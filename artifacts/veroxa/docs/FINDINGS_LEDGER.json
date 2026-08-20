@@ -585,6 +585,320 @@
       ],
       "rollbackMethod": "No change made.",
       "finalStatus": "open_deferred_after_core_proof"
+    },
+    {
+      "findingId": "F-023",
+      "originalConcern": "PR #193 allowed more than one internal acceptance tenant to receive live-AI authority because uniqueness was scoped only by restaurant and scope key.",
+      "freshVerificationResult": "The local repair adds a constant singleton slot with a database unique constraint, a transaction advisory lock, and an exact-scope idempotency check. A conflicting second tenant is covered by pgTAP and fails with internal_acceptance_scope_singleton_conflict.",
+      "severity": "high",
+      "affectedSystems": [
+        "Supabase tenant authorization",
+        "internal acceptance provisioning",
+        "live-AI budget authority"
+      ],
+      "rootCause": "The provisioning function searched only by requested restaurant and the table had no global singleton invariant.",
+      "correctiveAction": "Keep the singleton constraint and lock in the forward migration, and require the hosted pgTAP conflict assertion before applying it.",
+      "branch": "agent/veroxa-pre-intervention-proof-20260815",
+      "pullRequest": 193,
+      "commit": null,
+      "migrationOrDeployment": "pending repaired migration 20260815191500_veroxa_preintervention_acceptance_v1.sql",
+      "tests": [
+        "local migration and pgTAP mirrors are byte-identical",
+        "hosted singleton-conflict proof is pending the repaired exact head"
+      ],
+      "productionEvidence": [],
+      "rollbackMethod": "Do not apply the candidate migration until its repaired exact head passes all gates.",
+      "finalStatus": "local_repair_pending_exact_head_ci_review_and_apply"
+    },
+    {
+      "findingId": "F-024",
+      "originalConcern": "PR #193 enforced owner-rights and current-offering consent only in the browser, while the database could create confirmed rights without persisting the authenticated actor's attestation.",
+      "freshVerificationResult": "The local begin RPC now requires an exact versioned owner-attestation object, hashes it into an immutable actor/idempotency alias, and commit revalidates that exact alias plus current real-owner status before registration.",
+      "severity": "high",
+      "affectedSystems": [
+        "authenticated media upload RPCs",
+        "media rights evidence",
+        "current-offering association"
+      ],
+      "rootCause": "The original RPC contract omitted the browser attestation and the canonical session snapshot was not actor-specific.",
+      "correctiveAction": "Require structured server-bound attestation at begin and the exact idempotency alias at commit; keep aliases immutable and hashed.",
+      "branch": "agent/veroxa-pre-intervention-proof-20260815",
+      "pullRequest": 193,
+      "commit": null,
+      "migrationOrDeployment": "pending repaired migration and Sites client source",
+      "tests": [
+        "application contract assertions cover the begin attestation and commit idempotency key",
+        "pgTAP covers missing, false, wrong-key, hashed-readback, and immutable-alias cases; hosted execution is pending"
+      ],
+      "productionEvidence": [],
+      "rollbackMethod": "Do not apply or deploy the candidate; the last proven Sites and database states remain authoritative.",
+      "finalStatus": "local_repair_pending_exact_head_ci_review_apply_and_deploy"
+    },
+    {
+      "findingId": "F-025",
+      "originalConcern": "PR #193 deduplicated exact bytes only per actor, so a second Client in the same restaurant could allocate a second object, asset, rights row, and ingestion receipt.",
+      "freshVerificationResult": "The local repair makes restaurant plus original SHA-256 the canonical session identity and content lock, keeps actor-specific immutable aliases, and allows a separately attested active real-owner Client to replay only a registered canonical session.",
+      "severity": "high",
+      "affectedSystems": [
+        "private Storage object allocation",
+        "media registration",
+        "Team actionable work",
+        "tenant authorization"
+      ],
+      "rootCause": "The session unique keys, advisory lock, lookup, foreign key, and commit authorization all included the initiating actor.",
+      "correctiveAction": "Keep content identity restaurant-scoped, aliases actor-scoped, initiated commit creator-bound, and registered replay bound to a current valid real-owner Client alias.",
+      "branch": "agent/veroxa-pre-intervention-proof-20260815",
+      "pullRequest": 193,
+      "commit": null,
+      "migrationOrDeployment": "pending repaired migration 20260815191500_veroxa_preintervention_acceptance_v1.sql",
+      "tests": [
+        "pgTAP models two single-membership real-owner Clients and expects one session, path, asset, rights row, and receipt with three immutable aliases",
+        "hosted execution is pending the repaired exact head"
+      ],
+      "productionEvidence": [],
+      "rollbackMethod": "Do not apply the candidate migration; preserve all existing objects and immutable evidence.",
+      "finalStatus": "local_repair_pending_exact_head_ci_review_and_duplicate_proof"
+    },
+    {
+      "findingId": "F-026",
+      "originalConcern": "The deployment-attestation generator hard-coded the older media-inspection preflight as every active candidate's latest migration, causing PR #193 CI to reject its own bounded acceptance migration.",
+      "freshVerificationResult": "The local generator now obtains the active forward candidate's validated migration filename and records the media-inspection migration only as its prerequisite.",
+      "severity": "high",
+      "affectedSystems": [
+        "CI release attestation",
+        "release-manifest guard"
+      ],
+      "rootCause": "Candidate-specific release state was replaced by a hard-coded migration filename in the generic attestation path.",
+      "correctiveAction": "Generate attestation from the active candidate helper and verify the exact candidate migration hash, last-file position, and prerequisite independently.",
+      "branch": "agent/veroxa-pre-intervention-proof-20260815",
+      "pullRequest": 193,
+      "commit": null,
+      "migrationOrDeployment": null,
+      "tests": [
+        "local exact-head generation is pending the repaired merge commit",
+        "CI rerun is pending"
+      ],
+      "productionEvidence": [],
+      "rollbackMethod": "Keep release and production gates false if exact attestation generation fails.",
+      "finalStatus": "local_repair_pending_exact_head_attestation_and_ci"
+    },
+    {
+      "findingId": "F-027",
+      "originalConcern": "The authenticated profile RLS policy called a private helper whose execute privilege had been revoked from authenticated, aborting the hosted pgTAP suite with permission denied.",
+      "freshVerificationResult": "The local migration grants execute only to authenticated while retaining PUBLIC, anon, and service_role revocation; a migration invariant and pgTAP assertion verify the exact ACL.",
+      "severity": "high",
+      "affectedSystems": [
+        "Supabase profile RLS",
+        "authenticated Team visibility",
+        "hosted migration verification"
+      ],
+      "rootCause": "The RLS policy and helper ACL were changed independently, leaving the policy unable to evaluate for its intended role.",
+      "correctiveAction": "Retain the minimal authenticated-only function grant and rerun the entire hosted Supabase workflow because the earlier raw SQL abort skipped later assertions.",
+      "branch": "agent/veroxa-pre-intervention-proof-20260815",
+      "pullRequest": 193,
+      "commit": null,
+      "migrationOrDeployment": "pending repaired migration 20260815191500_veroxa_preintervention_acceptance_v1.sql",
+      "tests": [
+        "local ACL invariants are present",
+        "hosted pgTAP, lint, and outbound-request checks are pending"
+      ],
+      "productionEvidence": [],
+      "rollbackMethod": "Do not apply the migration if authenticated is not the sole intended caller role or hosted RLS tests fail.",
+      "finalStatus": "local_repair_pending_exact_head_hosted_supabase_verification"
+    },
+    {
+      "findingId": "F-028",
+      "originalConcern": "Repository entry documents still labeled the prior PR #185 / Sites v56 checkpoint as current authority after R3 became the canonical milestone.",
+      "freshVerificationResult": "The local repair gives all eight entry documents one shared R3 current-authority section, puts CURRENT_MILESTONE first in the read order, and replaces the active-candidate validation bypass with explicit marker checks.",
+      "severity": "high",
+      "affectedSystems": [
+        "operator authority chain",
+        "scheduled-task readiness",
+        "release guard"
+      ],
+      "rootCause": "The R3 checkpoint landed in the canonical milestone without synchronizing older repository entry points, and the source-truth validator exited early for any forward candidate.",
+      "correctiveAction": "Keep CURRENT_MILESTONE canonical, require one current R3 heading and common fail-closed markers in every entry document, and preserve the bounded PR #193 path allowlist.",
+      "branch": "agent/veroxa-pre-intervention-proof-20260815",
+      "pullRequest": 193,
+      "commit": null,
+      "migrationOrDeployment": null,
+      "tests": [
+        "all eight documents have exactly one current R3 heading",
+        "the exact release/source-truth guards are pending the repaired merge commit"
+      ],
+      "productionEvidence": [],
+      "rollbackMethod": "Keep the queue paused and treat CURRENT_MILESTONE as authoritative if any entry-point check diverges.",
+      "finalStatus": "local_authority_repair_pending_exact_head_guard_and_ci"
+    },
+    {
+      "findingId": "F-029",
+      "originalConcern": "The first restaurant-wide deduplication test attempted to insert a second momo_house_san_antonio operational-scope row for the acceptance restaurant, which would collide with the singleton Momo scope instead of testing the intended path.",
+      "freshVerificationResult": "The local repair removes that scope spoof and authorizes the second acceptance Client only through an active single membership plus explicit real-owner evidence, while the dedicated Team actor remains fixed by the singleton acceptance scope.",
+      "severity": "high",
+      "affectedSystems": [
+        "pgTAP acceptance proof",
+        "operational membership helper",
+        "Momo scope isolation"
+      ],
+      "rootCause": "The test tried to reuse the Momo-only operational scope key rather than modeling a second valid Client inside the isolated acceptance tenant.",
+      "correctiveAction": "Exercise the acceptance tenant's normal membership and owner-evidence boundary without creating or changing any Momo operational-scope row.",
+      "branch": "agent/veroxa-pre-intervention-proof-20260815",
+      "pullRequest": 193,
+      "commit": null,
+      "migrationOrDeployment": "pending repaired migration and pgTAP",
+      "tests": [
+        "migration and pgTAP mirrors are byte-identical",
+        "hosted two-client replay proof is pending"
+      ],
+      "productionEvidence": [],
+      "rollbackMethod": "Do not apply the candidate if the isolated two-client pgTAP path cannot pass without modifying Momo scope.",
+      "finalStatus": "local_test_and_scope_repair_pending_hosted_verification"
+    },
+    {
+      "findingId": "F-030",
+      "originalConcern": "The authenticated browser supplied the SHA used for exact-byte deduplication and could commit asset, rights, instruction, and outbox rows before authoritative server byte verification.",
+      "freshVerificationResult": "The repaired browser can only begin a bounded session and upload its reserved private object. The authenticated finalize route now downloads, validates, decodes, and hashes the exact bytes, then a signed lifecycle bridge calls a service-role-only v2 commit bound to the observed SHA, storage object ID/version, actor, session, and immutable idempotency alias before any registration row is written.",
+      "severity": "medium",
+      "affectedSystems": [
+        "authenticated Client upload",
+        "private Storage",
+        "media registration",
+        "Team ingestion queue"
+      ],
+      "rootCause": "The v1 commit trusted a browser-computed hash as canonical content identity and registered durable work before the separate server verifier ran.",
+      "correctiveAction": "Keep v1 commit revoked from every application role, keep v2 service-role-only, and require the signed bridge to carry the server-observed hash and exact storage identity.",
+      "branch": "agent/veroxa-pre-intervention-proof-20260815",
+      "pullRequest": 193,
+      "commit": null,
+      "migrationOrDeployment": "pending repaired migration, Sites finalize route, and lifecycle Edge source",
+      "tests": [
+        "observed-SHA mismatch must create zero asset, rights, instruction, or outbox rows",
+        "browser source must contain no direct v1 or v2 commit RPC",
+        "hosted pgTAP and exact-head CI are pending"
+      ],
+      "productionEvidence": [],
+      "rollbackMethod": "Do not apply or deploy the candidate unless the service-only commit ACL and server-hash path pass exact-head gates.",
+      "finalStatus": "local_repair_pending_exact_head_security_ci_and_hosted_pgtap"
+    },
+    {
+      "findingId": "F-031",
+      "originalConcern": "An authenticated Client could reserve any restaurant/SHA pair forever without uploading an object, permanently blocking a later legitimate exact-byte upload.",
+      "freshVerificationResult": "Initiated sessions now expire after at most 15 minutes, stale reservations transition to immutable expired evidence, and only initiated or registered rows participate in the live SHA/request unique indexes. Active and hourly actor/restaurant session quotas bound allocation.",
+      "severity": "medium",
+      "affectedSystems": [
+        "upload session allocation",
+        "restaurant-wide exact-byte deduplication",
+        "database capacity"
+      ],
+      "rootCause": "The original session lifecycle had only initiated and registered states, a permanent SHA unique constraint, no TTL, and no allocation quota.",
+      "correctiveAction": "Retain the bounded initiation lifetime, partial live-only uniqueness, immutable expiry transition, and actor/restaurant quotas.",
+      "branch": "agent/veroxa-pre-intervention-proof-20260815",
+      "pullRequest": 193,
+      "commit": null,
+      "migrationOrDeployment": "pending repaired migration 20260815191500_veroxa_preintervention_acceptance_v1.sql",
+      "tests": [
+        "pgTAP reclaims an abandoned SHA after expiry",
+        "pgTAP rejects expired idempotency replay and active/hourly quota overflow",
+        "hosted execution is pending"
+      ],
+      "productionEvidence": [],
+      "rollbackMethod": "Do not apply the candidate if stale reservations remain live or any quota/expiry assertion fails.",
+      "finalStatus": "local_repair_pending_exact_head_hosted_expiry_and_quota_proof"
+    },
+    {
+      "findingId": "F-032",
+      "originalConcern": "A Client could append unlimited immutable idempotency aliases to one registered session with cheap repeated begin calls.",
+      "freshVerificationResult": "The repaired begin RPC preserves exact replay but caps aliases at eight per actor/session and 32 per session, with a separate 30-per-hour actor alias rate bound under advisory locks.",
+      "severity": "low",
+      "affectedSystems": [
+        "upload idempotency aliases",
+        "private database storage"
+      ],
+      "rootCause": "Uniqueness prevented reuse of one key but imposed no cardinality or rate limit across fresh UUID keys.",
+      "correctiveAction": "Keep both per-session cardinality limits and the actor-hour rate limit, while allowing an exact existing key to replay even after the quota is reached.",
+      "branch": "agent/veroxa-pre-intervention-proof-20260815",
+      "pullRequest": 193,
+      "commit": null,
+      "migrationOrDeployment": "pending repaired migration 20260815191500_veroxa_preintervention_acceptance_v1.sql",
+      "tests": [
+        "pgTAP proves eight aliases remain replayable and the ninth fails closed",
+        "hosted execution is pending"
+      ],
+      "productionEvidence": [],
+      "rollbackMethod": "Do not apply the candidate if alias cardinality can exceed either bound.",
+      "finalStatus": "local_repair_pending_exact_head_hosted_alias_limit_proof"
+    },
+    {
+      "findingId": "F-033",
+      "originalConcern": "The shared Momo operational-row trigger validated only NEW.restaurant_id and did not explicitly reject an UPDATE that reassigned an existing row to another tenant.",
+      "freshVerificationResult": "No authenticated reassignment sink was established, but the repaired trigger now rejects every OLD/NEW restaurant mismatch before evaluating either operational or isolated-acceptance scope.",
+      "severity": "low",
+      "affectedSystems": [
+        "tenant isolation",
+        "Momo evidence tables"
+      ],
+      "rootCause": "The shared trigger was written as an insert-oriented scope check and relied on separate privilege/RPC controls for UPDATE safety.",
+      "correctiveAction": "Keep restaurant scope immutable at the shared trigger boundary and exercise the denial in pgTAP.",
+      "branch": "agent/veroxa-pre-intervention-proof-20260815",
+      "pullRequest": 193,
+      "commit": null,
+      "migrationOrDeployment": "pending repaired migration 20260815191500_veroxa_preintervention_acceptance_v1.sql",
+      "tests": [
+        "pgTAP rejects cross-restaurant reassignment with operational_restaurant_scope_is_immutable",
+        "hosted execution is pending"
+      ],
+      "productionEvidence": [],
+      "rollbackMethod": "Do not apply the candidate if restaurant_id can be changed on any protected operational row.",
+      "finalStatus": "defense_in_depth_repair_pending_exact_head_hosted_isolation_proof"
+    },
+    {
+      "findingId": "F-034",
+      "originalConcern": "An authenticated orphan-object DELETE could race the service-only v2 commit after the server verified bytes but before registration completed.",
+      "freshVerificationResult": "Live initiated and registered session paths are now protected by the Storage delete-policy helper, and v2 takes a row lock on the exact storage object before validating and registering it.",
+      "severity": "high",
+      "affectedSystems": [
+        "Supabase Storage RLS",
+        "server-authoritative media commit",
+        "asset-to-object integrity"
+      ],
+      "rootCause": "The orphan-delete helper recognized only already-registered asset paths and the new commit initially read the storage object without FOR UPDATE.",
+      "correctiveAction": "Treat every live upload-session path as registered for delete protection and retain the exact storage-object row lock through registration.",
+      "branch": "agent/veroxa-pre-intervention-proof-20260815",
+      "pullRequest": 193,
+      "commit": null,
+      "migrationOrDeployment": "pending repaired migration 20260815191500_veroxa_preintervention_acceptance_v1.sql",
+      "tests": [
+        "pgTAP proves an authenticated Client cannot delete a live session object",
+        "hosted concurrency/pgTAP execution is pending"
+      ],
+      "productionEvidence": [],
+      "rollbackMethod": "Do not apply the candidate if a live reserved object remains deletable during commit.",
+      "finalStatus": "local_race_repair_pending_exact_head_hosted_storage_proof"
+    },
+    {
+      "findingId": "F-035",
+      "originalConcern": "The trusted commit used storage object ID/version and observed SHA transiently but did not persist that canonical evidence for immutable replay validation.",
+      "freshVerificationResult": "Registered sessions now persist observed_sha256, committed_storage_object_id, committed_storage_object_version, and committed_at; the session guard freezes them and every registered replay must match the stored canonical evidence.",
+      "severity": "medium",
+      "affectedSystems": [
+        "upload session evidence",
+        "idempotent commit replay",
+        "media provenance"
+      ],
+      "rootCause": "The first v2 draft returned canonical IDs but retained only the earlier browser claim and registration timestamps in the session row.",
+      "correctiveAction": "Persist and freeze the exact server-observed hash and storage version at commit, and compare them on every replay.",
+      "branch": "agent/veroxa-pre-intervention-proof-20260815",
+      "pullRequest": 193,
+      "commit": null,
+      "migrationOrDeployment": "pending repaired migration 20260815191500_veroxa_preintervention_acceptance_v1.sql",
+      "tests": [
+        "pgTAP verifies the persisted canonical object/hash evidence",
+        "pgTAP rejects replay when the requested storage version differs",
+        "hosted execution is pending"
+      ],
+      "productionEvidence": [],
+      "rollbackMethod": "Do not apply the candidate if registered evidence fields are mutable or replay is not bound to them.",
+      "finalStatus": "local_evidence_repair_pending_exact_head_hosted_replay_proof"
     }
   ]
 }

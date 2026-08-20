@@ -160,7 +160,8 @@ test("Client copy presents safe outcomes without internal processing details", a
   assert.doesNotMatch(data, /client\.rpc\("veroxa_momo_client_upload_status_v3"/);
   assert.match(data, /pipelineAttentionReasons: effectiveAttentionReasons/);
   assert.match(data, /"veroxa_begin_media_upload_v1"/);
-  assert.match(data, /"veroxa_commit_media_upload_v1"/);
+  assert.doesNotMatch(data, /"veroxa_commit_media_upload_v1"/);
+  assert.match(data, /finalizeMomoMediaUploadSession/);
   assert.doesNotMatch(data, /"veroxa_register_momo_media_v1"/);
   assert.doesNotMatch(data, /"veroxa_register_momo_media_v3"/);
   assert.match(data, /p_requested_association: input\.restaurantAssociation/);

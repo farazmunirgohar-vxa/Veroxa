@@ -9,6 +9,18 @@ const teamMediaUi = read(
   "artifacts/veroxa-sites/app/momo-team-preconnection-center.tsx",
 );
 const clientData = read("artifacts/veroxa-sites/app/momo-client-data.ts");
+const mediaFinalizeCore = read(
+  "artifacts/veroxa-sites/app/api/media/finalize/core.ts",
+);
+const mediaFinalizeRoute = read(
+  "artifacts/veroxa-sites/app/api/media/finalize/route.ts",
+);
+const lifecycleContract = read(
+  "artifacts/veroxa-sites/supabase/functions/_shared/momo-content-ai-lifecycle-contract.ts",
+);
+const lifecycleEdge = read(
+  "artifacts/veroxa-sites/supabase/functions/momo-content-ai-lifecycle/index.ts",
+);
 const clientUi = read("artifacts/veroxa-sites/app/momo-client-portal.tsx");
 const teamSummary = read("artifacts/veroxa-sites/app/momo-team-summary.ts");
 const page = read("artifacts/veroxa-sites/app/page.tsx");
@@ -306,7 +318,7 @@ for (const marker of [
   "usageScope: string[]",
   "p_usage_scope: usageScope",
   '"veroxa_begin_media_upload_v1"',
-  '"veroxa_commit_media_upload_v1"',
+  "finalizeMomoMediaUploadSession",
   "p_original_sha256: originalSha256",
   "p_requested_association: input.restaurantAssociation",
 ]) {
@@ -319,10 +331,23 @@ for (const legacyRpc of [
   '"veroxa_register_momo_media_v1"',
   '"veroxa_register_momo_media_v2"',
   '"veroxa_register_momo_media_v3"',
+  '"veroxa_commit_media_upload_v1"',
+  '"veroxa_commit_media_upload_v2"',
 ]) {
   must(
     !clientData.includes(legacyRpc),
     `Sites browser code still exposes the legacy upload bypass: ${legacyRpc}`,
+  );
+}
+for (const [source, marker] of [
+  [mediaFinalizeCore, "observedSha256: contentSha256"],
+  [mediaFinalizeRoute, '{ operation: "commit_upload", ...input }'],
+  [lifecycleContract, 'operation: "commit_upload"'],
+  [lifecycleEdge, 'admin.rpc("veroxa_commit_media_upload_v2"'],
+] as const) {
+  must(
+    source.includes(marker),
+    `Server-authoritative media commit contract missing: ${marker}`,
   );
 }
 

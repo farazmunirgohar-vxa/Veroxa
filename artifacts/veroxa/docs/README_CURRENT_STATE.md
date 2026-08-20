@@ -4,7 +4,17 @@ Status: Short index for Faraz, Codex, and future ChatGPT/Codex sessions.
 
 <!-- GUARDED_INTERNAL_AI_ROLLOUT_AUTHORITY -->
 
-## 2026-08-15 — private media-recovery host-inspection diagnostic closeout; Sites v56 and database58 live (current authority)
+## 2026-08-20 — R3 pre-intervention readiness (current authority)
+
+Read `artifacts/veroxa/docs/CURRENT_MILESTONE.md` first. Live verified state outranks the ordered R3 Linear program; the program outranks exact reviewed code and evidence; older date-stamped claims are historical.
+
+- **GitHub:** `main` is `a05e7a79b2c527ff93a4c3810afc6ada193fce6c`. PR #193 is the current candidate only—not merged, deployed, or production authority. PR #187 remains deferred and unmerged.
+- **Hosting and database:** Sites v59 deployment `appgdep_6a8016eee874819184f031daa896048c` is the last conclusively proven production deployment; saved v60 is not deployment proof. Production Supabase has 59 observed migrations; the PR #193 acceptance migration is unapplied candidate source.
+- **Media boundary:** IMG_4257 (`05ab2303-f7ea-4056-8f75-9cd7e523a4f4`) is terminal, immutable, read-only, non-Ready, and has zero retries. Never retry, reprocess, resubmit, move, replace, delete, re-upload, or use it as a fixture.
+- **Product boundary:** `ready_for_team_review` is not approval, scheduling, publication, or an external action. Momo remains the free founding pilot.
+- **External boundary:** Publishing, provider writes, review replies, messaging, website/listing/menu writes, advertising, external scheduling, customer contact, account connection, and repository-visibility changes remain fail-closed.
+
+## 2026-08-15 — private media-recovery host-inspection diagnostic closeout; Sites v56 and database58 live (historical, superseded)
 
 Current reconciliation markers: private media-recovery host-inspection diagnostic closeout; GitHub application source 77dadd67505642353b431db3802d2ec365966869; PR #185; Sites v56; database58 through `20260813175640_durable_media_ingestion_path_regex_repair_v1.sql`; environment revision 22; USD 0 incremental spend.
 

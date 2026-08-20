@@ -47,6 +47,25 @@ function dependencies(
         contentType: data.contentType ?? "",
       };
     },
+    async commit(
+      input: Record<string, unknown>,
+      context: { correlationId: string },
+    ) {
+      const bridgeConfig = bridge();
+      if (!bridgeConfig) {
+        throw momoContentAiLifecycleBridgeFailure({
+          stage: "configuration",
+          code: "momo_content_ai_lifecycle_configuration_unavailable",
+          correlationId: context.correlationId,
+        });
+      }
+      return invokeMomoContentAiLifecycleBridge<unknown>(
+        client,
+        bridgeConfig,
+        { operation: "commit_upload", ...input },
+        { correlationId: context.correlationId },
+      );
+    },
     async finalize(
       input: Record<string, unknown>,
       context: { correlationId: string },

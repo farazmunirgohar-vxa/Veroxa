@@ -509,7 +509,8 @@ test("Momo operating center uses live tenant data and exact production contracts
   assert.match(data, /\.rpc\("veroxa_apply_approval_v1"/, "Team approval decisions must atomically update their subject");
   assert.match(data, /\.rpc\("veroxa_review_momo_media_v1"/, "Media review replacement and asset state must be atomic");
   assert.match(clientData, /"veroxa_begin_media_upload_v1"/, "Every authenticated client upload must reserve one replay-safe private object path");
-  assert.match(clientData, /"veroxa_commit_media_upload_v1"/, "Every authenticated client upload must atomically register its instruction and durable receipt");
+  assert.doesNotMatch(clientData, /"veroxa_commit_media_upload_v1"/, "The authenticated browser must not call a registration commit RPC");
+  assert.match(clientData, /finalizeMomoMediaUploadSession/, "The server-side byte verifier must own session registration and finalization");
   assert.match(clientData, /p_original_sha256:\s*originalSha256/, "The durable upload session must bind the browser's full-file SHA-256");
   assert.doesNotMatch(clientData, /"veroxa_register_momo_media_v1"/, "No browser adapter may call the original registration RPC directly");
   assert.doesNotMatch(clientData, /"veroxa_register_momo_media_v2"/, "No browser adapter may retain the legacy instruction-bypass registration path");
@@ -522,7 +523,8 @@ test("Momo operating center uses live tenant data and exact production contracts
     );
   }
   assert.match(acceptanceMigration, /grant execute on function public\.veroxa_begin_media_upload_v1\([\s\S]{0,220}to authenticated;/, "Authenticated Client registration must enter through the durable begin RPC");
-  assert.match(acceptanceMigration, /grant execute on function public\.veroxa_commit_media_upload_v1\([\s\S]{0,120}to authenticated;/, "Authenticated Client registration must finish through the durable commit RPC");
+  assert.match(acceptanceMigration, /revoke all on function public\.veroxa_commit_media_upload_v1\(uuid,uuid\)[\s\S]{0,120}from public, anon, authenticated, service_role;/, "The browser-callable v1 commit must stay revoked");
+  assert.match(acceptanceMigration, /grant execute on function public\.veroxa_commit_media_upload_v2\([\s\S]{0,220}to service_role;/, "Only the signed server bridge may execute the observed-byte commit");
   assert.match(clientData, /p_expires_on:\s*input\.expiresAt \|\| null/, "Rights expiry must be sent as a Momo-local calendar date, not browser-local timestamp");
   assert.match(data, /\.rpc\([\s\S]{0,80}"veroxa_apply_momo_media_upload_instruction_v1"/, "Team must apply the immutable saved instruction through the narrow processor");
   assert.match(processorMigration, /revoke all on function public\.veroxa_register_momo_media_v2\([\s\S]{0,180}from public, anon, authenticated, service_role;/, "The legacy browser bypass must be revoked");

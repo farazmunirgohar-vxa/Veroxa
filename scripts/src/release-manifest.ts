@@ -77,9 +77,9 @@ const ACTIVE_PRIVATE_MEDIA_VERIFIER_CONTRACT_CANDIDATE_ALLOWED_PATHS = new Set([
   "scripts/src/release-manifest.ts",
 ]);
 const ACTIVE_PREINTERVENTION_ACCEPTANCE_CANDIDATE_BASE_COMMIT =
-  "7cb6173ce76cff840017b2b4ecfa37c31cb07a09";
+  "a05e7a79b2c527ff93a4c3810afc6ada193fce6c";
 const ACTIVE_PREINTERVENTION_ACCEPTANCE_CANDIDATE_BASE_TREE =
-  "86afd2ac1a08d8486ea9d1bb30e8fff31478739e";
+  "a0c26f7df224ec00d366edc8e7f38f8e829999d2";
 const PREINTERVENTION_ACCEPTANCE_MIGRATION =
   "20260815191500_veroxa_preintervention_acceptance_v1.sql";
 const PREINTERVENTION_ACCEPTANCE_PGTAP =
@@ -92,34 +92,49 @@ const ACTIVE_PREINTERVENTION_ACCEPTANCE_CANDIDATE_ALLOWED_PATHS = new Set([
   "artifacts/veroxa-sites/app/api/internal/momo/media/recover/core.ts",
   "artifacts/veroxa-sites/app/api/internal/momo/media/recover/route.ts",
   "artifacts/veroxa-sites/app/api/internal/veroxa/media/inspection-preflight/core.ts",
+  "artifacts/veroxa-sites/app/api/media/finalize/core.ts",
+  "artifacts/veroxa-sites/app/api/media/finalize/route.ts",
   "artifacts/veroxa-sites/app/client/[[...slug]]/page.tsx",
   "artifacts/veroxa-sites/app/momo-client-data.ts",
   "artifacts/veroxa-sites/app/momo-client-portal.tsx",
+  "artifacts/veroxa-sites/app/momo-media-finalize-client.ts",
   "artifacts/veroxa-sites/app/momo-operating-center.tsx",
   "artifacts/veroxa-sites/app/page.tsx",
   "artifacts/veroxa-sites/app/veroxa-supabase-server.ts",
   "artifacts/veroxa-sites/app/veroxa-supabase.ts",
+  "artifacts/veroxa-sites/supabase/functions/_shared/momo-content-ai-lifecycle-contract.ts",
+  "artifacts/veroxa-sites/supabase/functions/momo-content-ai-lifecycle/index.ts",
   `artifacts/veroxa-sites/supabase/migrations/${PREINTERVENTION_ACCEPTANCE_MIGRATION}`,
   `artifacts/veroxa-sites/supabase/tests/${PREINTERVENTION_ACCEPTANCE_PGTAP}`,
   "artifacts/veroxa-sites/tests/momo-client-media-portal.test.mjs",
   "artifacts/veroxa-sites/tests/momo-client-media-upload.test.mjs",
   "artifacts/veroxa-sites/tests/momo-client-requests-contract.test.mjs",
+  "artifacts/veroxa-sites/tests/momo-content-lifecycle-contract.test.mjs",
   "artifacts/veroxa-sites/tests/momo-media-guidance.test.mjs",
+  "artifacts/veroxa-sites/tests/momo-media-finalize-client.test.mjs",
+  "artifacts/veroxa-sites/tests/momo-media-finalize-route.test.mjs",
   "artifacts/veroxa-sites/tests/momo-media-ingestion-recovery.test.mjs",
   "artifacts/veroxa-sites/tests/momo-operating-ux.test.mjs",
   "artifacts/veroxa-sites/tests/momo-v2-team-surface.test.mjs",
   "artifacts/veroxa-sites/tests/rendered-html.test.mjs",
   "artifacts/veroxa/docs/ACTIVE_DOCS_INDEX.md",
+  "artifacts/veroxa/docs/CHATGPT_SITES_MIGRATION_AND_SOURCE_OF_TRUTH.md",
   "artifacts/veroxa/docs/CURRENT_BUILD_STATUS.md",
   "artifacts/veroxa/docs/CURRENT_MILESTONE.md",
   "artifacts/veroxa/docs/CURRENT_STATE.json",
   "artifacts/veroxa/docs/FINDINGS_LEDGER.json",
+  "artifacts/veroxa/docs/README_CURRENT_STATE.md",
+  "artifacts/veroxa/docs/RR_CHECKPOINT.md",
   "artifacts/veroxa/docs/VEROXA_CURRENT_MILESTONE.md",
   "artifacts/veroxa/docs/VEROXA_LOCKED_OPERATING_MEMORY.md",
   "artifacts/veroxa/docs/history/2026-08-15-preintervention-phase-1-source-of-truth.json",
+  "scripts/src/check-chatgpt-sites-migration-source-truth.ts",
+  "scripts/src/generate-deployment-attestation.ts",
   "scripts/src/check-sites-momo-operating-contract.ts",
   "scripts/src/release-manifest.ts",
   "scripts/src/check-supabase-migration-ledger.ts",
+  "supabase/functions/_shared/momo-content-ai-lifecycle-contract.ts",
+  "supabase/functions/momo-content-ai-lifecycle/index.ts",
   `supabase/migrations/${PREINTERVENTION_ACCEPTANCE_MIGRATION}`,
   `supabase/tests/${PREINTERVENTION_ACCEPTANCE_PGTAP}`,
 ]);
@@ -1132,6 +1147,14 @@ export function hasActiveMediaInspectionForwardCandidate(): boolean {
   return readActiveMediaInspectionCandidateState() !== null;
 }
 
+export function activeMediaInspectionForwardCandidateMigration(): string | null {
+  const filename = readActiveMediaInspectionCandidateState()
+    ?.activeCandidate?.migration?.filename;
+  return typeof filename === "string" && /^[0-9]{14}_[a-z0-9_]+[.]sql$/u.test(filename)
+    ? filename
+    : null;
+}
+
 export function activeMediaInspectionPreflightMigrationIsApplied(): boolean {
   const candidate = readActiveMediaInspectionCandidateState()?.activeCandidate;
   return candidate?.preflightMigrationStatus === "applied";
@@ -1685,6 +1708,15 @@ function assertActivePreinterventionAcceptanceCandidate(
   );
   const pgTap = read(`supabase/tests/${PREINTERVENTION_ACCEPTANCE_PGTAP}`);
   const uploadAdapter = read("artifacts/veroxa-sites/app/momo-client-data.ts");
+  const finalizeCore = read(
+    "artifacts/veroxa-sites/app/api/media/finalize/core.ts",
+  );
+  const lifecycleContract = read(
+    "supabase/functions/_shared/momo-content-ai-lifecycle-contract.ts",
+  );
+  const lifecycleEdge = read(
+    "supabase/functions/momo-content-ai-lifecycle/index.ts",
+  );
   const clientPortal = read("artifacts/veroxa-sites/app/momo-client-portal.tsx");
   const teamPortal = read("artifacts/veroxa-sites/app/momo-operating-center.tsx");
   const recovery = read(
@@ -1728,7 +1760,7 @@ function assertActivePreinterventionAcceptanceCandidate(
     "pre-intervention candidate identity or not-ready boundary drifted",
   );
   must(
-    candidate?.pullRequest === null &&
+    candidate?.pullRequest === 193 &&
       candidate.reviewedHead === null &&
       candidate.mergeCommit === null &&
       candidate.sourceTree === null &&
@@ -1759,12 +1791,12 @@ function assertActivePreinterventionAcceptanceCandidate(
         ACTIVE_PREINTERVENTION_ACCEPTANCE_CANDIDATE_BASE_COMMIT &&
       github.mainTree === ACTIVE_PREINTERVENTION_ACCEPTANCE_CANDIDATE_BASE_TREE &&
       github.latestApplicationSourceCommit ===
-        ACTIVE_PREINTERVENTION_ACCEPTANCE_CANDIDATE_BASE_COMMIT &&
-      github.latestMergedPullRequest === 191 &&
+        "7cb6173ce76cff840017b2b4ecfa37c31cb07a09" &&
+      github.latestMergedPullRequest === 195 &&
       github.pullRequest191?.head ===
         "aabb1efc72cfcc1ee649572dd033c7806a28dbb0" &&
       github.pullRequest191?.mergeCommit ===
-        ACTIVE_PREINTERVENTION_ACCEPTANCE_CANDIDATE_BASE_COMMIT &&
+        "7cb6173ce76cff840017b2b4ecfa37c31cb07a09" &&
       github.pullRequest191?.sourceTreeMatchesMain === true &&
       github.pullRequest191?.allFourExactHeadWorkflowsGreen === true &&
       sameJson(github.pullRequest191?.workflowRuns, {
@@ -1834,7 +1866,7 @@ function assertActivePreinterventionAcceptanceCandidate(
       pgTapEvidence?.filename === PREINTERVENTION_ACCEPTANCE_PGTAP &&
       pgTapEvidence.sha256 === sha256File(rootPgTapPath) &&
       pgTapEvidence.byteLength === statSync(rootPgTapPath).size &&
-      pgTapEvidence.plannedAssertions === 31 &&
+      pgTapEvidence.plannedAssertions === 57 &&
       pgTapEvidence.mirrored === true &&
       pgTapEvidence.hostedExecutionPassed === false,
     "pre-intervention pgTAP identity, mirror, or unproven hosted-execution boundary drifted",
@@ -1846,25 +1878,47 @@ function assertActivePreinterventionAcceptanceCandidate(
   must(
     migration.includes("create or replace function public.veroxa_begin_media_upload_v1(") &&
       migration.includes("create or replace function public.veroxa_commit_media_upload_v1(") &&
-      migration.includes("unique (restaurant_id, actor_id, original_sha256)") &&
+      migration.includes("create or replace function public.veroxa_commit_media_upload_v2(") &&
+      migration.includes("media_upload_sessions_live_sha_v1") &&
+      migration.includes("initiation_expires_at timestamptz not null") &&
+      migration.includes("message = 'media_upload_session_expired'") &&
+      migration.includes("message = 'media_upload_alias_limit_reached'") &&
+      migration.includes("message = 'media_upload_session_rate_or_active_limit_reached'") &&
+      migration.includes("unique (singleton_slot)") &&
       migration.includes("create table veroxa_private.media_upload_session_aliases_v1") &&
       migration.includes("primary key (restaurant_id, actor_id, client_idempotency_key)") &&
+      migration.includes("request_snapshot jsonb not null") &&
       migration.includes("message = 'media_upload_session_alias_is_immutable'") &&
+      migration.includes("message = 'media_upload_owner_attestation_invalid'") &&
+      migration.includes("message = 'internal_acceptance_scope_singleton_conflict'") &&
       authenticatedV3Revoke.test(migration) &&
       !authenticatedV3Grant.test(migration) &&
       migration.includes("message = 'media_upload_registration_rpc_acl_invalid'") &&
       migration.includes("public.veroxa_register_momo_media_v1(uuid,text,text,bigint,text,text,jsonb,timestamptz)") &&
       migration.includes("public.veroxa_register_momo_media_v2(uuid,text,text,bigint,text,text,jsonb,date)") &&
       migration.includes("public.veroxa_register_momo_media_v3(uuid,text,text,bigint,text,jsonb,date,text,text)") &&
-      migration.includes("public.veroxa_begin_media_upload_v1(uuid,uuid,text,text,bigint,text,jsonb,date,text,text)") &&
-      migration.includes("public.veroxa_commit_media_upload_v1(uuid)") &&
-      pgTap.includes("authenticated Client registration is begin/commit only") &&
+      migration.includes("public.veroxa_begin_media_upload_v1(uuid,uuid,text,text,bigint,text,jsonb,jsonb,date,text,text)") &&
+      migration.includes("public.veroxa_commit_media_upload_v1(uuid,uuid)") &&
+      migration.includes("public.veroxa_commit_media_upload_v2(uuid,uuid,uuid,text,uuid,text,uuid)") &&
+      pgTap.includes("authenticated Clients can only begin; service_role alone can commit v2") &&
+      pgTap.includes("mismatch creates no durable row or committed session evidence") &&
+      pgTap.includes("an expired idempotency alias cannot be replayed or rebound") &&
+      pgTap.includes("a ninth actor/session alias fails closed") &&
+      pgTap.includes("a second restaurant Client reuses the canonical restaurant/SHA session") &&
       uploadAdapter.includes('"veroxa_begin_media_upload_v1"') &&
-      uploadAdapter.includes('"veroxa_commit_media_upload_v1"') &&
-      uploadAdapter.includes("idempotent commit replay can finish registration without re-uploading") &&
+      !uploadAdapter.includes('"veroxa_commit_media_upload_v1"') &&
+      !uploadAdapter.includes('"veroxa_commit_media_upload_v2"') &&
+      uploadAdapter.includes("finalizeMomoMediaUploadSession") &&
+      uploadAdapter.includes("p_owner_attestation") &&
+      uploadAdapter.includes("p_client_idempotency_key: clientIdempotencyKey.toLowerCase()") &&
+      finalizeCore.includes("observedSha256: contentSha256") &&
+      lifecycleContract.includes('operation: "commit_upload"') &&
+      lifecycleEdge.includes('admin.rpc("veroxa_commit_media_upload_v2"') &&
+      migration.includes("grant execute on function public.veroxa_commit_media_upload_v2(") &&
+      migration.includes(") to service_role;") &&
       uploadTests.includes("an already registered replay skips object creation and reuses the same IDs") &&
       uploadTests.includes("an initiated replay can commit an already-present reserved object"),
-    "begin/commit replay, content uniqueness, immutable alias, or authenticated-v3 revocation contract drifted",
+    "bounded begin/server-commit replay, content uniqueness, immutable alias, or RPC ACL contract drifted",
   );
   const offeringAttestation =
     "Authenticated restaurant uploader attested that this image depicts a current restaurant offering.";
@@ -1874,6 +1928,8 @@ function assertActivePreinterventionAcceptanceCandidate(
       teamPortal.includes('restaurantAssociation: "represents_current_restaurant_offering"') &&
       teamPortal.includes(`associationNote: "${offeringAttestation}"`) &&
       migration.includes("'represents_current_restaurant_offering'") &&
+      migration.includes("'veroxa-media-owner-attestation-v1'") &&
+      migration.includes("'currentOfferingAccepted'") &&
       pgTap.includes("'represents_current_restaurant_offering'"),
     "truthful current-offering attestation contract drifted",
   );

@@ -133,6 +133,33 @@ Deno.serve(async (request: Request): Promise<Response> => {
     global: { headers: { "x-veroxa-server-purpose": "momo-content-ai-lifecycle-v1" } },
   });
 
+  if (body.operation === "commit_upload") {
+    const { data, error } = await admin.rpc("veroxa_commit_media_upload_v2", {
+      p_restaurant_id: body.restaurantId,
+      p_upload_session_id: body.uploadSessionId,
+      p_client_idempotency_key: body.clientIdempotencyKey,
+      p_observed_sha256: body.observedSha256,
+      p_storage_object_id: body.storageObjectId,
+      p_storage_object_version: body.storageObjectVersion,
+      p_actor_id: userData.user.id,
+    });
+    const committed = Array.isArray(data) ? data[0] : data;
+    if (error || !isPlainObject(committed) ||
+      committed.upload_session_id !== body.uploadSessionId ||
+      committed.storage_path !== body.storagePath ||
+      committed.session_status !== "registered" ||
+      typeof committed.asset_id !== "string" || !UUID.test(committed.asset_id) ||
+      typeof committed.rights_id !== "string" || !UUID.test(committed.rights_id) ||
+      typeof committed.instruction_id !== "string" || !UUID.test(committed.instruction_id) ||
+      typeof committed.ingestion_receipt_id !== "string" || !UUID.test(committed.ingestion_receipt_id) ||
+      typeof committed.ingestion_correlation_id !== "string" || !UUID.test(committed.ingestion_correlation_id) ||
+      committed.original_sha256 !== body.observedSha256 ||
+      committed.external_write_allowed !== false) {
+      return response({ error: "lifecycle_rpc_rejected" }, 409);
+    }
+    return response({ data: committed }, 200);
+  }
+
   if (body.operation === "finalize_upload") {
     const { data: finalizeData, error: finalizeError } = await admin.rpc(
       "veroxa_finalize_private_media_assessment_intake_v1",

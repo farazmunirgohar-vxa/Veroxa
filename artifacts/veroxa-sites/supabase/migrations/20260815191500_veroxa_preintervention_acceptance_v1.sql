@@ -19,6 +19,8 @@ revoke all on schema veroxa_private
 create table veroxa_private.internal_acceptance_scope_v1 (
   restaurant_id uuid primary key
     references public.veroxa_restaurants(id) on delete restrict,
+  singleton_slot smallint not null default 1
+    check (singleton_slot = 1),
   scope_key text not null unique check (
     scope_key ~ '^veroxa_internal_acceptance_[a-z0-9_]{3,80}$'
   ),
@@ -39,6 +41,7 @@ create table veroxa_private.internal_acceptance_scope_v1 (
   evidence_snapshot jsonb not null
     check (pg_catalog.jsonb_typeof(evidence_snapshot) = 'object'),
   evidence_sha256 text not null check (evidence_sha256 ~ '^[0-9a-f]{64}$'),
+  unique (singleton_slot),
   check (client_actor_id <> team_actor_id),
   check (created_by = team_actor_id)
 );
@@ -127,6 +130,7 @@ begin
   ), 'hex');
   if new.evidence_snapshot is distinct from pg_catalog.jsonb_build_object(
        'schemaVersion', 'veroxa-internal-acceptance-scope-v1',
+       'singletonSlot', 1,
        'scopeKey', new.scope_key,
        'restaurantId', new.restaurant_id,
        'clientActorId', new.client_actor_id,
@@ -254,10 +258,23 @@ as $$
             from veroxa_private.internal_acceptance_scope_v1 scope
             where scope.restaurant_id = p_restaurant_id
               and (
-                (profile.role = 'client'::public.veroxa_role_v1
-                  and scope.client_actor_id = p_actor_id)
-                or (profile.role = 'team'::public.veroxa_role_v1
-                  and scope.team_actor_id = p_actor_id)
+                (
+                  profile.role = 'client'::public.veroxa_role_v1
+                  and veroxa_private.momo_evidence_class_for_user_v1(
+                    p_restaurant_id, p_actor_id
+                  ) = 'real_owner'
+                  and (
+                    select pg_catalog.count(*)
+                    from public.veroxa_restaurant_members actor_membership
+                    where actor_membership.user_id = p_actor_id
+                      and actor_membership.status =
+                        'active'::public.veroxa_account_status_v1
+                  ) = 1
+                )
+                or (
+                  profile.role = 'team'::public.veroxa_role_v1
+                  and scope.team_actor_id = p_actor_id
+                )
               )
           )
         )
@@ -350,6 +367,9 @@ $$;
 revoke all on function
   veroxa_private.profile_visible_to_current_team_v1(uuid)
   from public, anon, authenticated, service_role;
+grant execute on function
+  veroxa_private.profile_visible_to_current_team_v1(uuid)
+  to authenticated;
 
 drop policy if exists veroxa_profiles_self_or_team_select
   on public.veroxa_user_profiles;
@@ -372,6 +392,11 @@ security definer
 set search_path = ''
 as $$
 begin
+  if tg_op = 'UPDATE'
+     and old.restaurant_id is distinct from new.restaurant_id then
+    raise exception using errcode = '23514',
+      message = 'operational_restaurant_scope_is_immutable';
+  end if;
   if exists (
     select 1
     from veroxa_private.operational_restaurant_scope scope
@@ -592,6 +617,7 @@ declare
 begin
   scope_snapshot := pg_catalog.jsonb_build_object(
     'schemaVersion', 'veroxa-internal-acceptance-scope-v1',
+    'singletonSlot', 1,
     'scopeKey', p_scope_key,
     'restaurantId', p_restaurant_id,
     'clientActorId', p_client_actor_id,
@@ -607,9 +633,12 @@ begin
     ), 'sha256'
   ), 'hex');
 
+  perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended(
+    'veroxa-internal-acceptance-singleton-v1', 0
+  ));
   select * into existing_scope
   from veroxa_private.internal_acceptance_scope_v1 scope
-  where scope.restaurant_id = p_restaurant_id;
+  where scope.singleton_slot = 1;
   if found and (
        existing_scope.scope_key is distinct from p_scope_key
        or existing_scope.client_actor_id is distinct from p_client_actor_id
@@ -618,16 +647,16 @@ begin
        or existing_scope.evidence_sha256 is distinct from scope_sha256
      ) then
     raise exception using errcode = '23505',
-      message = 'internal_acceptance_scope_idempotency_conflict';
+      message = 'internal_acceptance_scope_singleton_conflict';
   end if;
   if not found then
     insert into veroxa_private.internal_acceptance_scope_v1 (
-      restaurant_id, scope_key, client_actor_id, team_actor_id,
+      restaurant_id, singleton_slot, scope_key, client_actor_id, team_actor_id,
       purpose, enabled, customer_visible, excluded_from_reports,
       external_write_allowed,
       created_by, evidence_snapshot, evidence_sha256
     ) values (
-      p_restaurant_id, p_scope_key, p_client_actor_id, p_team_actor_id,
+      p_restaurant_id, 1, p_scope_key, p_client_actor_id, p_team_actor_id,
       'synthetic_upload_to_ready', true, false, true, false,
       p_team_actor_id, scope_snapshot, scope_sha256
     );
@@ -737,9 +766,10 @@ create table veroxa_private.media_upload_sessions_v1 (
   id uuid primary key default extensions.gen_random_uuid(),
   restaurant_id uuid not null
     references public.veroxa_restaurants(id) on delete restrict,
-  actor_id uuid not null
+  created_by_actor_id uuid not null
     references public.veroxa_user_profiles(user_id) on delete restrict,
-  request_sha256 text not null check (request_sha256 ~ '^[0-9a-f]{64}$'),
+  content_request_sha256 text not null
+    check (content_request_sha256 ~ '^[0-9a-f]{64}$'),
   original_sha256 text not null check (original_sha256 ~ '^[0-9a-f]{64}$'),
   storage_path text not null unique,
   declared_mime_type text not null
@@ -767,7 +797,20 @@ create table veroxa_private.media_upload_sessions_v1 (
     or pg_catalog.char_length(association_note) between 1 and 2000
   ),
   state text not null default 'initiated'
-    check (state in ('initiated','registered')),
+    check (state in ('initiated','registered','expired')),
+  initiation_expires_at timestamptz not null,
+  expired_at timestamptz,
+  expired_by_actor_id uuid
+    references public.veroxa_user_profiles(user_id) on delete restrict,
+  observed_sha256 text check (
+    observed_sha256 is null or observed_sha256 ~ '^[0-9a-f]{64}$'
+  ),
+  storage_object_id uuid,
+  storage_object_version text check (
+    storage_object_version is null
+    or pg_catalog.char_length(storage_object_version) between 1 and 512
+  ),
+  committed_at timestamptz,
   asset_id uuid references public.veroxa_media_assets(id) on delete restrict,
   rights_id uuid references public.veroxa_media_rights(id) on delete restrict,
   instruction_id uuid
@@ -777,14 +820,17 @@ create table veroxa_private.media_upload_sessions_v1 (
     references veroxa_private.momo_media_ingestion_outbox_v1(id)
     on delete restrict,
   ingestion_correlation_id uuid,
+  registered_by_actor_id uuid
+    references public.veroxa_user_profiles(user_id) on delete restrict,
   registered_at timestamptz,
   created_at timestamptz not null default pg_catalog.clock_timestamp(),
   updated_at timestamptz not null default pg_catalog.clock_timestamp(),
   external_write_allowed boolean not null default false
     check (not external_write_allowed),
-  unique (id, restaurant_id, actor_id),
-  unique (restaurant_id, actor_id, original_sha256),
-  unique (restaurant_id, actor_id, request_sha256),
+  unique (id, restaurant_id),
+  -- Partial indexes below replace the former
+  -- unique (restaurant_id, original_sha256) and content-request constraint so
+  -- immutable expired evidence cannot permanently reserve live content.
   check (storage_path ~ (
     '^restaurants/' || restaurant_id::text ||
     '/uploads/[0-9]{4}/(0[1-9]|1[0-2])/' ||
@@ -792,31 +838,129 @@ create table veroxa_private.media_upload_sessions_v1 (
     '[89ab][0-9a-f]{3}-[0-9a-f]{12}[.](jpg|jpeg|png)$'
   )),
   check (
+    initiation_expires_at > created_at
+    and initiation_expires_at <= created_at + interval '15 minutes'
+  ),
+  check (
     (state = 'initiated'
       and asset_id is null
       and rights_id is null
       and instruction_id is null
       and ingestion_receipt_id is null
       and ingestion_correlation_id is null
-      and registered_at is null)
+      and registered_by_actor_id is null
+      and registered_at is null
+      and expired_at is null
+      and expired_by_actor_id is null
+      and observed_sha256 is null
+      and storage_object_id is null
+      and storage_object_version is null
+      and committed_at is null)
     or (state = 'registered'
       and asset_id is not null
       and rights_id is not null
       and instruction_id is not null
       and ingestion_receipt_id is not null
       and ingestion_correlation_id is not null
-      and registered_at is not null)
+      and registered_by_actor_id is not null
+      and registered_at is not null
+      and expired_at is null
+      and expired_by_actor_id is null
+      and observed_sha256 = original_sha256
+      and storage_object_id is not null
+      and storage_object_version is not null
+      and committed_at is not null
+      and committed_at = registered_at)
+    or (state = 'expired'
+      and asset_id is null
+      and rights_id is null
+      and instruction_id is null
+      and ingestion_receipt_id is null
+      and ingestion_correlation_id is null
+      and registered_by_actor_id is null
+      and registered_at is null
+      and expired_at is not null
+      and expired_at >= initiation_expires_at
+      and expired_by_actor_id is not null
+      and observed_sha256 is null
+      and storage_object_id is null
+      and storage_object_version is null
+      and committed_at is null)
   )
 );
 
+create unique index media_upload_sessions_live_sha_v1
+  on veroxa_private.media_upload_sessions_v1 (
+    restaurant_id, original_sha256
+  ) where state in ('initiated','registered');
+create unique index media_upload_sessions_live_request_v1
+  on veroxa_private.media_upload_sessions_v1 (
+    restaurant_id, content_request_sha256
+  ) where state in ('initiated','registered');
 create index media_upload_sessions_restaurant_created_v1
   on veroxa_private.media_upload_sessions_v1 (
     restaurant_id, created_at desc
+  );
+create index media_upload_sessions_actor_created_v1
+  on veroxa_private.media_upload_sessions_v1 (
+    restaurant_id, created_by_actor_id, created_at desc
   );
 alter table veroxa_private.media_upload_sessions_v1 enable row level security;
 alter table veroxa_private.media_upload_sessions_v1 force row level security;
 revoke all on table veroxa_private.media_upload_sessions_v1
   from public, anon, authenticated, service_role;
+
+-- An authenticated owner may delete only a true orphan. A live reservation
+-- is already registered for cleanup purposes so DELETE cannot race the
+-- server-authoritative object check and durable registration transaction.
+create or replace function public.veroxa_media_storage_path_registered(
+  target_storage_path text
+)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select case
+    when public.veroxa_restaurant_id_from_storage_path(target_storage_path)
+      is null then false
+    when not (
+      public.veroxa_current_user_has_active_restaurant(
+        public.veroxa_restaurant_id_from_storage_path(target_storage_path)
+      )
+      or public.veroxa_current_user_is_team_for_restaurant(
+        public.veroxa_restaurant_id_from_storage_path(target_storage_path)
+      )
+    ) then false
+    else exists (
+      select 1
+      from public.veroxa_media_assets asset
+      where asset.storage_path = target_storage_path
+    )
+      or exists (
+        select 1
+        from public.veroxa_media_renditions rendition
+        where rendition.storage_path = target_storage_path
+      )
+      or exists (
+        select 1
+        from public.veroxa_momo_media_ai_candidates candidate
+        where candidate.storage_path = target_storage_path
+          and candidate.status in ('pending_review','approved')
+      )
+      or exists (
+        select 1
+        from veroxa_private.media_upload_sessions_v1 upload_session
+        where upload_session.storage_path = target_storage_path
+          and upload_session.state in ('initiated','registered')
+      )
+  end;
+$$;
+revoke all on function public.veroxa_media_storage_path_registered(text)
+  from public, anon, authenticated, service_role;
+grant execute on function public.veroxa_media_storage_path_registered(text)
+  to authenticated;
 
 create table veroxa_private.media_upload_session_aliases_v1 (
   restaurant_id uuid not null
@@ -825,14 +969,16 @@ create table veroxa_private.media_upload_session_aliases_v1 (
     references public.veroxa_user_profiles(user_id) on delete restrict,
   client_idempotency_key uuid not null,
   upload_session_id uuid not null,
+  request_snapshot jsonb not null
+    check (pg_catalog.jsonb_typeof(request_snapshot) = 'object'),
   request_sha256 text not null check (request_sha256 ~ '^[0-9a-f]{64}$'),
   created_at timestamptz not null default pg_catalog.clock_timestamp(),
   external_write_allowed boolean not null default false
     check (not external_write_allowed),
   primary key (restaurant_id, actor_id, client_idempotency_key),
-  foreign key (upload_session_id, restaurant_id, actor_id)
+  foreign key (upload_session_id, restaurant_id)
     references veroxa_private.media_upload_sessions_v1(
-      id, restaurant_id, actor_id
+      id, restaurant_id
     ) on delete restrict
 );
 alter table veroxa_private.media_upload_session_aliases_v1
@@ -841,6 +987,14 @@ alter table veroxa_private.media_upload_session_aliases_v1
   force row level security;
 revoke all on table veroxa_private.media_upload_session_aliases_v1
   from public, anon, authenticated, service_role;
+create index media_upload_session_aliases_actor_created_v1
+  on veroxa_private.media_upload_session_aliases_v1 (
+    restaurant_id, actor_id, created_at desc
+  );
+create index media_upload_session_aliases_session_actor_v1
+  on veroxa_private.media_upload_session_aliases_v1 (
+    upload_session_id, actor_id
+  );
 
 create or replace function
   veroxa_private.guard_media_upload_session_alias_v1()
@@ -849,9 +1003,51 @@ language plpgsql
 security definer
 set search_path = ''
 as $$
+declare
+  expected_sha256 text;
+  session veroxa_private.media_upload_sessions_v1%rowtype;
 begin
-  raise exception using errcode = '23514',
-    message = 'media_upload_session_alias_is_immutable';
+  if tg_op <> 'INSERT' then
+    raise exception using errcode = '23514',
+      message = 'media_upload_session_alias_is_immutable';
+  end if;
+  select * into session
+  from veroxa_private.media_upload_sessions_v1 candidate
+  where candidate.id = new.upload_session_id
+    and candidate.restaurant_id = new.restaurant_id;
+  expected_sha256 := pg_catalog.encode(extensions.digest(
+    pg_catalog.convert_to(
+      veroxa_private.momo_canonical_json_v1(new.request_snapshot), 'UTF8'
+    ), 'sha256'
+  ), 'hex');
+  if not found
+     or new.external_write_allowed
+     or new.request_sha256 is distinct from expected_sha256
+     or new.request_snapshot is distinct from pg_catalog.jsonb_build_object(
+       'schemaVersion', 'veroxa-media-upload-request-v1',
+       'restaurantId', new.restaurant_id,
+       'actorId', new.actor_id,
+       'clientIdempotencyKey', new.client_idempotency_key,
+       'originalSha256', session.original_sha256,
+       'mimeType', session.declared_mime_type,
+       'fileSize', session.declared_file_size,
+       'originalFileName', session.original_file_name,
+       'usageScope', session.usage_scope,
+       'expiresOn', session.expires_on,
+       'requestedAssociation', session.requested_association,
+       'associationNote', session.association_note,
+       'ownerAttestation', pg_catalog.jsonb_build_object(
+         'schemaVersion', 'veroxa-media-owner-attestation-v1',
+         'ownerRightsAccepted', true,
+         'currentOfferingAccepted', session.requested_association =
+           'represents_current_restaurant_offering'
+       ),
+       'externalWriteAllowed', false
+     ) then
+    raise exception using errcode = '23514',
+      message = 'media_upload_owner_attestation_invalid';
+  end if;
+  return new;
 end;
 $$;
 revoke all on function
@@ -859,7 +1055,7 @@ revoke all on function
   from public, anon, authenticated, service_role;
 
 create trigger veroxa_media_upload_session_alias_guard_v1
-before update or delete
+before insert or update or delete
 on veroxa_private.media_upload_session_aliases_v1
 for each row execute function
   veroxa_private.guard_media_upload_session_alias_v1();
@@ -876,12 +1072,39 @@ begin
     raise exception using errcode = '23514',
       message = 'media_upload_session_is_immutable';
   end if;
+  if old.state = 'initiated'
+     and new.state = 'expired'
+     and new.id is not distinct from old.id
+     and new.restaurant_id is not distinct from old.restaurant_id
+     and new.created_by_actor_id is not distinct from old.created_by_actor_id
+     and new.content_request_sha256 is not distinct from old.content_request_sha256
+     and new.original_sha256 is not distinct from old.original_sha256
+     and new.storage_path is not distinct from old.storage_path
+     and new.declared_mime_type is not distinct from old.declared_mime_type
+     and new.declared_file_size is not distinct from old.declared_file_size
+     and new.original_file_name is not distinct from old.original_file_name
+     and new.usage_scope is not distinct from old.usage_scope
+     and new.expires_on is not distinct from old.expires_on
+     and new.requested_association is not distinct from old.requested_association
+     and new.association_note is not distinct from old.association_note
+     and new.initiation_expires_at is not distinct from old.initiation_expires_at
+     and new.expired_at >= old.initiation_expires_at
+     and new.expired_by_actor_id is not null
+     and veroxa_private.actor_has_supported_operational_membership_v1(
+       new.restaurant_id, new.expired_by_actor_id,
+       'client'::public.veroxa_role_v1
+     )
+     and new.created_at is not distinct from old.created_at
+     and not new.external_write_allowed
+     and new.updated_at >= old.updated_at then
+    return new;
+  end if;
   if old.state <> 'initiated'
      or new.state <> 'registered'
      or new.id is distinct from old.id
      or new.restaurant_id is distinct from old.restaurant_id
-     or new.actor_id is distinct from old.actor_id
-     or new.request_sha256 is distinct from old.request_sha256
+     or new.created_by_actor_id is distinct from old.created_by_actor_id
+     or new.content_request_sha256 is distinct from old.content_request_sha256
      or new.original_sha256 is distinct from old.original_sha256
      or new.storage_path is distinct from old.storage_path
      or new.declared_mime_type is distinct from old.declared_mime_type
@@ -891,6 +1114,27 @@ begin
      or new.expires_on is distinct from old.expires_on
      or new.requested_association is distinct from old.requested_association
      or new.association_note is distinct from old.association_note
+     or new.initiation_expires_at is distinct from old.initiation_expires_at
+     or new.expired_at is not null
+     or new.expired_by_actor_id is not null
+     or old.observed_sha256 is not null
+     or new.observed_sha256 is distinct from old.original_sha256
+     or old.storage_object_id is not null
+     or new.storage_object_id is null
+     or old.storage_object_version is not null
+     or new.storage_object_version is null
+     or old.committed_at is not null
+     or new.committed_at is null
+     or new.committed_at is distinct from new.registered_at
+     or new.registered_by_actor_id is null
+     or old.registered_by_actor_id is not null
+     or not exists (
+       select 1
+       from veroxa_private.media_upload_session_aliases_v1 alias_record
+       where alias_record.upload_session_id = new.id
+         and alias_record.restaurant_id = new.restaurant_id
+         and alias_record.actor_id = new.registered_by_actor_id
+     )
      or new.created_at is distinct from old.created_at
      or new.external_write_allowed
      or new.updated_at < old.updated_at then
@@ -928,6 +1172,7 @@ create or replace function public.veroxa_begin_media_upload_v1(
   p_mime_type text,
   p_file_size bigint,
   p_original_file_name text,
+  p_owner_attestation jsonb,
   p_usage_scope jsonb default
     '["facebook","instagram","google_business"]'::jsonb,
   p_expires_on date default null,
@@ -957,11 +1202,15 @@ declare
   );
   normalized_note text := nullif(pg_catalog.btrim(p_association_note), '');
   normalized_scope jsonb;
+  content_snapshot jsonb;
+  content_hash text;
   request_snapshot jsonb;
   request_hash text;
   session veroxa_private.media_upload_sessions_v1%rowtype;
   alias_record veroxa_private.media_upload_session_aliases_v1%rowtype;
   new_session_id uuid := extensions.gen_random_uuid();
+  v_now timestamptz := pg_catalog.clock_timestamp();
+  active_session_found boolean := false;
   extension text;
 begin
   if v_actor_id is null
@@ -1000,16 +1249,24 @@ begin
     raise exception using errcode = '22023',
       message = 'invalid_media_upload_session_request';
   end if;
+  if p_owner_attestation is distinct from pg_catalog.jsonb_build_object(
+       'schemaVersion', 'veroxa-media-owner-attestation-v1',
+       'ownerRightsAccepted', true,
+       'currentOfferingAccepted', p_requested_association =
+         'represents_current_restaurant_offering'
+     ) then
+    raise exception using errcode = '23514',
+      message = 'media_upload_owner_attestation_invalid';
+  end if;
 
   select pg_catalog.jsonb_agg(value order by value) into normalized_scope
   from (
     select distinct element.value
     from pg_catalog.jsonb_array_elements_text(p_usage_scope) element(value)
   ) values_sorted;
-  request_snapshot := pg_catalog.jsonb_build_object(
-    'schemaVersion', 'veroxa-media-upload-session-v1',
+  content_snapshot := pg_catalog.jsonb_build_object(
+    'schemaVersion', 'veroxa-media-upload-content-v1',
     'restaurantId', p_restaurant_id,
-    'actorId', v_actor_id,
     'originalSha256', p_original_sha256,
     'mimeType', p_mime_type,
     'fileSize', p_file_size,
@@ -1020,16 +1277,47 @@ begin
     'associationNote', normalized_note,
     'externalWriteAllowed', false
   );
+  content_hash := pg_catalog.encode(extensions.digest(
+    pg_catalog.convert_to(
+      veroxa_private.momo_canonical_json_v1(content_snapshot), 'UTF8'
+    ), 'sha256'
+  ), 'hex');
+  request_snapshot := content_snapshot || pg_catalog.jsonb_build_object(
+    'schemaVersion', 'veroxa-media-upload-request-v1',
+    'actorId', v_actor_id,
+    'clientIdempotencyKey', p_client_idempotency_key,
+    'ownerAttestation', p_owner_attestation
+  );
   request_hash := pg_catalog.encode(extensions.digest(
     pg_catalog.convert_to(
       veroxa_private.momo_canonical_json_v1(request_snapshot), 'UTF8'
     ), 'sha256'
   ), 'hex');
 
+  -- Serialize the restaurant-wide and actor-wide quotas before resolving the
+  -- idempotency key. Exact replay remains available after a quota is reached.
+  perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended(
+    'veroxa-media-upload-restaurant-quota:' || p_restaurant_id::text, 0
+  ));
+  perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended(
+    'veroxa-media-upload-actor-quota:' || p_restaurant_id::text || ':' ||
+    v_actor_id::text, 0
+  ));
   perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended(
     'veroxa-media-upload-key:' || p_restaurant_id::text || ':' ||
     v_actor_id::text || ':' || p_client_idempotency_key::text, 0
   ));
+  v_now := pg_catalog.clock_timestamp();
+
+  -- Retain immutable evidence while releasing only stale, never-registered
+  -- reservations. A live Client who reclaims one records that transition.
+  update veroxa_private.media_upload_sessions_v1 candidate
+  set state = 'expired', expired_at = v_now,
+      expired_by_actor_id = v_actor_id, updated_at = v_now
+  where candidate.restaurant_id = p_restaurant_id
+    and candidate.state = 'initiated'
+    and candidate.initiation_expires_at <= v_now;
+
   select * into alias_record
   from veroxa_private.media_upload_session_aliases_v1 candidate
   where candidate.restaurant_id = p_restaurant_id
@@ -1040,10 +1328,14 @@ begin
     select * into strict session
     from veroxa_private.media_upload_sessions_v1 candidate
     where candidate.id = alias_record.upload_session_id
-      and candidate.restaurant_id = alias_record.restaurant_id
-      and candidate.actor_id = alias_record.actor_id;
+      and candidate.restaurant_id = alias_record.restaurant_id;
+    if session.state = 'expired' then
+      raise exception using errcode = '55000',
+        message = 'media_upload_session_expired';
+    end if;
     if alias_record.request_sha256 is distinct from request_hash
-       or session.request_sha256 is distinct from request_hash
+       or alias_record.request_snapshot is distinct from request_snapshot
+       or session.content_request_sha256 is distinct from content_hash
        or session.original_sha256 is distinct from p_original_sha256 then
       raise exception using errcode = '23505',
         message = 'media_upload_session_idempotency_conflict';
@@ -1055,27 +1347,52 @@ begin
     return;
   end if;
 
+  if (select pg_catalog.count(*)
+      from veroxa_private.media_upload_session_aliases_v1 candidate
+      where candidate.restaurant_id = p_restaurant_id
+        and candidate.actor_id = v_actor_id
+        and candidate.created_at >= v_now - interval '1 hour') >= 30 then
+    raise exception using errcode = '54000',
+      message = 'media_upload_alias_rate_limit_reached';
+  end if;
+
   perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended(
     'veroxa-media-upload-content:' || p_restaurant_id::text || ':' ||
-    v_actor_id::text || ':' || p_original_sha256, 0
+    p_original_sha256, 0
   ));
   select * into session
   from veroxa_private.media_upload_sessions_v1 candidate
   where candidate.restaurant_id = p_restaurant_id
-    and candidate.actor_id = v_actor_id
     and candidate.original_sha256 = p_original_sha256
+    and candidate.state in ('initiated','registered')
   for update;
-  if found then
-    if session.request_sha256 is distinct from request_hash then
+  active_session_found := found;
+  if active_session_found then
+    if session.content_request_sha256 is distinct from content_hash then
       raise exception using errcode = '23505',
         message = 'media_upload_content_metadata_conflict';
     end if;
+    if session.state = 'initiated'
+       and session.created_by_actor_id is distinct from v_actor_id then
+      raise exception using errcode = '55000',
+        message = 'media_upload_content_in_progress';
+    end if;
+    if (select pg_catalog.count(*)
+        from veroxa_private.media_upload_session_aliases_v1 candidate
+        where candidate.upload_session_id = session.id
+          and candidate.actor_id = v_actor_id) >= 8
+       or (select pg_catalog.count(*)
+        from veroxa_private.media_upload_session_aliases_v1 candidate
+        where candidate.upload_session_id = session.id) >= 32 then
+      raise exception using errcode = '54000',
+        message = 'media_upload_alias_limit_reached';
+    end if;
     insert into veroxa_private.media_upload_session_aliases_v1 (
       restaurant_id, actor_id, client_idempotency_key,
-      upload_session_id, request_sha256
+      upload_session_id, request_snapshot, request_sha256
     ) values (
       p_restaurant_id, v_actor_id, p_client_idempotency_key,
-      session.id, request_hash
+      session.id, request_snapshot, request_hash
     );
     return query select session.id, session.storage_path, session.state,
       session.asset_id, session.rights_id, session.instruction_id,
@@ -1084,31 +1401,56 @@ begin
     return;
   end if;
 
+  if (select pg_catalog.count(*)
+      from veroxa_private.media_upload_sessions_v1 candidate
+      where candidate.restaurant_id = p_restaurant_id
+        and candidate.created_by_actor_id = v_actor_id
+        and candidate.created_at >= v_now - interval '1 hour') >= 10
+     or (select pg_catalog.count(*)
+      from veroxa_private.media_upload_sessions_v1 candidate
+      where candidate.restaurant_id = p_restaurant_id
+        and candidate.created_by_actor_id = v_actor_id
+        and candidate.state = 'initiated') >= 3
+     or (select pg_catalog.count(*)
+      from veroxa_private.media_upload_sessions_v1 candidate
+      where candidate.restaurant_id = p_restaurant_id
+        and candidate.created_at >= v_now - interval '1 hour') >= 50
+     or (select pg_catalog.count(*)
+      from veroxa_private.media_upload_sessions_v1 candidate
+      where candidate.restaurant_id = p_restaurant_id
+        and candidate.state = 'initiated') >= 12 then
+    raise exception using errcode = '54000',
+      message = 'media_upload_session_rate_or_active_limit_reached';
+  end if;
+
   extension := case p_mime_type
     when 'image/jpeg' then 'jpg'
     else 'png'
   end;
   insert into veroxa_private.media_upload_sessions_v1 (
-    id, restaurant_id, actor_id, request_sha256, original_sha256, storage_path,
+    id, restaurant_id, created_by_actor_id, content_request_sha256,
+    original_sha256, storage_path,
     declared_mime_type, declared_file_size, original_file_name,
-    usage_scope, expires_on, requested_association, association_note
+    usage_scope, expires_on, requested_association, association_note,
+    initiation_expires_at, created_at, updated_at
   ) values (
-    new_session_id, p_restaurant_id, v_actor_id, request_hash,
+    new_session_id, p_restaurant_id, v_actor_id, content_hash,
     p_original_sha256,
     'restaurants/' || p_restaurant_id::text || '/uploads/' ||
       pg_catalog.to_char(
-        pg_catalog.clock_timestamp() at time zone 'UTC', 'YYYY/MM'
+        v_now at time zone 'UTC', 'YYYY/MM'
       ) || '/' || new_session_id::text || '.' || extension,
     p_mime_type, p_file_size, normalized_file_name,
-    normalized_scope, p_expires_on, p_requested_association, normalized_note
+    normalized_scope, p_expires_on, p_requested_association, normalized_note,
+    v_now + interval '15 minutes', v_now, v_now
   ) returning * into session;
 
   insert into veroxa_private.media_upload_session_aliases_v1 (
     restaurant_id, actor_id, client_idempotency_key,
-    upload_session_id, request_sha256
+    upload_session_id, request_snapshot, request_sha256
   ) values (
     p_restaurant_id, v_actor_id, p_client_idempotency_key,
-    session.id, request_hash
+    session.id, request_snapshot, request_hash
   );
 
   return query select session.id, session.storage_path, session.state,
@@ -1118,14 +1460,15 @@ begin
 end;
 $$;
 revoke all on function public.veroxa_begin_media_upload_v1(
-  uuid,uuid,text,text,bigint,text,jsonb,date,text,text
+  uuid,uuid,text,text,bigint,text,jsonb,jsonb,date,text,text
 ) from public, anon, authenticated, service_role;
 grant execute on function public.veroxa_begin_media_upload_v1(
-  uuid,uuid,text,text,bigint,text,jsonb,date,text,text
+  uuid,uuid,text,text,bigint,text,jsonb,jsonb,date,text,text
 ) to authenticated;
 
 create or replace function public.veroxa_commit_media_upload_v1(
-  p_upload_session_id uuid
+  p_upload_session_id uuid,
+  p_client_idempotency_key uuid
 )
 returns table (
   upload_session_id uuid,
@@ -1146,6 +1489,9 @@ as $$
 declare
   v_actor_id uuid := (select auth.uid());
   session veroxa_private.media_upload_sessions_v1%rowtype;
+  alias_record veroxa_private.media_upload_session_aliases_v1%rowtype;
+  expected_request_snapshot jsonb;
+  expected_request_sha256 text;
   registered record;
   receipt veroxa_private.momo_media_ingestion_outbox_v1%rowtype;
 begin
@@ -1155,12 +1501,55 @@ begin
   for update;
   if not found
      or v_actor_id is null
-     or session.actor_id is distinct from v_actor_id
      or not veroxa_private.actor_has_supported_operational_membership_v1(
        session.restaurant_id, v_actor_id, 'client'::public.veroxa_role_v1
      ) then
     raise exception using errcode = '42501',
       message = 'active_upload_session_client_required';
+  end if;
+
+  select * into alias_record
+  from veroxa_private.media_upload_session_aliases_v1 candidate
+  where candidate.restaurant_id = session.restaurant_id
+    and candidate.actor_id = v_actor_id
+    and candidate.client_idempotency_key = p_client_idempotency_key
+    and candidate.upload_session_id = session.id;
+  expected_request_snapshot := pg_catalog.jsonb_build_object(
+    'schemaVersion', 'veroxa-media-upload-request-v1',
+    'restaurantId', session.restaurant_id,
+    'actorId', v_actor_id,
+    'clientIdempotencyKey', p_client_idempotency_key,
+    'originalSha256', session.original_sha256,
+    'mimeType', session.declared_mime_type,
+    'fileSize', session.declared_file_size,
+    'originalFileName', session.original_file_name,
+    'usageScope', session.usage_scope,
+    'expiresOn', session.expires_on,
+    'requestedAssociation', session.requested_association,
+    'associationNote', session.association_note,
+    'ownerAttestation', pg_catalog.jsonb_build_object(
+      'schemaVersion', 'veroxa-media-owner-attestation-v1',
+      'ownerRightsAccepted', true,
+      'currentOfferingAccepted', session.requested_association =
+        'represents_current_restaurant_offering'
+    ),
+    'externalWriteAllowed', false
+  );
+  expected_request_sha256 := pg_catalog.encode(extensions.digest(
+    pg_catalog.convert_to(
+      veroxa_private.momo_canonical_json_v1(expected_request_snapshot), 'UTF8'
+    ), 'sha256'
+  ), 'hex');
+  if not found
+     or alias_record.request_snapshot is distinct from expected_request_snapshot
+     or alias_record.request_sha256 is distinct from expected_request_sha256
+     or (session.requested_association =
+       'represents_current_restaurant_offering' and
+       veroxa_private.momo_evidence_class_for_user_v1(
+         session.restaurant_id, v_actor_id
+       ) <> 'real_owner') then
+    raise exception using errcode = '23514',
+      message = 'media_upload_owner_attestation_invalid';
   end if;
 
   if session.state = 'registered' then
@@ -1169,6 +1558,10 @@ begin
       session.ingestion_receipt_id, session.ingestion_correlation_id,
       session.original_sha256, false;
     return;
+  end if;
+  if session.created_by_actor_id is distinct from v_actor_id then
+    raise exception using errcode = '42501',
+      message = 'media_upload_session_creator_required';
   end if;
 
   select * into strict registered
@@ -1194,6 +1587,7 @@ begin
       instruction_id = registered.instruction_id,
       ingestion_receipt_id = receipt.id,
       ingestion_correlation_id = receipt.correlation_id,
+      registered_by_actor_id = v_actor_id,
       registered_at = pg_catalog.clock_timestamp(),
       updated_at = pg_catalog.clock_timestamp()
   where target.id = session.id
@@ -1205,10 +1599,237 @@ begin
     session.original_sha256, false;
 end;
 $$;
-revoke all on function public.veroxa_commit_media_upload_v1(uuid)
+revoke all on function public.veroxa_commit_media_upload_v1(uuid,uuid)
   from public, anon, authenticated, service_role;
-grant execute on function public.veroxa_commit_media_upload_v1(uuid)
-  to authenticated;
+
+create or replace function public.veroxa_commit_media_upload_v2(
+  p_restaurant_id uuid,
+  p_upload_session_id uuid,
+  p_client_idempotency_key uuid,
+  p_observed_sha256 text,
+  p_storage_object_id uuid,
+  p_storage_object_version text,
+  p_actor_id uuid
+)
+returns table (
+  upload_session_id uuid,
+  storage_path text,
+  session_status text,
+  asset_id uuid,
+  rights_id uuid,
+  instruction_id uuid,
+  ingestion_receipt_id uuid,
+  ingestion_correlation_id uuid,
+  original_sha256 text,
+  external_write_allowed boolean
+)
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  session veroxa_private.media_upload_sessions_v1%rowtype;
+  alias_record veroxa_private.media_upload_session_aliases_v1%rowtype;
+  expected_request_snapshot jsonb;
+  expected_request_sha256 text;
+  alias_found boolean := false;
+  storage_object record;
+  registered record;
+  receipt veroxa_private.momo_media_ingestion_outbox_v1%rowtype;
+  commit_time timestamptz;
+  prior_claim_sub text := pg_catalog.current_setting(
+    'request.jwt.claim.sub', true
+  );
+  prior_claims text := pg_catalog.current_setting(
+    'request.jwt.claims', true
+  );
+begin
+  select * into session
+  from veroxa_private.media_upload_sessions_v1 candidate
+  where candidate.id = p_upload_session_id
+    and candidate.restaurant_id = p_restaurant_id
+  for update;
+  if not found
+     or p_actor_id is null
+     or p_client_idempotency_key is null
+     or not veroxa_private.actor_has_supported_operational_membership_v1(
+       p_restaurant_id, p_actor_id, 'client'::public.veroxa_role_v1
+     ) then
+    raise exception using errcode = '42501',
+      message = 'active_upload_session_client_required';
+  end if;
+
+  select * into alias_record
+  from veroxa_private.media_upload_session_aliases_v1 candidate
+  where candidate.restaurant_id = p_restaurant_id
+    and candidate.actor_id = p_actor_id
+    and candidate.client_idempotency_key = p_client_idempotency_key
+    and candidate.upload_session_id = p_upload_session_id;
+  alias_found := found;
+  expected_request_snapshot := pg_catalog.jsonb_build_object(
+    'schemaVersion', 'veroxa-media-upload-request-v1',
+    'restaurantId', session.restaurant_id,
+    'actorId', p_actor_id,
+    'clientIdempotencyKey', p_client_idempotency_key,
+    'originalSha256', session.original_sha256,
+    'mimeType', session.declared_mime_type,
+    'fileSize', session.declared_file_size,
+    'originalFileName', session.original_file_name,
+    'usageScope', session.usage_scope,
+    'expiresOn', session.expires_on,
+    'requestedAssociation', session.requested_association,
+    'associationNote', session.association_note,
+    'ownerAttestation', pg_catalog.jsonb_build_object(
+      'schemaVersion', 'veroxa-media-owner-attestation-v1',
+      'ownerRightsAccepted', true,
+      'currentOfferingAccepted', session.requested_association =
+        'represents_current_restaurant_offering'
+    ),
+    'externalWriteAllowed', false
+  );
+  expected_request_sha256 := pg_catalog.encode(extensions.digest(
+    pg_catalog.convert_to(
+      veroxa_private.momo_canonical_json_v1(expected_request_snapshot), 'UTF8'
+    ), 'sha256'
+  ), 'hex');
+  if not alias_found
+     or alias_record.request_snapshot is distinct from expected_request_snapshot
+     or alias_record.request_sha256 is distinct from expected_request_sha256
+     or (session.requested_association =
+       'represents_current_restaurant_offering' and
+       veroxa_private.momo_evidence_class_for_user_v1(
+         session.restaurant_id, p_actor_id
+       ) <> 'real_owner') then
+    raise exception using errcode = '23514',
+      message = 'media_upload_owner_attestation_invalid';
+  end if;
+  if session.state = 'expired'
+     or (session.state = 'initiated' and
+       session.initiation_expires_at <= pg_catalog.clock_timestamp()) then
+    raise exception using errcode = '55000',
+      message = 'media_upload_session_expired';
+  end if;
+  if session.state = 'initiated'
+     and session.created_by_actor_id is distinct from p_actor_id then
+    raise exception using errcode = '42501',
+      message = 'media_upload_session_creator_required';
+  end if;
+  if session.state = 'registered' and (
+       p_observed_sha256 is distinct from session.observed_sha256
+       or p_storage_object_id is distinct from session.storage_object_id
+       or p_storage_object_version is distinct from
+         session.storage_object_version
+     ) then
+    raise exception using errcode = '23514',
+      message = 'media_upload_commit_evidence_conflict';
+  end if;
+
+  select object_record.id, object_record.version, object_record.name,
+    object_record.owner_id, object_record.metadata
+  into storage_object
+  from storage.objects object_record
+  where object_record.bucket_id = 'restaurant-media'
+    and object_record.id = p_storage_object_id
+  for update;
+  if not found
+     or p_storage_object_version is null
+     or storage_object.version is distinct from p_storage_object_version
+     or storage_object.name is distinct from session.storage_path
+     or storage_object.owner_id is distinct from
+       session.created_by_actor_id::text
+     or pg_catalog.coalesce(
+       storage_object.metadata ->> 'mimetype', ''
+     ) is distinct from session.declared_mime_type
+     or (case when pg_catalog.coalesce(
+       storage_object.metadata ->> 'size', ''
+     ) ~ '^[0-9]{1,30}$'
+       then (storage_object.metadata ->> 'size')::numeric is distinct from
+         session.declared_file_size::numeric
+       else true end) then
+    raise exception using errcode = '23514',
+      message = 'media_upload_storage_object_mismatch';
+  end if;
+  if p_observed_sha256 is null
+     or p_observed_sha256 !~ '^[0-9a-f]{64}$'
+     or p_observed_sha256 is distinct from session.original_sha256 then
+    raise exception using errcode = '23514',
+      message = 'media_upload_expected_sha256_mismatch';
+  end if;
+
+  if session.state = 'registered' then
+    return query select session.id, session.storage_path, session.state,
+      session.asset_id, session.rights_id, session.instruction_id,
+      session.ingestion_receipt_id, session.ingestion_correlation_id,
+      session.original_sha256, false;
+    return;
+  end if;
+
+  -- The reviewed registration chain derives its actor from auth.uid(). The
+  -- service-only bridge therefore installs the already-validated actor only
+  -- for this transaction and restores the caller claims after registration.
+  perform pg_catalog.set_config(
+    'request.jwt.claim.sub', p_actor_id::text, true
+  );
+  perform pg_catalog.set_config(
+    'request.jwt.claims',
+    pg_catalog.jsonb_build_object(
+      'sub', p_actor_id, 'role', 'authenticated'
+    )::text,
+    true
+  );
+  select * into strict registered
+  from public.veroxa_register_momo_media_v3(
+    session.restaurant_id,
+    session.storage_path,
+    session.declared_mime_type,
+    session.declared_file_size,
+    session.original_file_name,
+    session.usage_scope,
+    session.expires_on,
+    session.requested_association,
+    session.association_note
+  );
+  perform pg_catalog.set_config(
+    'request.jwt.claim.sub', pg_catalog.coalesce(prior_claim_sub, ''), true
+  );
+  perform pg_catalog.set_config(
+    'request.jwt.claims', pg_catalog.coalesce(prior_claims, ''), true
+  );
+
+  select * into strict receipt
+  from veroxa_private.momo_media_ingestion_outbox_v1 outbox
+  where outbox.asset_id = registered.asset_id;
+
+  commit_time := pg_catalog.clock_timestamp();
+  update veroxa_private.media_upload_sessions_v1 target
+  set state = 'registered',
+      observed_sha256 = p_observed_sha256,
+      storage_object_id = p_storage_object_id,
+      storage_object_version = p_storage_object_version,
+      committed_at = commit_time,
+      asset_id = registered.asset_id,
+      rights_id = registered.rights_id,
+      instruction_id = registered.instruction_id,
+      ingestion_receipt_id = receipt.id,
+      ingestion_correlation_id = receipt.correlation_id,
+      registered_by_actor_id = p_actor_id,
+      registered_at = commit_time,
+      updated_at = commit_time
+  where target.id = session.id
+  returning * into session;
+
+  return query select session.id, session.storage_path, session.state,
+    session.asset_id, session.rights_id, session.instruction_id,
+    session.ingestion_receipt_id, session.ingestion_correlation_id,
+    session.original_sha256, false;
+end;
+$$;
+revoke all on function public.veroxa_commit_media_upload_v2(
+  uuid,uuid,uuid,text,uuid,text,uuid
+) from public, anon, authenticated, service_role;
+grant execute on function public.veroxa_commit_media_upload_v2(
+  uuid,uuid,uuid,text,uuid,text,uuid
+) to service_role;
 
 -- The server-side full-byte verifier must agree with the browser's expected
 -- original SHA before any immutable verified intake can be written. Legacy
@@ -1275,10 +1896,24 @@ begin
     select 1
     from pg_catalog.pg_constraint constraint_record
     where constraint_record.conrelid =
-      'veroxa_private.media_upload_sessions_v1'::pg_catalog.regclass
+      'veroxa_private.internal_acceptance_scope_v1'::pg_catalog.regclass
       and constraint_record.contype = 'u'
       and pg_catalog.pg_get_constraintdef(constraint_record.oid)
-        like '%restaurant_id, actor_id, original_sha256%'
+        like '%singleton_slot%'
+  ) then
+    raise exception using errcode = '55000',
+      message = 'internal_acceptance_singleton_constraint_missing';
+  end if;
+  if not exists (
+    select 1
+    from pg_catalog.pg_index index_record
+    join pg_catalog.pg_class index_relation
+      on index_relation.oid = index_record.indexrelid
+    where index_record.indrelid =
+      'veroxa_private.media_upload_sessions_v1'::pg_catalog.regclass
+      and index_record.indisunique
+      and index_record.indpred is not null
+      and index_relation.relname = 'media_upload_sessions_live_sha_v1'
   ) then
     raise exception using errcode = '55000',
       message = 'media_upload_session_idempotency_constraint_missing';
@@ -1300,12 +1935,47 @@ begin
      )
      or not pg_catalog.has_function_privilege(
        'authenticated',
-       'public.veroxa_begin_media_upload_v1(uuid,uuid,text,text,bigint,text,jsonb,date,text,text)',
+       'public.veroxa_begin_media_upload_v1(uuid,uuid,text,text,bigint,text,jsonb,jsonb,date,text,text)',
+       'execute'
+     )
+     or pg_catalog.has_function_privilege(
+       'authenticated',
+       'public.veroxa_commit_media_upload_v1(uuid,uuid)',
+       'execute'
+     )
+     or pg_catalog.has_function_privilege(
+       'service_role',
+       'public.veroxa_commit_media_upload_v1(uuid,uuid)',
+       'execute'
+     )
+     or pg_catalog.has_function_privilege(
+       'authenticated',
+       'public.veroxa_commit_media_upload_v2(uuid,uuid,uuid,text,uuid,text,uuid)',
+       'execute'
+     )
+     or pg_catalog.has_function_privilege(
+       'anon',
+       'public.veroxa_commit_media_upload_v2(uuid,uuid,uuid,text,uuid,text,uuid)',
+       'execute'
+     )
+     or not pg_catalog.has_function_privilege(
+       'service_role',
+       'public.veroxa_commit_media_upload_v2(uuid,uuid,uuid,text,uuid,text,uuid)',
        'execute'
      )
      or not pg_catalog.has_function_privilege(
        'authenticated',
-       'public.veroxa_commit_media_upload_v1(uuid)',
+       'veroxa_private.profile_visible_to_current_team_v1(uuid)',
+       'execute'
+     )
+     or pg_catalog.has_function_privilege(
+       'anon',
+       'veroxa_private.profile_visible_to_current_team_v1(uuid)',
+       'execute'
+     )
+     or pg_catalog.has_function_privilege(
+       'service_role',
+       'veroxa_private.profile_visible_to_current_team_v1(uuid)',
        'execute'
      ) then
     raise exception using errcode = '55000',

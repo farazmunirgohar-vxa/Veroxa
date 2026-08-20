@@ -49,23 +49,6 @@ function harness(overrides = {}) {
           external_write_allowed: false,
         }], error: null };
       }
-      if (name === "veroxa_commit_media_upload_v1") {
-        const begin = calls.rpc.find((call) =>
-          call.name === "veroxa_begin_media_upload_v1"
-        );
-        const extension = begin?.parameters.p_mime_type === "image/png"
-          ? "png"
-          : "jpg";
-        return { data: [{
-          upload_session_id: OBJECT_ID,
-          storage_path: `${SESSION_PATH_PREFIX}.${extension}`,
-          session_status: "registered",
-          asset_id: ASSET_ID,
-          rights_id: RIGHTS_ID,
-          original_sha256: "1".repeat(64),
-          external_write_allowed: false,
-        }], error: null };
-      }
       return { data: [{ asset_id: ASSET_ID, rights_id: RIGHTS_ID }], error: null };
     },
     ...overrides.client,
@@ -74,6 +57,20 @@ function harness(overrides = {}) {
     calls.finalize.push(input);
     return { verificationId: VERIFICATION_ID, status: "verified", canonicalAssetId: ASSET_ID, duplicateAssetId: null, externalWriteAllowed: false };
   });
+  const finalizeSession = overrides.finalizeSession ?? overrides.finalize ??
+    (async (input) => {
+      calls.finalize.push(input);
+      return {
+        verificationId: VERIFICATION_ID,
+        status: "verified",
+        canonicalAssetId: ASSET_ID,
+        duplicateAssetId: null,
+        uploadSessionId: input.uploadSessionId,
+        assetId: ASSET_ID,
+        rightsId: RIGHTS_ID,
+        externalWriteAllowed: false,
+      };
+    });
   const assess = overrides.assess ?? (async (input) => {
     calls.assess.push(input);
     return {
@@ -110,6 +107,7 @@ function harness(overrides = {}) {
     dependencies: {
       client,
       finalize,
+      finalizeSession,
       assess,
       recordAssociation,
       sha256: async () => "1".repeat(64),
@@ -119,7 +117,7 @@ function harness(overrides = {}) {
   };
 }
 
-test("real client upload registers the stored JPG, parses asset_id, then finalizes it", async () => {
+test("real client upload hands the stored JPG session to server-authoritative registration and finalization", async () => {
   const { calls, dependencies } = harness();
   await assert.rejects(uploadMomoClientMediaWithDependencies({
     restaurantId: RESTAURANT_ID,
@@ -141,18 +139,47 @@ test("real client upload registers the stored JPG, parses asset_id, then finaliz
   assert.match(result.storagePath, /\/uploads\/2026\/08\/cccccccc-cccc-4ccc-8ccc-cccccccccccc\.jpg$/u);
   assert.equal(calls.upload.length, 1);
   assert.equal(calls.rpc[0].name, "veroxa_begin_media_upload_v1");
-  assert.equal(calls.rpc[1].name, "veroxa_commit_media_upload_v1");
+  assert.equal(calls.rpc.length, 1, "the browser must not call a registration commit RPC");
   assert.deepEqual(calls.rpc[0].parameters.p_usage_scope, ["instagram", "facebook"]);
   assert.equal(calls.rpc[0].parameters.p_original_sha256, "1".repeat(64));
+  assert.deepEqual(calls.rpc[0].parameters.p_owner_attestation, {
+    schemaVersion: "veroxa-media-owner-attestation-v1",
+    ownerRightsAccepted: true,
+    currentOfferingAccepted: false,
+  });
   assert.equal(calls.rpc[0].parameters.p_requested_association, "not_for_restaurant");
   assert.equal(calls.rpc[0].parameters.p_association_note, null);
   assert.equal(Object.hasOwn(calls.rpc[0].parameters, "p_intake_notes"), false,
     "the database must create the versioned durable instruction itself");
-  assert.deepEqual(calls.finalize[0], { restaurantId: RESTAURANT_ID, assetId: ASSET_ID, storagePath: result.storagePath });
+  assert.deepEqual(calls.finalize[0], {
+    restaurantId: RESTAURANT_ID,
+    uploadSessionId: OBJECT_ID,
+    clientIdempotencyKey: calls.rpc[0].parameters.p_client_idempotency_key,
+    storagePath: result.storagePath,
+  });
   assert.equal(calls.assess.length, 1);
   assert.equal(calls.association.length, 1);
   assert.equal(calls.association[0].rightsId, RIGHTS_ID);
   assert.equal(calls.remove.length, 0);
+});
+
+test("current-offering uploads bind both owner claims to the begin RPC", async () => {
+  const { calls, dependencies } = harness();
+  await uploadMomoClientMediaWithDependencies({
+    restaurantId: RESTAURANT_ID,
+    file: image(),
+    usageScope: ["instagram", "facebook"],
+    restaurantAssociation: "represents_current_restaurant_offering",
+    associationNote: "The authenticated owner confirms this current offering.",
+    rightsAttested: true,
+  }, dependencies);
+  assert.deepEqual(calls.rpc[0].parameters.p_owner_attestation, {
+    schemaVersion: "veroxa-media-owner-attestation-v1",
+    ownerRightsAccepted: true,
+    currentOfferingAccepted: true,
+  });
+  assert.equal(calls.rpc[0].parameters.p_requested_association,
+    "represents_current_restaurant_offering");
 });
 
 test("Team assessment-only upload uses its narrow registration RPC and never writes an association", async () => {
@@ -264,7 +291,7 @@ test("immediate upload copy claims Team ownership only for a durable receipt", (
   );
 });
 
-test("a failed session commit retains the private object for idempotent replay", async () => {
+test("a failed server-authoritative session commit retains the private object for idempotent replay", async () => {
   const calls = { upload: [], remove: [] };
   const client = {
     storage: { from(bucket) { return {
@@ -284,7 +311,7 @@ test("a failed session commit retains the private object for idempotent replay",
       return { data: null, error: new Error("rejected") };
     },
   };
-  await assert.rejects(() => uploadMomoClientMediaWithDependencies({
+  const result = await uploadMomoClientMediaWithDependencies({
     restaurantId: RESTAURANT_ID,
     file: image(),
     usageScope: ["instagram"],
@@ -292,9 +319,17 @@ test("a failed session commit retains the private object for idempotent replay",
     rightsAttested: true,
   }, {
     client,
+    finalizeSession: async () => {
+      throw new MomoMediaFinalizeRequestError(
+        "media_registration_unavailable",
+        503,
+      );
+    },
     sha256: async () => "1".repeat(64),
     randomUuid: () => OBJECT_ID,
-  }), /media_registration_failed/u);
+  });
+  assert.equal(result.status, "uploaded_but_needs_attention");
+  assert.equal(result.errorCode, "media_registration_unavailable");
   assert.equal(calls.upload.length, 1);
   assert.deepEqual(calls.remove, []);
 });
@@ -323,7 +358,6 @@ test("an already registered replay skips object creation and reuses the same IDs
   assert.equal(calls.upload.length, 0);
   assert.deepEqual(calls.rpc.map((call) => call.name), [
     "veroxa_begin_media_upload_v1",
-    "veroxa_commit_media_upload_v1",
   ]);
 });
 
@@ -341,7 +375,7 @@ test("an initiated replay can commit an already-present reserved object", async 
   assert.equal(result.status, "verified");
   assert.equal(result.assetId, ASSET_ID);
   assert.equal(calls.upload.length, 1);
-  assert.equal(calls.rpc[1].name, "veroxa_commit_media_upload_v1");
+  assert.equal(calls.rpc.length, 1);
 });
 
 test("upload-session responses fail closed when the expected SHA is confused", async () => {

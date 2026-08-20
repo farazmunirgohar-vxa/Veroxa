@@ -1,6 +1,16 @@
 <!-- GUARDED_INTERNAL_AI_ROLLOUT_AUTHORITY -->
 
-## 2026-08-15 — pre-intervention acceptance reconciliation (current authority)
+## 2026-08-20 — R3 pre-intervention readiness (current authority)
+
+Read `artifacts/veroxa/docs/CURRENT_MILESTONE.md` first. Live verified state outranks the ordered R3 Linear program; the program outranks exact reviewed code and evidence; older date-stamped claims are historical.
+
+- **GitHub:** `main` is `a05e7a79b2c527ff93a4c3810afc6ada193fce6c`. PR #193 is the current candidate only—not merged, deployed, or production authority. PR #187 remains deferred and unmerged.
+- **Hosting and database:** Sites v59 deployment `appgdep_6a8016eee874819184f031daa896048c` is the last conclusively proven production deployment; saved v60 is not deployment proof. Production Supabase has 59 observed migrations; the PR #193 acceptance migration is unapplied candidate source.
+- **Media boundary:** IMG_4257 (`05ab2303-f7ea-4056-8f75-9cd7e523a4f4`) is terminal, immutable, read-only, non-Ready, and has zero retries. Never retry, reprocess, resubmit, move, replace, delete, re-upload, or use it as a fixture.
+- **Product boundary:** `ready_for_team_review` is not approval, scheduling, publication, or an external action. Momo remains the free founding pilot.
+- **External boundary:** Publishing, provider writes, review replies, messaging, website/listing/menu writes, advertising, external scheduling, customer contact, account connection, and repository-visibility changes remain fail-closed.
+
+## 2026-08-15 — pre-intervention acceptance reconciliation (historical, superseded)
 
 This checkpoint supersedes every earlier retry instruction. IMG_4257 (`05ab2303-f7ea-4056-8f75-9cd7e523a4f4`) is terminal at immutable attempt 4 with `media_recovery_completion_unavailable`; **zero retries remain**. Do not retry, reprocess, resubmit, move, replace, delete, re-upload, or transition it to Ready. Read-only evidence reconciliation is the only permitted access.
 
@@ -242,7 +252,7 @@ This section records the retired Vite/Vercel state at PR #120. It does not overr
 
 # Veroxa Agent Instructions
 
-Current docs authority: read `artifacts/veroxa/docs/VEROXA_CURRENT_MILESTONE.md` first, then `artifacts/veroxa/docs/ACTIVE_DOCS_INDEX.md`, then `artifacts/veroxa/docs/VEROXA_LOCKED_OPERATING_MEMORY.md`. Do not override the current milestone, active docs index, locked operating memory, `PRICING_SOURCE_OF_TRUTH.md`, or `CURRENT_BUILD_STATUS.md` with older current-looking docs or archived strategy notes.
+Current docs authority: read `artifacts/veroxa/docs/CURRENT_MILESTONE.md` first, then `artifacts/veroxa/docs/ACTIVE_DOCS_INDEX.md`, `artifacts/veroxa/docs/VEROXA_CURRENT_MILESTONE.md`, and `artifacts/veroxa/docs/VEROXA_LOCKED_OPERATING_MEMORY.md`. Do not override the R3 milestone, active docs index, locked operating memory, `PRICING_SOURCE_OF_TRUTH.md`, or `CURRENT_BUILD_STATUS.md` with older current-looking docs or archived strategy notes.
 
 ## 2026-06-14 — Automation-first Momo pivot
 

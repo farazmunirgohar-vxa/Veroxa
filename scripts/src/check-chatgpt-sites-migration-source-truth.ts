@@ -26,12 +26,66 @@ try {
 
 
 if (activeForwardCandidate) {
+  const authorityDocs = [
+    "AGENTS.md",
+    "artifacts/veroxa/docs/ACTIVE_DOCS_INDEX.md",
+    "artifacts/veroxa/docs/CHATGPT_SITES_MIGRATION_AND_SOURCE_OF_TRUTH.md",
+    "artifacts/veroxa/docs/CURRENT_BUILD_STATUS.md",
+    "artifacts/veroxa/docs/README_CURRENT_STATE.md",
+    "artifacts/veroxa/docs/RR_CHECKPOINT.md",
+    "artifacts/veroxa/docs/VEROXA_CURRENT_MILESTONE.md",
+    "artifacts/veroxa/docs/VEROXA_LOCKED_OPERATING_MEMORY.md",
+  ];
+  const requiredCurrentMarkers = [
+    "artifacts/veroxa/docs/CURRENT_MILESTONE.md",
+    "a05e7a79b2c527ff93a4c3810afc6ada193fce6c",
+    "PR #193 is the current candidate only",
+    "PR #187 remains deferred and unmerged",
+    "Sites v59",
+    "saved v60 is not deployment proof",
+    "59 observed migrations",
+    "05ab2303-f7ea-4056-8f75-9cd7e523a4f4",
+    "zero retries",
+    "ready_for_team_review",
+    "free founding pilot",
+    "remain fail-closed",
+  ];
+  for (const path of authorityDocs) {
+    const text = read(path);
+    must(!/^(<<<<<<<|=======|>>>>>>>)/mu.test(text), path + " contains merge markers.");
+    const headings = text.match(/^## .*?\(current authority\)$/gmu) ?? [];
+    must(headings.length === 1, path + " must contain exactly one current-authority heading.");
+    const heading = text.match(/^## .*?\(current authority\)$/mu);
+    const start = heading?.index ?? -1;
+    const next = start < 0 ? -1 : text.indexOf(
+      "\n## ", start + (heading?.[0].length ?? 0),
+    );
+    const current = start < 0 ? "" : text.slice(start, next < 0 ? undefined : next);
+    for (const marker of requiredCurrentMarkers) {
+      must(current.includes(marker), path + " is missing R3 authority marker: " + marker);
+    }
+  }
+  const milestone = read("artifacts/veroxa/docs/CURRENT_MILESTONE.md");
+  must(!/^(<<<<<<<|=======|>>>>>>>)/mu.test(milestone),
+    "CURRENT_MILESTONE.md contains merge markers.");
+  for (const marker of [
+    "Current Milestone — R3 Pre-Intervention Readiness",
+    "controlling written R3 authority",
+    "VER-20",
+    "VER-28",
+    "PR #193",
+    "zero retries",
+    "ready_for_team_review",
+    "free founding pilot",
+  ]) {
+    must(milestone.includes(marker), "CURRENT_MILESTONE.md is missing R3 marker: " + marker);
+  }
   if (failures.length > 0) {
     for (const failure of failures) console.error("FAIL:", failure);
     process.exit(1);
   }
   console.log(
-    "PASS: designated CURRENT_STATE is the active authority for the private-media forward candidate; schema-13 closeout files remain historical evidence only.",
+    "PASS: the R3 authority chain and designated CURRENT_STATE consistently describe the guarded forward candidate.",
   );
   process.exit(0);
 }

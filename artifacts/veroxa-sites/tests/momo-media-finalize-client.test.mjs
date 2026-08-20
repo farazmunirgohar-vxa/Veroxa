@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   finalizeMomoMediaUpload,
+  finalizeMomoMediaUploadSession,
   MomoMediaFinalizeRequestError,
 } from "../app/momo-media-finalize-client.ts";
 
@@ -10,6 +11,9 @@ const ASSET_ID = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
 const CANONICAL_ASSET_ID = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
 const VERIFICATION_ID = "dddddddd-dddd-4ddd-8ddd-dddddddddddd";
 const ATTEMPT_ID = "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee";
+const UPLOAD_SESSION_ID = "11111111-1111-4111-8111-111111111111";
+const RIGHTS_ID = "22222222-2222-4222-8222-222222222222";
+const IDEMPOTENCY_KEY = "33333333-3333-4333-8333-333333333333";
 const STORAGE_PATH = `restaurants/${RESTAURANT_ID}/uploads/2026/08/eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee.jpg`;
 
 test("shared client finalizer posts one bounded same-origin request and accepts verified evidence", async () => {
@@ -100,6 +104,56 @@ test("shared client finalizer preserves the authoritative canonical identity for
   assert.equal(result.status, "duplicate");
   assert.equal(result.canonicalAssetId, CANONICAL_ASSET_ID);
   assert.equal(result.duplicateAssetId, ASSET_ID);
+});
+
+test("session finalizer accepts registration identities only from the server response", async () => {
+  const calls = [];
+  const result = await finalizeMomoMediaUploadSession({
+    restaurantId: RESTAURANT_ID,
+    uploadSessionId: UPLOAD_SESSION_ID,
+    clientIdempotencyKey: IDEMPOTENCY_KEY,
+    storagePath: STORAGE_PATH,
+  }, async (url, init) => {
+    calls.push({ url, init });
+    return Response.json({
+      verificationId: VERIFICATION_ID,
+      status: "verified",
+      canonicalAssetId: ASSET_ID,
+      duplicateAssetId: null,
+      uploadSessionId: UPLOAD_SESSION_ID,
+      assetId: ASSET_ID,
+      rightsId: RIGHTS_ID,
+      externalWriteAllowed: false,
+    });
+  });
+  assert.equal(result.assetId, ASSET_ID);
+  assert.equal(result.rightsId, RIGHTS_ID);
+  assert.deepEqual(JSON.parse(calls[0].init.body), {
+    restaurantId: RESTAURANT_ID,
+    uploadSessionId: UPLOAD_SESSION_ID,
+    clientIdempotencyKey: IDEMPOTENCY_KEY,
+    storagePath: STORAGE_PATH,
+  });
+
+  await assert.rejects(
+    () => finalizeMomoMediaUploadSession({
+      restaurantId: RESTAURANT_ID,
+      uploadSessionId: UPLOAD_SESSION_ID,
+      clientIdempotencyKey: IDEMPOTENCY_KEY,
+      storagePath: STORAGE_PATH,
+    }, async () => Response.json({
+      verificationId: VERIFICATION_ID,
+      status: "verified",
+      canonicalAssetId: ASSET_ID,
+      duplicateAssetId: null,
+      uploadSessionId: "44444444-4444-4444-8444-444444444444",
+      assetId: ASSET_ID,
+      rightsId: RIGHTS_ID,
+      externalWriteAllowed: false,
+    })),
+    (error) => error instanceof MomoMediaFinalizeRequestError &&
+      error.code === "media_verification_unavailable",
+  );
 });
 
 test("shared client finalizer exposes controlled failure codes and rejects malformed success", async () => {
