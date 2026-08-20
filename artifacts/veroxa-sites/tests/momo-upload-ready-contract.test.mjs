@@ -68,7 +68,7 @@ test("content lifecycle bypasses only the platform JWT precheck while enforcing 
   assert.match(supabaseConfig, /\[functions\.momo-content-ai-lifecycle\]\s+verify_jwt = false/u);
   assert.match(supabaseConfig, /\[functions\.momo-media-ai-lifecycle\]\s+verify_jwt = true/u);
   const bearerGate = contentLifecycleEdge.indexOf('authorization.startsWith("Bearer ")');
-  const signatureGate = contentLifecycleEdge.indexOf("verifyMomoContentAiBridgeSignature");
+  const signatureGate = contentLifecycleEdge.indexOf("verifyMomoContentAiBridgeSignature(");
   const userGate = contentLifecycleEdge.indexOf("userClient.auth.getUser(accessToken)");
   const adminClient = contentLifecycleEdge.indexOf("const admin = createClient");
   assert.ok(bearerGate >= 0, "handler must require a bearer user session");
