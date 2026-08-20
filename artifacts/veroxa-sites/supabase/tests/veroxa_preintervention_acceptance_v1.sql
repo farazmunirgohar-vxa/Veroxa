@@ -579,6 +579,7 @@ create temporary table acceptance_commit_v1 (
   external_write_allowed boolean
 ) on commit drop;
 grant insert, select on acceptance_commit_v1 to service_role;
+grant select on acceptance_commit_v1 to authenticated;
 
 select set_config('request.jwt.claims', '{"role":"service_role"}', true);
 select set_config('request.jwt.claim.sub', '', true);

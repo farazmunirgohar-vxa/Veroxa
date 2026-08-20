@@ -1125,6 +1125,32 @@
       "productionEvidence": [],
       "rollbackMethod": "Do not apply the candidate unless hosted PostgreSQL proves expiry cleanup and registered/live-session protection under the shared lock order.",
       "finalStatus": "local_orphan_expiry_repair_pending_exact_head_supabase_verify"
+    },
+    {
+      "findingId": "F-045",
+      "originalConcern": "The new authenticated registered-object delete probe selected its storage path from the temporary acceptance_commit_v1 table without granting that test role SELECT, stopping hosted pgTAP before the intended RLS assertion.",
+      "freshVerificationResult": "The temporary commit fixture now grants authenticated read access in both byte-identical pgTAP mirrors. The grant is transaction-local test scaffolding only; it does not alter application tables, production privileges, or the registered-object protection policy.",
+      "severity": "low",
+      "affectedSystems": [
+        "Supabase Verify",
+        "registered Storage RLS regression test",
+        "pgTAP role harness"
+      ],
+      "rootCause": "The delete probe correctly changed to the authenticated role but its newly referenced temporary path fixture retained the earlier service-role-only grant.",
+      "correctiveAction": "Grant authenticated SELECT on the transaction-local acceptance_commit_v1 fixture before the role switch and retain the exact registered-object delete assertion.",
+      "branch": "agent/veroxa-pre-intervention-proof-20260815",
+      "pullRequest": 193,
+      "commit": null,
+      "migrationOrDeployment": "pending exact-head Supabase Verify rerun",
+      "tests": [
+        "hosted clean migration chain passed on run 32340346865",
+        "hosted pgTAP reached the registered-object delete probe and exposed only the missing temporary-table grant",
+        "root/Sites pgTAP mirrors retain 61 planned assertions",
+        "full hosted database rerun is pending"
+      ],
+      "productionEvidence": [],
+      "rollbackMethod": "Do not merge until the authenticated registered-object probe and all remaining pgTAP assertions pass on the exact repaired head.",
+      "finalStatus": "pgtap_temp_fixture_permission_repair_pending_exact_head_supabase_verify"
     }
   ]
 }
