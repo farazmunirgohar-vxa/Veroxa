@@ -1,6 +1,6 @@
 # Current Milestone — R3 Pre-Intervention Readiness
 
-Read [`R3_PREINTERVENTION_AUTHORITY_2026-08-20.md`](R3_PREINTERVENTION_AUTHORITY_2026-08-20.md) first. Live verified evidence and the ordered R3 Linear program override earlier release claims.
+This document is the current written R3 authority. Live verified evidence and the ordered R3 Linear program override earlier release claims. AGENTS.md and the active-documents index remain deferred authority-link corrections until the active private-media candidate has passed its exact review and release gates.
 
 ## Active outcome
 
