@@ -1,9 +1,12 @@
 name: VER-39 Exact Path Bytes Patch
 
 on:
-  push:
+  pull_request:
     branches:
-      - agent/ver-39-edge-jwt-gate-repair-20260820
+      - main
+    types:
+      - opened
+      - synchronize
     paths:
       - .github/workflows/ver39-exact-path-bytes-patch.yml
 
@@ -12,16 +15,18 @@ permissions:
 
 jobs:
   patch:
+    if: github.head_ref == 'agent/ver-39-edge-jwt-gate-repair-20260820'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 2
       - name: Patch parser and self-remove helpers
         shell: bash
         run: |
           set -euo pipefail
-          test "$(git rev-parse HEAD^)" = "dcd7f7979199b7996da925702c0567318de2ca10"
+          test "$(git rev-parse HEAD^)" = "c9649aa19c275517961b072689d12519decc17c6"
           python - <<'PY'
           from pathlib import Path
           p = Path('scripts/src/release-manifest.ts')
