@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "recordKind": "veroxa_current_state",
   "stateAuthority": "current_deployed_state_and_explicit_forward_candidate",
-  "updatedAt": "2026-08-20T05:38:07Z",
+  "updatedAt": "2026-08-20T05:45:10Z",
   "phase": "preintervention_acceptance_candidate_pending_exact_head_gates_and_live_proof",
   "currentVerdict": "NOT READY — AUTONOMOUS WORK REMAINS",
   "production": {
@@ -101,8 +101,8 @@
     },
     "pgTap": {
       "filename": "veroxa_preintervention_acceptance_v1.sql",
-      "sha256": "b53ee9ff5cfaccf0511b017479c309ce7522ba34d1326ef050d76a37ae56bb7c",
-      "byteLength": 45096,
+      "sha256": "3acd5d59d89dd32bd8e1833b7b1ebfbd4393fc4cc84d6fe437dab8a9870cfdbb",
+      "byteLength": 45337,
       "plannedAssertions": 57,
       "mirrored": true,
       "hostedExecutionPassed": false

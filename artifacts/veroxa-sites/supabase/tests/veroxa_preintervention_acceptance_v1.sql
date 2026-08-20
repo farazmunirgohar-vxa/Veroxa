@@ -432,7 +432,11 @@ select throws_ok(
   'an idempotency-key alias can never be rebound'
 );
 
+create temporary table acceptance_delete_probe_v1 (
+  deleted_count integer not null
+) on commit drop;
 grant select on acceptance_begin_v1 to authenticated, service_role;
+grant insert, select on acceptance_delete_probe_v1 to authenticated;
 set local role authenticated;
 select lives_ok(
   $$insert into storage.objects (
@@ -446,22 +450,22 @@ select lives_ok(
     from acceptance_begin_v1 begin_row$$,
   'the authenticated Client can insert the reserved object path through RLS'
 );
-select is(
-  (
-    with deleted as (
-      delete from storage.objects object_record
-      where object_record.bucket_id = 'restaurant-media'
-        and object_record.name = (
-          select storage_path from acceptance_begin_v1
-        )
-      returning 1
+with deleted as (
+  delete from storage.objects object_record
+  where object_record.bucket_id = 'restaurant-media'
+    and object_record.name = (
+      select storage_path from acceptance_begin_v1
     )
-    select pg_catalog.count(*)::integer from deleted
-  ),
+  returning 1
+)
+insert into acceptance_delete_probe_v1 (deleted_count)
+select pg_catalog.count(*)::integer from deleted;
+reset role;
+select is(
+  (select deleted_count from acceptance_delete_probe_v1),
   0,
   'orphan cleanup cannot delete an object protected by a live session'
 );
-reset role;
 
 create temporary table acceptance_storage_object_v1 on commit drop as
 select object_record.id, object_record.version

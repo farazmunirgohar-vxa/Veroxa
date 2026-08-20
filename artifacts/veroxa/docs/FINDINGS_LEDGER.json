@@ -949,6 +949,31 @@
       "productionEvidence": [],
       "rollbackMethod": "Do not apply the candidate migration unless all 57 hosted pgTAP assertions and database lint pass.",
       "finalStatus": "sql_expression_repair_pending_exact_head_supabase_verify"
+    },
+    {
+      "findingId": "F-038",
+      "originalConcern": "The authenticated Storage delete-policy probe placed a data-modifying CTE inside a scalar pgTAP argument, which PostgreSQL rejects because a modifying WITH clause must be top-level.",
+      "freshVerificationResult": "The probe now executes the DELETE as a top-level modifying CTE, stores its affected-row count in a permission-bounded temporary table while the authenticated role is active, then asserts the zero-delete result after resetting the role.",
+      "severity": "low",
+      "affectedSystems": [
+        "Supabase Verify",
+        "Storage RLS regression test",
+        "live upload-session delete protection"
+      ],
+      "rootCause": "The initial source-only pgTAP review counted assertions but did not execute the nested data-modifying CTE in PostgreSQL.",
+      "correctiveAction": "Keep the RLS action under the authenticated role while moving the modifying CTE to the statement top level, without changing the 57-assertion plan.",
+      "branch": "agent/veroxa-pre-intervention-proof-20260815",
+      "pullRequest": 193,
+      "commit": null,
+      "migrationOrDeployment": "pending exact-head Supabase Verify rerun",
+      "tests": [
+        "hosted Supabase Verify reached assertion 25 with all preceding assertions passing",
+        "root/Sites pgTAP mirrors retain 57 planned assertions",
+        "full hosted database rerun is pending"
+      ],
+      "productionEvidence": [],
+      "rollbackMethod": "Do not merge until the top-level RLS delete probe and all subsequent pgTAP assertions pass in hosted PostgreSQL.",
+      "finalStatus": "pgtap_execution_repair_pending_exact_head_supabase_verify"
     }
   ]
 }
