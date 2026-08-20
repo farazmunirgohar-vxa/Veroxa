@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import { uploadMomoClientMediaWithDependencies } from "../app/momo-client-data.ts";
+import {
+  MomoClientMediaUploadRetryError,
+  uploadMomoClientMediaWithDependencies,
+} from "../app/momo-client-data.ts";
 import { MomoMediaFinalizeRequestError } from "../app/momo-media-finalize-client.ts";
 
 const RESTAURANT_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
@@ -219,28 +222,80 @@ test("Team assessment registration rejects every external preparation scope", as
   }
 });
 
-test("reserved originals remain saved and retryable when session finalization needs attention", async () => {
-  const { calls, dependencies } = harness({ finalize: async () => { throw new MomoMediaFinalizeRequestError("media_not_platform_ready", 422); } });
-  const result = await uploadMomoClientMediaWithDependencies({
-    restaurantId: RESTAURANT_ID,
-    file: image(),
-    usageScope: ["instagram"],
-    restaurantAssociation: "not_for_restaurant",
-    rightsAttested: true,
-  }, dependencies);
-  assert.deepEqual(result, {
-    status: "uploaded_but_needs_attention",
-    assetId: null,
-    storagePath: calls.upload[0].path,
-    errorCode: "media_not_platform_ready",
-    failureReceipt: null,
-    externalWriteAllowed: false,
-    rightsId: null,
+test("a malformed pre-registration handoff cannot become an undurable attention outcome", async () => {
+  const { calls, dependencies } = harness({
+    rpc: async () => ({ data: [{ asset_id: null, rights_id: null }], error: null }),
   });
+  await assert.rejects(() => uploadMomoClientMediaWithDependencies({
+      restaurantId: RESTAURANT_ID,
+      file: image("image/png"),
+      usageScope: ["internal"],
+      restaurantAssociation: "not_for_restaurant",
+    }, {
+      ...dependencies,
+      registrationRpc: "veroxa_register_team_private_media_v1",
+      skipAssociation: true,
+    }),
+    (error) => error instanceof MomoClientMediaUploadRetryError &&
+      error.code === "media_upload_retry_required" &&
+      error.failureCode === "media_registration_response_invalid" &&
+      error.storagePath === calls.upload[0].path,
+  );
+  assert.equal(calls.remove.length, 0,
+    "an uploaded object with an unconfirmed registration response must remain retryable");
+});
+
+test("pre-registration finalization without a durable receipt requires a truthful retry", async () => {
+  const { calls, dependencies } = harness({ finalize: async () => { throw new MomoMediaFinalizeRequestError("media_not_platform_ready", 422); } });
+  await assert.rejects(() => uploadMomoClientMediaWithDependencies({
+      restaurantId: RESTAURANT_ID,
+      file: image(),
+      usageScope: ["instagram"],
+      restaurantAssociation: "not_for_restaurant",
+      rightsAttested: true,
+    }, dependencies),
+    (error) => error instanceof MomoClientMediaUploadRetryError &&
+      error.code === "media_upload_retry_required" &&
+      error.failureCode === "media_not_platform_ready" &&
+      error.storagePath === calls.upload[0].path,
+  );
   assert.equal(calls.remove.length, 0, "a reserved original must never be deleted after session-finalize failure");
   assert.equal(calls.rpc[0].name, "veroxa_begin_media_upload_v1");
   assert.equal(calls.rpc[0].parameters.p_requested_association, "not_for_restaurant",
-    "the upload instruction must be registered before finalization starts");
+    "the requested association must remain bound to the replay-safe reservation");
+});
+
+test("an unconfirmed exception receipt remains retryable instead of claiming recovery", async () => {
+  const receipt = {
+    status: "exception_recording_unconfirmed",
+    attemptId: null,
+    recoveryOwner: null,
+    clientActionRequired: false,
+    correlationId: "66666666-6666-4666-8666-666666666666",
+    durableCorrelationId: null,
+  };
+  const { calls, dependencies } = harness({
+    finalize: async () => {
+      throw new MomoMediaFinalizeRequestError(
+        "media_verification_unavailable",
+        503,
+        receipt,
+        receipt.correlationId,
+      );
+    },
+  });
+  await assert.rejects(() => uploadMomoClientMediaWithDependencies({
+      restaurantId: RESTAURANT_ID,
+      file: image(),
+      usageScope: ["instagram"],
+      restaurantAssociation: "not_for_restaurant",
+      rightsAttested: true,
+    }, dependencies),
+    (error) => error instanceof MomoClientMediaUploadRetryError &&
+      error.code === "media_upload_retry_required" &&
+      error.failureCode === "media_verification_unavailable",
+  );
+  assert.equal(calls.remove.length, 0);
 });
 
 test("a durable finalize exception receipt survives the upload handoff", async () => {
@@ -270,7 +325,34 @@ test("a durable finalize exception receipt survives the upload handoff", async (
     rightsAttested: true,
   }, dependencies);
   assert.equal(result.status, "uploaded_but_needs_attention");
+  assert.equal(result.assetId, null);
   assert.deepEqual(result.failureReceipt, receipt);
+  assert.equal(calls.remove.length, 0);
+});
+
+test("a registered asset can retain recovery behavior without a durable exception receipt", async () => {
+  const { calls, dependencies } = harness({
+    finalize: async () => {
+      throw new MomoMediaFinalizeRequestError(
+        "media_verification_unavailable",
+        503,
+      );
+    },
+  });
+  const result = await uploadMomoClientMediaWithDependencies({
+    restaurantId: RESTAURANT_ID,
+    file: image("image/png"),
+    usageScope: ["internal"],
+    restaurantAssociation: "not_for_restaurant",
+  }, {
+    ...dependencies,
+    registrationRpc: "veroxa_register_team_private_media_v1",
+    skipAssociation: true,
+  });
+  assert.equal(result.status, "uploaded_but_needs_attention");
+  assert.equal(result.assetId, ASSET_ID);
+  assert.equal(result.rightsId, RIGHTS_ID);
+  assert.equal(result.failureReceipt, null);
   assert.equal(calls.remove.length, 0);
 });
 
@@ -291,7 +373,7 @@ test("immediate upload copy claims Team ownership only for a durable receipt", (
   );
 });
 
-test("a failed server-authoritative session commit retains the private object for idempotent replay", async () => {
+test("a failed server-authoritative session commit retains the private object and requires replay", async () => {
   const calls = { upload: [], remove: [] };
   const client = {
     storage: { from(bucket) { return {
@@ -311,25 +393,27 @@ test("a failed server-authoritative session commit retains the private object fo
       return { data: null, error: new Error("rejected") };
     },
   };
-  const result = await uploadMomoClientMediaWithDependencies({
-    restaurantId: RESTAURANT_ID,
-    file: image(),
-    usageScope: ["instagram"],
-    restaurantAssociation: "not_for_restaurant",
-    rightsAttested: true,
-  }, {
-    client,
-    finalizeSession: async () => {
-      throw new MomoMediaFinalizeRequestError(
-        "media_registration_unavailable",
-        503,
-      );
-    },
-    sha256: async () => "1".repeat(64),
-    randomUuid: () => OBJECT_ID,
-  });
-  assert.equal(result.status, "uploaded_but_needs_attention");
-  assert.equal(result.errorCode, "media_registration_unavailable");
+  await assert.rejects(() => uploadMomoClientMediaWithDependencies({
+      restaurantId: RESTAURANT_ID,
+      file: image(),
+      usageScope: ["instagram"],
+      restaurantAssociation: "not_for_restaurant",
+      rightsAttested: true,
+    }, {
+      client,
+      finalizeSession: async () => {
+        throw new MomoMediaFinalizeRequestError(
+          "media_registration_unavailable",
+          503,
+        );
+      },
+      sha256: async () => "1".repeat(64),
+      randomUuid: () => OBJECT_ID,
+    }),
+    (error) => error instanceof MomoClientMediaUploadRetryError &&
+      error.code === "media_upload_retry_required" &&
+      error.failureCode === "media_registration_unavailable",
+  );
   assert.equal(calls.upload.length, 1);
   assert.deepEqual(calls.remove, []);
 });
@@ -359,6 +443,55 @@ test("an already registered replay skips object creation and reuses the same IDs
   assert.deepEqual(calls.rpc.map((call) => call.name), [
     "veroxa_begin_media_upload_v1",
   ]);
+  assert.deepEqual(calls.finalize[0], {
+    restaurantId: RESTAURANT_ID,
+    assetId: ASSET_ID,
+    storagePath: `${SESSION_PATH_PREFIX}.jpg`,
+  });
+});
+
+test("a registered session replay keeps its durable IDs when finalization needs attention", async () => {
+  let registeredFinalizeCalls = 0;
+  let sessionFinalizeCalls = 0;
+  const { calls, dependencies } = harness({
+    rpc: async () => ({ data: [{
+      upload_session_id: OBJECT_ID,
+      storage_path: `${SESSION_PATH_PREFIX}.jpg`,
+      session_status: "registered",
+      asset_id: ASSET_ID,
+      rights_id: RIGHTS_ID,
+      original_sha256: "1".repeat(64),
+      external_write_allowed: false,
+    }], error: null }),
+    finalize: async (input) => {
+      registeredFinalizeCalls += 1;
+      assert.equal(input.assetId, ASSET_ID);
+      throw new MomoMediaFinalizeRequestError(
+        "media_verification_unavailable",
+        503,
+      );
+    },
+    finalizeSession: async () => {
+      sessionFinalizeCalls += 1;
+      throw new Error("registered_session_must_not_reenter_commit");
+    },
+  });
+  const result = await uploadMomoClientMediaWithDependencies({
+    restaurantId: RESTAURANT_ID,
+    file: image(),
+    usageScope: ["instagram"],
+    restaurantAssociation: "not_for_restaurant",
+    rightsAttested: true,
+    clientIdempotencyKey: OBJECT_ID,
+  }, dependencies);
+  assert.equal(result.status, "uploaded_but_needs_attention");
+  assert.equal(result.assetId, ASSET_ID);
+  assert.equal(result.rightsId, RIGHTS_ID);
+  assert.equal(result.errorCode, "media_verification_unavailable");
+  assert.equal(result.failureReceipt, null);
+  assert.equal(registeredFinalizeCalls, 1);
+  assert.equal(sessionFinalizeCalls, 0);
+  assert.equal(calls.upload.length, 0);
 });
 
 test("an initiated replay can commit an already-present reserved object", async () => {

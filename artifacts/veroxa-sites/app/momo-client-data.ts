@@ -996,6 +996,19 @@ export type MomoClientMediaUploadOutcome = (MomoMediaFinalizeApiResult & {
   rightsId?: string | null;
 };
 
+export class MomoClientMediaUploadRetryError extends Error {
+  readonly code = "media_upload_retry_required";
+  readonly failureCode: string;
+  readonly storagePath: string;
+
+  constructor(failureCode: string, storagePath: string) {
+    super("media_upload_retry_required");
+    this.name = "MomoClientMediaUploadRetryError";
+    this.failureCode = failureCode;
+    this.storagePath = storagePath;
+  }
+}
+
 export type MomoClientMediaUploadDependencies = {
   client: MomoClientMediaUploadClient;
   finalize?: typeof finalizeMomoMediaUpload;
@@ -1111,6 +1124,10 @@ function uploadAttention(
   const failureReceipt = error instanceof MomoMediaFinalizeRequestError
     ? error.receipt
     : null;
+  if (assetId === null &&
+    failureReceipt?.status !== "team_exception_recorded") {
+    throw new MomoClientMediaUploadRetryError(errorCode, storagePath);
+  }
   return {
     status: "uploaded_but_needs_attention",
     assetId,
@@ -1287,7 +1304,20 @@ export async function uploadMomoClientMediaWithDependencies(input: {
     );
     if (!session) throw new Error("media_upload_session_response_invalid");
     storagePath = session.storagePath;
-    if (session.status === "initiated") {
+    if (session.status === "registered") {
+      if (!session.assetId || !session.rightsId) {
+        throw new Error("media_upload_session_response_invalid");
+      }
+      registered = {
+        assetId: session.assetId,
+        rightsId: session.rightsId,
+      };
+      finalized = await finalizeRegisteredMomoClientMedia({
+        restaurantId: input.restaurantId.toLowerCase(),
+        assetId: session.assetId,
+        storagePath,
+      }, dependencies.finalize ?? finalizeMomoMediaUpload);
+    } else {
       const uploaded = await dependencies.client.storage
         .from("restaurant-media").upload(storagePath, input.file, {
           contentType: input.file.type,
@@ -1301,28 +1331,28 @@ export async function uploadMomoClientMediaWithDependencies(input: {
         !isMomoReservedStorageObjectConflict(uploaded.error)) {
         throw new Error("media_upload_failed");
       }
-    }
-    finalized = await finalizeMomoClientMediaSession({
-      restaurantId: input.restaurantId.toLowerCase(),
-      uploadSessionId: session.uploadSessionId,
-      clientIdempotencyKey: clientIdempotencyKey.toLowerCase(),
-      storagePath,
-    }, dependencies.finalizeSession ?? finalizeMomoMediaUploadSession);
-    if (finalized.status === "uploaded_but_needs_attention") {
-      return finalized;
-    }
-    const rightsId = finalized.rightsId;
-    if (!rightsId) {
-      return uploadAttention(
-        finalized.assetId,
+      finalized = await finalizeMomoClientMediaSession({
+        restaurantId: input.restaurantId.toLowerCase(),
+        uploadSessionId: session.uploadSessionId,
+        clientIdempotencyKey: clientIdempotencyKey.toLowerCase(),
         storagePath,
-        "media_registration_response_invalid",
-      );
+      }, dependencies.finalizeSession ?? finalizeMomoMediaUploadSession);
+      if (finalized.status === "uploaded_but_needs_attention") {
+        return finalized;
+      }
+      const rightsId = finalized.rightsId;
+      if (!rightsId) {
+        return uploadAttention(
+          finalized.assetId,
+          storagePath,
+          "media_registration_response_invalid",
+        );
+      }
+      registered = {
+        assetId: finalized.assetId,
+        rightsId,
+      };
     }
-    registered = {
-      assetId: finalized.assetId,
-      rightsId,
-    };
   }
   if (!registered) return uploadAttention(null, storagePath, "media_registration_response_invalid");
   finalized ??= await finalizeRegisteredMomoClientMedia({

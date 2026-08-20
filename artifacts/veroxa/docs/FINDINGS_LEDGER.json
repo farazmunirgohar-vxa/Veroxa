@@ -1176,6 +1176,34 @@
       "productionEvidence": [],
       "rollbackMethod": "Do not merge until hosted pgTAP proves canonical replay uniqueness while expired immutable evidence coexists.",
       "finalStatus": "pgtap_dedup_scope_alignment_pending_exact_head_supabase_verify"
+    },
+    {
+      "findingId": "F-047",
+      "originalConcern": "After Storage accepted a Client upload, an unconfirmed signed session commit or finalization failure could return uploaded_but_needs_attention with no asset ID and no durable exception receipt. The portal then cleared the selected file and told the Client not to retry even though the initiated session could expire and its orphaned object become deletable.",
+      "freshVerificationResult": "A null-asset attention outcome can now cross the data boundary only with a validated team_exception_recorded receipt. Every missing or unconfirmed receipt throws a typed media_upload_retry_required error; the Client portal rechecks that invariant before clearing state, retains the selected file and attestation, skips refresh, and gives explicit same-file retry guidance. Registered replay sessions use their known asset and rights IDs through the registered-asset finalizer, so durable assets retain Team-owned recovery behavior without an unnecessary Client retry.",
+      "severity": "high",
+      "affectedSystems": [
+        "Client media upload",
+        "signed upload-session finalization",
+        "retry guidance and selected-file state",
+        "registered upload replay"
+      ],
+      "rootCause": "The upload adapter modeled all post-Storage failures as the same success-style attention handoff and discarded the distinction between a durable registered asset or exception receipt and an initiated session with no durable recovery ownership.",
+      "correctiveAction": "Centralize the durable-attention invariant, throw a typed retry error for every null-asset outcome without a durable Team receipt, defensively enforce the same rule before portal state clearing, and route already-registered sessions through asset finalization with their known durable IDs.",
+      "branch": "agent/veroxa-pre-intervention-proof-20260815",
+      "pullRequest": 193,
+      "commit": null,
+      "migrationOrDeployment": "pending repaired Sites source on PR #193; no production action authorized",
+      "tests": [
+        "focused tests prove missing and exception_recording_unconfirmed receipts preserve retry state",
+        "focused tests prove only team_exception_recorded may hand off a null-asset exception to Team",
+        "portal contract tests prove the defensive guard runs before file, key, or attestation clearing",
+        "registered replay tests prove known asset and rights IDs use registered finalization and retain recovery behavior",
+        "full exact-head Sites and Veroxa Verify reruns are pending"
+      ],
+      "productionEvidence": [],
+      "rollbackMethod": "Do not merge if any null-asset/no-durable-receipt outcome can clear the Client file, suppress retry guidance, or claim Team recovery ownership.",
+      "finalStatus": "local_retry_boundary_repair_pending_exact_head_sites_verify_and_final_review"
     }
   ]
 }

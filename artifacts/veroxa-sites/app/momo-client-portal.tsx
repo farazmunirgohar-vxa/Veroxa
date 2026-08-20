@@ -18,6 +18,7 @@ import {
   signOutMomoClient,
   submitMomoClientDecision,
   uploadMomoClientMedia,
+  MomoClientMediaUploadRetryError,
   type MomoClientMessage,
   type MomoClientMediaUploadOutcome,
   type MomoClientAttentionReason,
@@ -55,6 +56,8 @@ const clientLabels: Record<ClientView, string> = {
 };
 
 const MOMO_CLIENT_UPLOAD_SCOPE = ["instagram", "facebook", "google_business"] as const;
+const MEDIA_UPLOAD_RETRY_MESSAGE =
+  "Your private file reached storage, but Veroxa could not confirm a durable media record. Keep this file selected and choose Confirm and upload again so the reserved upload can be reconciled safely. Nothing was posted, scheduled, or connected.";
 
 const pathToView = (path: string): ClientView =>
   (Object.entries(clientRoutes).find(([, value]) => value === path)?.[0] as ClientView | undefined) ?? "dashboard";
@@ -198,8 +201,10 @@ export function MomoClientPortal({
       const outcomeMessage = await action();
       await refresh();
       setToast(outcomeMessage || success);
-    } catch {
-      setToast("That update was not saved. Nothing was changed; please try again.");
+    } catch (error) {
+      setToast(error instanceof MomoClientMediaUploadRetryError
+        ? MEDIA_UPLOAD_RETRY_MESSAGE
+        : "That update was not saved. Nothing was changed; please try again.");
     } finally {
       setBusy(false);
       window.setTimeout(() => setToast(""), 4200);
@@ -359,6 +364,13 @@ function Media({ snapshot, restaurantName, restaurantId, busy, run }: { snapshot
   };
   const finishUploadOutcome = (outcome: MomoClientMediaUploadOutcome): string => {
     if (outcome.status === "uploaded_but_needs_attention") {
+      if (outcome.assetId === null &&
+        outcome.failureReceipt?.status !== "team_exception_recorded") {
+        throw new MomoClientMediaUploadRetryError(
+          outcome.errorCode,
+          outcome.storagePath,
+        );
+      }
       const message = mediaUploadAttentionMessage(
         outcome.errorCode,
         outcome.failureReceipt,
@@ -387,14 +399,21 @@ function Media({ snapshot, restaurantName, restaurantId, busy, run }: { snapshot
     if (!file) throw new Error("media_file_required");
     if (!uploadAttested) throw new Error("media_rights_attestation_required");
     setUploadError("");
-    return finishUploadOutcome(await uploadMomoClientMedia({
-      restaurantId,
-      file,
-      usageScope: [...MOMO_CLIENT_UPLOAD_SCOPE],
-      restaurantAssociation: "represents_current_restaurant_offering",
-      associationNote: "Authenticated restaurant uploader attested that this image depicts a current restaurant offering.",
-      rightsAttested: uploadAttested,
-    }));
+    try {
+      return finishUploadOutcome(await uploadMomoClientMedia({
+        restaurantId,
+        file,
+        usageScope: [...MOMO_CLIENT_UPLOAD_SCOPE],
+        restaurantAssociation: "represents_current_restaurant_offering",
+        associationNote: "Authenticated restaurant uploader attested that this image depicts a current restaurant offering.",
+        rightsAttested: uploadAttested,
+      }));
+    } catch (error) {
+      if (error instanceof MomoClientMediaUploadRetryError) {
+        setUploadError(MEDIA_UPLOAD_RETRY_MESSAGE);
+      }
+      throw error;
+    }
   };
   const newest = snapshot.media[0];
   const newestAssessable = Boolean(newest &&

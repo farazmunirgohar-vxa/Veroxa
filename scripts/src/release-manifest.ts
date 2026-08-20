@@ -1929,6 +1929,20 @@ function assertActivePreinterventionAcceptanceCandidate(
       uploadTests.includes("unproven object durability must block server finalization"),
     "bounded begin/server-commit replay, content uniqueness, immutable alias, or RPC ACL contract drifted",
   );
+  must(
+    uploadAdapter.includes("export class MomoClientMediaUploadRetryError") &&
+      uploadAdapter.includes('readonly code = "media_upload_retry_required"') &&
+      uploadAdapter.includes('failureReceipt?.status !== "team_exception_recorded"') &&
+      uploadAdapter.includes('session.status === "registered"') &&
+      uploadAdapter.includes("finalizeRegisteredMomoClientMedia") &&
+      clientPortal.includes("Keep this file selected and choose Confirm and upload again") &&
+      clientPortal.includes("outcome.assetId === null") &&
+      clientPortal.includes('outcome.failureReceipt?.status !== "team_exception_recorded"') &&
+      uploadTests.includes("pre-registration finalization without a durable receipt requires a truthful retry") &&
+      uploadTests.includes("an unconfirmed exception receipt remains retryable instead of claiming recovery") &&
+      uploadTests.includes("a registered session replay keeps its durable IDs when finalization needs attention"),
+    "pre-registration retry preservation or registered-session recovery contract drifted",
+  );
   const offeringAttestation =
     "Authenticated restaurant uploader attested that this image depicts a current restaurant offering.";
   must(
