@@ -363,7 +363,14 @@ test("an already registered replay skips object creation and reuses the same IDs
 
 test("an initiated replay can commit an already-present reserved object", async () => {
   const { calls, dependencies } = harness({
-    upload: async () => ({ error: new Error("object already exists") }),
+    upload: async () => ({
+      error: {
+        name: "StorageApiError",
+        status: 409,
+        statusCode: "ResourceAlreadyExists",
+        message: "The specified resource already exists",
+      },
+    }),
   });
   const result = await uploadMomoClientMediaWithDependencies({
     restaurantId: RESTAURANT_ID,
@@ -376,6 +383,93 @@ test("an initiated replay can commit an already-present reserved object", async 
   assert.equal(result.assetId, ASSET_ID);
   assert.equal(calls.upload.length, 1);
   assert.equal(calls.rpc.length, 1);
+  assert.equal(calls.finalize.length, 1,
+    "the server must reconcile an explicit conflict by verifying exact bytes");
+});
+
+test("a legacy 400 response with Storage statusCode 409 is an explicit object conflict", async () => {
+  const { calls, dependencies } = harness({
+    upload: async () => ({
+      error: {
+        name: "StorageApiError",
+        status: 400,
+        statusCode: "409",
+        message: "The resource already exists",
+      },
+    }),
+  });
+  const result = await uploadMomoClientMediaWithDependencies({
+    restaurantId: RESTAURANT_ID,
+    file: image(),
+    usageScope: ["instagram"],
+    restaurantAssociation: "not_for_restaurant",
+    rightsAttested: true,
+  }, dependencies);
+  assert.equal(result.status, "verified");
+  assert.equal(calls.finalize.length, 1);
+});
+
+test("non-conflict Storage failures stop before server registration and finalization", async (t) => {
+  const failures = [
+    {
+      label: "access denied",
+      error: {
+        name: "StorageApiError",
+        status: 403,
+        statusCode: "AccessDenied",
+        message: "Access denied",
+      },
+    },
+    {
+      label: "entity too large",
+      error: {
+        name: "StorageApiError",
+        status: 413,
+        statusCode: "EntityTooLarge",
+        message: "The entity is too large",
+      },
+    },
+    {
+      label: "service failure",
+      error: {
+        name: "StorageApiError",
+        status: 500,
+        statusCode: "InternalError",
+        message: "Internal error",
+      },
+    },
+    {
+      label: "unknown network outcome",
+      error: {
+        name: "StorageUnknownError",
+        message: "fetch failed",
+        originalError: new TypeError("fetch failed"),
+      },
+    },
+  ];
+  for (const failure of failures) {
+    await t.test(failure.label, async () => {
+      const { calls, dependencies } = harness({
+        upload: async () => ({ error: failure.error }),
+      });
+      await assert.rejects(() => uploadMomoClientMediaWithDependencies({
+        restaurantId: RESTAURANT_ID,
+        file: image(),
+        usageScope: ["instagram"],
+        restaurantAssociation: "not_for_restaurant",
+        rightsAttested: true,
+      }, dependencies), /media_upload_failed/u);
+      assert.equal(calls.rpc.length, 1,
+        "the replay-safe session may be reserved before Storage responds");
+      assert.equal(calls.upload.length, 1);
+      assert.equal(calls.finalize.length, 0,
+        "unproven object durability must block server finalization");
+      assert.equal(calls.assess.length, 0);
+      assert.equal(calls.association.length, 0);
+      assert.equal(calls.remove.length, 0,
+        "the browser must not delete a path whose write outcome is unknown");
+    });
+  }
 });
 
 test("upload-session responses fail closed when the expected SHA is confused", async () => {

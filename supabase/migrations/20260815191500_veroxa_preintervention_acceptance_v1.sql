@@ -913,52 +913,65 @@ alter table veroxa_private.media_upload_sessions_v1 force row level security;
 revoke all on table veroxa_private.media_upload_sessions_v1
   from public, anon, authenticated, service_role;
 
--- An authenticated owner may delete only a true orphan. A live reservation
--- is already registered for cleanup purposes so DELETE cannot race the
--- server-authoritative object check and durable registration transaction.
+-- An authenticated owner may delete only a true orphan. Lock the matching
+-- upload session before deciding so cleanup and the server-authoritative
+-- commit use the same session -> Storage object lock order. This lets an
+-- initiated path become deletable at its deadline without allowing DELETE to
+-- overtake a commit that is durably registering the object.
 create or replace function public.veroxa_media_storage_path_registered(
   target_storage_path text
 )
 returns boolean
-language sql
-stable
+language plpgsql
+volatile
 security definer
 set search_path = ''
 as $$
-  select case
-    when public.veroxa_restaurant_id_from_storage_path(target_storage_path)
-      is null then false
-    when not (
-      public.veroxa_current_user_has_active_restaurant(
-        public.veroxa_restaurant_id_from_storage_path(target_storage_path)
-      )
-      or public.veroxa_current_user_is_team_for_restaurant(
-        public.veroxa_restaurant_id_from_storage_path(target_storage_path)
-      )
-    ) then false
-    else exists (
-      select 1
-      from public.veroxa_media_assets asset
-      where asset.storage_path = target_storage_path
+declare
+  target_restaurant_id uuid :=
+    public.veroxa_restaurant_id_from_storage_path(target_storage_path);
+  upload_session_state text;
+  upload_session_expires_at timestamptz;
+begin
+  if target_restaurant_id is null or not (
+    public.veroxa_current_user_has_active_restaurant(target_restaurant_id)
+    or public.veroxa_current_user_is_team_for_restaurant(
+      target_restaurant_id
     )
-      or exists (
-        select 1
-        from public.veroxa_media_renditions rendition
-        where rendition.storage_path = target_storage_path
-      )
-      or exists (
-        select 1
-        from public.veroxa_momo_media_ai_candidates candidate
-        where candidate.storage_path = target_storage_path
-          and candidate.status in ('pending_review','approved')
-      )
-      or exists (
-        select 1
-        from veroxa_private.media_upload_sessions_v1 upload_session
-        where upload_session.storage_path = target_storage_path
-          and upload_session.state in ('initiated','registered')
-      )
-  end;
+  ) then
+    return false;
+  end if;
+
+  if exists (
+    select 1
+    from public.veroxa_media_assets asset
+    where asset.storage_path = target_storage_path
+  ) or exists (
+    select 1
+    from public.veroxa_media_renditions rendition
+    where rendition.storage_path = target_storage_path
+  ) or exists (
+    select 1
+    from public.veroxa_momo_media_ai_candidates candidate
+    where candidate.storage_path = target_storage_path
+      and candidate.status in ('pending_review','approved')
+  ) then
+    return true;
+  end if;
+
+  select upload_session.state, upload_session.initiation_expires_at
+  into upload_session_state, upload_session_expires_at
+  from veroxa_private.media_upload_sessions_v1 upload_session
+  where upload_session.storage_path = target_storage_path
+  for update;
+
+  if not found then
+    return false;
+  end if;
+  return upload_session_state = 'registered'
+    or (upload_session_state = 'initiated'
+      and upload_session_expires_at > pg_catalog.clock_timestamp());
+end;
 $$;
 revoke all on function public.veroxa_media_storage_path_registered(text)
   from public, anon, authenticated, service_role;

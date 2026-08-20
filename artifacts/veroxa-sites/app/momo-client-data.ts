@@ -1122,6 +1122,24 @@ function uploadAttention(
   };
 }
 
+function isMomoReservedStorageObjectConflict(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+  const candidate = error as {
+    status?: unknown;
+    statusCode?: unknown;
+  };
+  const statusCode = String(candidate.statusCode ?? "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]/gu, "");
+  return Number(candidate.status) === 409 || [
+    "409",
+    "assetalreadyexists",
+    "duplicate",
+    "keyalreadyexists",
+    "resourcealreadyexists",
+  ].includes(statusCode);
+}
+
 async function finalizeRegisteredMomoClientMedia(
   input: { restaurantId: string; assetId: string; storagePath: string },
   finalize: typeof finalizeMomoMediaUpload,
@@ -1275,9 +1293,14 @@ export async function uploadMomoClientMediaWithDependencies(input: {
           contentType: input.file.type,
           upsert: false,
         });
-      // The authenticated browser can only create the reserved private object.
-      // An object-exists response is reconciled by the server-side byte verifier.
-      void uploaded.error;
+      // Only an explicit object conflict is safe to reconcile: the signed
+      // server bridge will download that reserved path and verify exact bytes.
+      // Every other Storage error leaves durability unproven and must stop
+      // before registration or finalization can claim that an original exists.
+      if (uploaded.error &&
+        !isMomoReservedStorageObjectConflict(uploaded.error)) {
+        throw new Error("media_upload_failed");
+      }
     }
     finalized = await finalizeMomoClientMediaSession({
       restaurantId: input.restaurantId.toLowerCase(),

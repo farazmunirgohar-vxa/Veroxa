@@ -2,7 +2,7 @@
 -- isolated Veroxa pre-intervention acceptance path.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(57);
+select plan(61);
 
 insert into public.veroxa_restaurants (
   id, name, city, state, timezone, status
@@ -467,6 +467,96 @@ select is(
   0,
   'orphan cleanup cannot delete an object protected by a live session'
 );
+select ok(
+  (
+    select function_record.provolatile = 'v'
+      and pg_catalog.lower(
+        pg_catalog.pg_get_functiondef(function_record.oid)
+      ) like '%for update%'
+    from pg_catalog.pg_proc function_record
+    where function_record.oid =
+      'public.veroxa_media_storage_path_registered(text)'::pg_catalog.regprocedure
+  ),
+  'orphan cleanup locks the upload session before its expiry decision'
+);
+
+-- A timed-out initiated session must stop protecting its orphan immediately;
+-- it must not depend on a later begin call to sweep the session first.
+create temporary table acceptance_expired_orphan_begin_v1 on commit drop as
+select * from public.veroxa_begin_media_upload_v1(
+  '21000000-0000-4000-8000-000000000191'::uuid,
+  '48000000-0000-4000-8000-000000000191'::uuid,
+  repeat('f', 64), 'image/jpeg', 12000, 'expired-orphan.jpg',
+  '{"schemaVersion":"veroxa-media-owner-attestation-v1","ownerRightsAccepted":true,"currentOfferingAccepted":false}'::jsonb,
+  '["internal"]'::jsonb, null, 'not_for_restaurant',
+  'An expired initiated fixture for immediate orphan cleanup.'
+);
+grant select on acceptance_expired_orphan_begin_v1 to authenticated;
+insert into storage.objects (
+  bucket_id, name, owner, owner_id, version, metadata
+)
+select 'restaurant-media', begin_row.storage_path,
+  '11000000-0000-4000-8000-000000000191'::uuid,
+  '11000000-0000-4000-8000-000000000191',
+  'acceptance-expired-orphan-v1',
+  '{"mimetype":"image/jpeg","size":12000}'::jsonb
+from acceptance_expired_orphan_begin_v1 begin_row;
+alter table veroxa_private.media_upload_sessions_v1
+  disable trigger veroxa_media_upload_session_guard_v1;
+update veroxa_private.media_upload_sessions_v1 session
+set created_at = pg_catalog.statement_timestamp() - interval '20 minutes',
+    initiation_expires_at =
+      pg_catalog.statement_timestamp() - interval '5 minutes',
+    updated_at = pg_catalog.statement_timestamp() - interval '20 minutes'
+where session.id = (
+  select upload_session_id from acceptance_expired_orphan_begin_v1
+);
+alter table veroxa_private.media_upload_sessions_v1
+  enable trigger veroxa_media_upload_session_guard_v1;
+
+create temporary table acceptance_expired_delete_probe_v1 (
+  deleted_count integer not null
+) on commit drop;
+grant insert, select on acceptance_expired_delete_probe_v1 to authenticated;
+set local role authenticated;
+select set_config('storage.allow_delete_query', 'true', true);
+with deleted as (
+  delete from storage.objects object_record
+  where object_record.bucket_id = 'restaurant-media'
+    and object_record.name = (
+      select storage_path from acceptance_expired_orphan_begin_v1
+    )
+  returning 1
+)
+insert into acceptance_expired_delete_probe_v1 (deleted_count)
+select pg_catalog.count(*)::integer from deleted;
+reset role;
+select is(
+  (select deleted_count from acceptance_expired_delete_probe_v1),
+  1,
+  'a timed-out initiated path is deletable without a later begin sweep'
+);
+select ok(
+  not exists (
+    select 1
+    from storage.objects object_record
+    where object_record.bucket_id = 'restaurant-media'
+      and object_record.name = (
+        select storage_path from acceptance_expired_orphan_begin_v1
+      )
+  ) and (
+    select session.state = 'initiated'
+      and session.initiation_expires_at <= pg_catalog.clock_timestamp()
+      and (select pg_catalog.count(*)
+        from veroxa_private.media_upload_session_aliases_v1 alias_record
+        where alias_record.upload_session_id = session.id) = 1
+    from veroxa_private.media_upload_sessions_v1 session
+    where session.id = (
+      select upload_session_id from acceptance_expired_orphan_begin_v1
+    )
+  ),
+  'orphan cleanup preserves the timed-out session and alias evidence'
+);
 
 create temporary table acceptance_storage_object_v1 on commit drop as
 select object_record.id, object_record.version
@@ -618,6 +708,37 @@ select throws_ok(
   'registered replay is bound to the canonical committed object version'
 );
 reset role;
+create temporary table acceptance_registered_delete_probe_v1 (
+  deleted_count integer not null
+) on commit drop;
+grant insert, select on acceptance_registered_delete_probe_v1
+  to authenticated;
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"11000000-0000-4000-8000-000000000191","role":"authenticated"}',
+  true
+);
+select set_config(
+  'request.jwt.claim.sub',
+  '11000000-0000-4000-8000-000000000191', true
+);
+select set_config('request.jwt.claim.role', 'authenticated', true);
+set local role authenticated;
+select set_config('storage.allow_delete_query', 'true', true);
+with deleted as (
+  delete from storage.objects object_record
+  where object_record.bucket_id = 'restaurant-media'
+    and object_record.name = (select storage_path from acceptance_commit_v1)
+  returning 1
+)
+insert into acceptance_registered_delete_probe_v1 (deleted_count)
+select pg_catalog.count(*)::integer from deleted;
+reset role;
+select is(
+  (select deleted_count from acceptance_registered_delete_probe_v1),
+  0,
+  'immutable registered evidence keeps its Storage object protected'
+);
 select throws_ok(
   $$update public.veroxa_media_assets asset
     set restaurant_id = '22000000-0000-4000-8000-000000000191'::uuid

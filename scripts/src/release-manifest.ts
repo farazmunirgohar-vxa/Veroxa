@@ -1867,7 +1867,7 @@ function assertActivePreinterventionAcceptanceCandidate(
       pgTapEvidence?.filename === PREINTERVENTION_ACCEPTANCE_PGTAP &&
       pgTapEvidence.sha256 === sha256File(rootPgTapPath) &&
       pgTapEvidence.byteLength === statSync(rootPgTapPath).size &&
-      pgTapEvidence.plannedAssertions === 57 &&
+      pgTapEvidence.plannedAssertions === 61 &&
       pgTapEvidence.mirrored === true &&
       pgTapEvidence.hostedExecutionPassed === false,
     "pre-intervention pgTAP identity, mirror, or unproven hosted-execution boundary drifted",
@@ -1883,6 +1883,8 @@ function assertActivePreinterventionAcceptanceCandidate(
       migration.includes("media_upload_sessions_live_sha_v1") &&
       migration.includes("initiation_expires_at timestamptz not null") &&
       migration.includes("message = 'media_upload_session_expired'") &&
+      migration.includes("upload_session_expires_at > pg_catalog.clock_timestamp()") &&
+      migration.includes("upload session before deciding so cleanup") &&
       migration.includes("message = 'media_upload_alias_limit_reached'") &&
       migration.includes("message = 'media_upload_session_rate_or_active_limit_reached'") &&
       migration.includes("unique (singleton_slot)") &&
@@ -1904,6 +1906,9 @@ function assertActivePreinterventionAcceptanceCandidate(
       pgTap.includes("authenticated Clients can only begin; service_role alone can commit v2") &&
       pgTap.includes("mismatch creates no durable row or committed session evidence") &&
       pgTap.includes("an expired idempotency alias cannot be replayed or rebound") &&
+      pgTap.includes("orphan cleanup locks the upload session before its expiry decision") &&
+      pgTap.includes("a timed-out initiated path is deletable without a later begin sweep") &&
+      pgTap.includes("immutable registered evidence keeps its Storage object protected") &&
       pgTap.includes("a ninth actor/session alias fails closed") &&
       pgTap.includes("a second restaurant Client reuses the canonical restaurant/SHA session") &&
       uploadAdapter.includes('"veroxa_begin_media_upload_v1"') &&
@@ -1918,7 +1923,10 @@ function assertActivePreinterventionAcceptanceCandidate(
       migration.includes("grant execute on function public.veroxa_commit_media_upload_v2(") &&
       migration.includes(") to service_role;") &&
       uploadTests.includes("an already registered replay skips object creation and reuses the same IDs") &&
-      uploadTests.includes("an initiated replay can commit an already-present reserved object"),
+      uploadTests.includes("an initiated replay can commit an already-present reserved object") &&
+      uploadAdapter.includes("isMomoReservedStorageObjectConflict") &&
+      uploadTests.includes("non-conflict Storage failures stop before server registration and finalization") &&
+      uploadTests.includes("unproven object durability must block server finalization"),
     "bounded begin/server-commit replay, content uniqueness, immutable alias, or RPC ACL contract drifted",
   );
   const offeringAttestation =

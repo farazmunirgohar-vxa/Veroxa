@@ -1074,6 +1074,57 @@
       "productionEvidence": [],
       "rollbackMethod": "Do not merge until all 57 exact-head assertions and database lint pass.",
       "finalStatus": "pgtap_expected_guard_alignment_pending_exact_head_supabase_verify"
+    },
+    {
+      "findingId": "F-043",
+      "originalConcern": "The initiated Client upload path ignored every Supabase Storage upload error and continued into server finalization, allowing a rejected or absent object to be presented as saved and queued without a durable asset or failure receipt.",
+      "freshVerificationResult": "Only an explicit existing-object conflict now proceeds to server-side exact-byte reconciliation. Access-denied, size-limit, server, and unknown network outcomes throw media_upload_failed before finalization, assessment, association, or saved-state copy can run; no uncertain path is deleted, so an actually completed write remains replay-safe.",
+      "severity": "high",
+      "affectedSystems": [
+        "Client media upload",
+        "Supabase Storage handoff",
+        "durable upload status and retry truth"
+      ],
+      "rootCause": "The replay implementation intentionally reconciled object-exists responses but discarded the Storage error object instead of distinguishing that narrow idempotent conflict from definitive or durability-unknown failures.",
+      "correctiveAction": "Classify only explicit Storage object conflicts as reconcilable and fail closed with media_upload_failed for every other upload error before invoking the server finalizer.",
+      "branch": "agent/veroxa-pre-intervention-proof-20260815",
+      "pullRequest": 193,
+      "commit": null,
+      "migrationOrDeployment": "pending repaired Sites source on PR #193",
+      "tests": [
+        "focused upload tests reconcile explicit ResourceAlreadyExists and legacy 409 responses",
+        "focused upload tests reject 403, 413, 500, and unknown network outcomes before finalization",
+        "full exact-head Sites Verify rerun is pending"
+      ],
+      "productionEvidence": [],
+      "rollbackMethod": "Do not merge if any non-conflict Storage error can reach finalization or clear the selected file as durably saved.",
+      "finalStatus": "local_fail_closed_upload_repair_pending_exact_head_sites_verify"
+    },
+    {
+      "findingId": "F-044",
+      "originalConcern": "A timed-out initiated upload session continued to protect its Storage path indefinitely unless an unrelated later begin call swept the session, so abandoned private objects could not be cleaned up at their recorded deadline.",
+      "freshVerificationResult": "The delete-policy helper now locks the matching session and protects only registered or not-yet-expired initiated paths. A timed-out initiated orphan is immediately deletable without a sweep, while the immutable session and alias evidence remain; session-first locking preserves the same order used by commit and closes the delete/commit race.",
+      "severity": "medium",
+      "affectedSystems": [
+        "Supabase Storage RLS",
+        "upload-session expiry",
+        "orphan cleanup and commit concurrency"
+      ],
+      "rootCause": "The helper treated initiated as a timeless live state and did not evaluate initiation_expires_at; a time-only predicate without locking would have introduced a cleanup/commit race.",
+      "correctiveAction": "Use a volatile security-definer helper that locks the unique session row before deciding whether registered or unexpired-initiated state protects the path, and retain session-to-Storage lock ordering in commit and cleanup.",
+      "branch": "agent/veroxa-pre-intervention-proof-20260815",
+      "pullRequest": 193,
+      "commit": null,
+      "migrationOrDeployment": "pending repaired migration 20260815191500_veroxa_preintervention_acceptance_v1.sql",
+      "tests": [
+        "pgTAP proves the helper is volatile and locks the session before its expiry decision",
+        "pgTAP deletes a timed-out initiated orphan without a later begin sweep and preserves its session and alias evidence",
+        "pgTAP proves both live initiated and registered object paths remain protected",
+        "hosted execution of all 61 assertions is pending"
+      ],
+      "productionEvidence": [],
+      "rollbackMethod": "Do not apply the candidate unless hosted PostgreSQL proves expiry cleanup and registered/live-session protection under the shared lock order.",
+      "finalStatus": "local_orphan_expiry_repair_pending_exact_head_supabase_verify"
     }
   ]
 }

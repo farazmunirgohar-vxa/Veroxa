@@ -91,19 +91,19 @@
     ],
     "migration": {
       "filename": "20260815191500_veroxa_preintervention_acceptance_v1.sql",
-      "sha256": "2c3af8bb96a98f3ed60a5f803f42873936a87879f43b87dc73f0fe991bc6ebd1",
-      "byteLength": 76297,
+      "sha256": "fe047343b1bab6a5da5222ab78acbd2c87fa7cd0713cd317dbf51dc64404950e",
+      "byteLength": 76641,
       "candidateMigrationCount": 60,
-      "candidateMigrationTreeSha256": "142ef68873b0c53085eeeea52a39b9cd6c65b060720ade995d84d8bdccd8b62e",
+      "candidateMigrationTreeSha256": "4c91224d731322539bdea70c3c4e802960b0fa4bc154faef19896a5a23794875",
       "productionBaselineMigrationCount": 59,
       "productionBaselineMigrationTreeSha256": "5c2cb401005a3828117b4a67da82be9557e5f7bdc1fe2fdd60332c9b6b07c61c",
       "applied": false
     },
     "pgTap": {
       "filename": "veroxa_preintervention_acceptance_v1.sql",
-      "sha256": "11c1e8761bd7b6d08d4b41a645b28f85f79bec29bdd7fef976ea7e9b6cebcc96",
-      "byteLength": 45443,
-      "plannedAssertions": 57,
+      "sha256": "f4c67675c1d12fb53911685c47921593072203bb73e0fe9c587c2b95853e7a95",
+      "byteLength": 50214,
+      "plannedAssertions": 61,
       "mirrored": true,
       "hostedExecutionPassed": false
     },
