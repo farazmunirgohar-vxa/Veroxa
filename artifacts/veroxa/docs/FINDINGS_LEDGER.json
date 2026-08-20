@@ -974,6 +974,31 @@
       "productionEvidence": [],
       "rollbackMethod": "Do not merge until the top-level RLS delete probe and all subsequent pgTAP assertions pass in hosted PostgreSQL.",
       "finalStatus": "pgtap_execution_repair_pending_exact_head_supabase_verify"
+    },
+    {
+      "findingId": "F-039",
+      "originalConcern": "The Storage RLS delete probe executed direct SQL without the transaction-local storage.allow_delete_query guard that the Supabase Storage API sets, so storage.protect_delete stopped the statement before RLS could be measured.",
+      "freshVerificationResult": "The authenticated probe now sets the same transaction-local Storage API guard immediately before the top-level DELETE; RLS remains responsible for returning zero protected rows.",
+      "severity": "low",
+      "affectedSystems": [
+        "Supabase Verify",
+        "Supabase Storage test harness",
+        "live upload-session delete protection"
+      ],
+      "rootCause": "The new probe reproduced the authenticated role and JWT claims but omitted the Storage API's documented test guard already used by the repository's preconnection integration suite.",
+      "correctiveAction": "Set storage.allow_delete_query=true transaction-locally while keeping the authenticated role active, then capture and assert the RLS row count.",
+      "branch": "agent/veroxa-pre-intervention-proof-20260815",
+      "pullRequest": 193,
+      "commit": null,
+      "migrationOrDeployment": "pending exact-head Supabase Verify rerun",
+      "tests": [
+        "existing momo_preconnection_integration.sql demonstrates the same Storage API guard contract",
+        "root/Sites pgTAP mirrors retain 57 planned assertions",
+        "full hosted database rerun is pending"
+      ],
+      "productionEvidence": [],
+      "rollbackMethod": "Do not merge until the Storage-API-equivalent RLS probe and all remaining hosted assertions pass.",
+      "finalStatus": "storage_test_guard_repair_pending_exact_head_supabase_verify"
     }
   ]
 }

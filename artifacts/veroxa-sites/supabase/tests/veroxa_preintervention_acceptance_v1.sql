@@ -450,6 +450,7 @@ select lives_ok(
     from acceptance_begin_v1 begin_row$$,
   'the authenticated Client can insert the reserved object path through RLS'
 );
+select set_config('storage.allow_delete_query', 'true', true);
 with deleted as (
   delete from storage.objects object_record
   where object_record.bucket_id = 'restaurant-media'
