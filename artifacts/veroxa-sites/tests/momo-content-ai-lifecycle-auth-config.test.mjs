@@ -27,16 +27,16 @@ test("content lifecycle bypasses only the platform JWT precheck while preserving
   assert.equal(functionVerifyJwt(rootConfig, "momo-media-ai-lifecycle"), "true");
 
   const bearerGate = source.indexOf('authorization.startsWith("Bearer ")');
-  const bridgeSignatureGate = source.indexOf("verifyMomoContentAiBridgeSignature");
+  const bridgeSignatureGate = source.indexOf("verifyMomoContentAiBridgeSignature(");
   const userGate = source.indexOf("userClient.auth.getUser(accessToken)");
   const adminClient = source.indexOf("const admin = createClient");
 
   assert.ok(bearerGate >= 0, "handler must require a bearer user session");
-  assert.ok(bridgeSignatureGate >= 0, "handler must verify the dedicated Ed25519 bridge signature");
+  assert.ok(bridgeSignatureGate >= 0, "handler must invoke the dedicated Ed25519 bridge signature verifier");
   assert.ok(userGate >= 0, "handler must validate the access token through Supabase Auth");
   assert.ok(adminClient >= 0, "handler must retain an explicit privileged client boundary");
   assert.ok(bearerGate < adminClient, "bearer gate must run before privileged access");
-  assert.ok(bridgeSignatureGate < adminClient, "bridge signature gate must run before privileged access");
+  assert.ok(bridgeSignatureGate < adminClient, "bridge signature invocation must run before privileged access");
   assert.ok(userGate < adminClient, "Supabase Auth validation must run before privileged access");
   assert.match(source, /if \(!verified\) return response\(\{ error: "bridge_access_required" \}, 403\)/u);
   assert.match(source, /if \(userError \|\| !userData\.user/u);
