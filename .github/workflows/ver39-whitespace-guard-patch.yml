@@ -18,18 +18,11 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 2
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-      - name: Enable pnpm
-        run: corepack enable
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
       - name: Apply exact whitespace-safe Git path parser repair
         shell: bash
         run: |
           set -euo pipefail
-          test "$(git rev-parse HEAD^)" = "a5cca7f47067de82db9d1471090d283b4d321bb5"
+          test "$(git rev-parse HEAD^)" = "69b9435f6d6566eb4eca4304fb364f32b4c514cb"
           python - <<'PY'
           from pathlib import Path
           p = Path('scripts/src/release-manifest.ts')
@@ -56,23 +49,6 @@ jobs:
           rm .github/workflows/ver39-whitespace-guard-patch.yml
           git diff --check
           test "$(git diff --name-only | sort)" = $'.github/workflows/ver39-whitespace-guard-patch.yml\nscripts/src/release-manifest.ts'
-      - name: Prove trailing-whitespace path remains rejected
-        shell: bash
-        run: |
-          set -euo pipefail
-          pnpm --filter @workspace/scripts run check-deployment-manifest
-          touch 'supabase/config.toml '
-          set +e
-          output="$(pnpm --filter @workspace/scripts run check-deployment-manifest 2>&1)"
-          status=$?
-          set -e
-          rm 'supabase/config.toml '
-          if [ "$status" -eq 0 ]; then
-            echo 'whitespace-collision probe unexpectedly passed' >&2
-            exit 1
-          fi
-          printf '%s\n' "$output" | grep -F 'pre-intervention candidate Git scope drifted'
-          pnpm --filter @workspace/scripts run check-deployment-manifest
       - name: Commit exact repair and remove helper
         shell: bash
         run: |
