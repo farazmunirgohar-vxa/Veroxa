@@ -1049,6 +1049,31 @@
       "productionEvidence": [],
       "rollbackMethod": "Do not merge until the expected-SHA mismatch and all remaining hosted assertions pass.",
       "finalStatus": "pgtap_lateral_query_repair_pending_exact_head_supabase_verify"
+    },
+    {
+      "findingId": "F-042",
+      "originalConcern": "The cross-tenant media-asset reassignment assertion expected the shared operational-scope trigger message, but the earlier table-specific immutable-restaurant guard correctly rejects the same update first.",
+      "freshVerificationResult": "The assertion now expects the canonical veroxa_media_assets.restaurant_id_is_immutable error while retaining SQLSTATE 23514 and the same forbidden tenant-reassignment update.",
+      "severity": "low",
+      "affectedSystems": [
+        "Supabase Verify",
+        "media asset tenant-isolation regression test",
+        "restaurant-scope immutability evidence"
+      ],
+      "rootCause": "The test encoded trigger execution order instead of the stable table-specific immutability contract already enforced by the migration chain.",
+      "correctiveAction": "Align both byte-identical pgTAP mirrors with the stricter canonical guard; do not change database enforcement.",
+      "branch": "agent/veroxa-pre-intervention-proof-20260815",
+      "pullRequest": 193,
+      "commit": null,
+      "migrationOrDeployment": "pending exact-head Supabase Verify rerun",
+      "tests": [
+        "hosted pgTAP executed all 57 assertions with 56 passing",
+        "the reassignment update was denied with SQLSTATE 23514",
+        "full hosted Supabase Verify rerun is pending"
+      ],
+      "productionEvidence": [],
+      "rollbackMethod": "Do not merge until all 57 exact-head assertions and database lint pass.",
+      "finalStatus": "pgtap_expected_guard_alignment_pending_exact_head_supabase_verify"
     }
   ]
 }

@@ -623,7 +623,7 @@ select throws_ok(
     set restaurant_id = '22000000-0000-4000-8000-000000000191'::uuid
     where asset.id = (select asset_id from acceptance_commit_v1)$$,
   '23514',
-  'operational_restaurant_scope_is_immutable',
+  'veroxa_media_assets.restaurant_id_is_immutable',
   'an operational asset cannot be reassigned across restaurant scope'
 );
 
