@@ -1,52 +1,45 @@
-# Current Milestone — Production Image Inspection to Internal Ready Proof
+# Current Milestone — R3 Pre-Intervention Readiness
 
-Active outcome: prove one private restaurant media cycle without an external
-write:
+Read [`R3_PREINTERVENTION_AUTHORITY_2026-08-20.md`](R3_PREINTERVENTION_AUTHORITY_2026-08-20.md) first. Live verified evidence and the ordered R3 Linear program override earlier release claims.
 
-`upload → byte verification → canonical identity → private assessment → grounded package → Ready → Team decision → non-publishing evidence → client status → report`
+## Active outcome
 
-## Current checkpoint
+Prove the first manual Momo acceptance test is safe only after every R3 gate
+passes on the same current release:
 
-PR #190 merged the Storage-transform redirect repair as
-`921e197ee27d1d2cc673e7c75c79ae1770fa6d33` and Sites version 59 is live from
-private mirror source `02f536710d5493b4670684294210e76bcb05eb9d`. The one
-manually controlled synthetic preflight passed with `bindingAvailable=true`, a
-private transformed JPEG response of 200, and durable completion evidence.
+`authority → live baseline → PR repair → CI/security proof → convergence → synthetic upload → authenticated portals → separate Team decision → final gate`
 
-IMG_4257 then received its one permitted retry using the unchanged source
-object/version. The recovery path read the source, completed trusted image
-inspection, and invoked the private completion RPC. The RPC returned HTTP 400
-because the handler emitted a success verifier version added for diagnostics in
-PR #185, while the immutable intake validator still requires its original
-success-contract version. The receipt is terminal at attempt 4 to prevent an
-automatic fifth retry. No source bytes, provider state, Ready package, or
-external action changed.
+## Current boundary
 
-The only active change is a narrow contract separation on
-`agent/fix-media-verifier-contract-20260815`: successful intake records retain
-the persisted v1 verifier contract, while recovery diagnostic evidence retains
-its v2 version. It does not alter media, rights, Ready, provider, or
-external-action logic.
+- IMG_4257 is terminal, immutable, read-only, non-Ready, and may never be
+  retried, moved, deleted, replaced, re-uploaded, or used as a fixture.
+- `ready_for_team_review` is not approval, scheduling, publication, or an
+  external action.
+- Momo remains the free founding pilot.
+- PR #193 is the current candidate only. PR #187 is deferred and unmerged.
+- Do not claim a saved Sites version or repository candidate is deployed
+  without exact current deployment evidence.
+- Publishing, provider writes, review replies, messaging, website/listing/menu
+  writes, advertising, external scheduling, customer contact, and repository
+  visibility changes remain locked.
 
-## Strict next sequence
+## Required sequence
 
-1. Open and review the scoped verifier-contract PR; require exact-head CI,
-   source review, and no unrelated diff.
-2. Merge only when green; mirror the exact reviewed Sites application tree and
-   deploy it.
-3. Use a clearly labeled synthetic fixture to prove signed delivery, full byte
-   readback, Storage transform inspection, durable intake completion, and
-   fail-closed recovery behavior.
-4. Preserve IMG_4257's truthful terminal exception. Do not retry, replace, or
-   alter it. Use synthetic media for subsequent technical proof of `Ready`.
-5. Complete the private Momo internal cycle before R2, broad portal work, or a
-   naming refactor.
+1. VER-20 — freeze authority and correct stale active documentation.
+2. VER-21 — reconcile exact live GitHub, Sites, Supabase, Linear, and
+   non-secret integration evidence; classify discrepancies.
+3. VER-22 through VER-27 — complete only the dependent repair, CI, security,
+   convergence, synthetic-proof, and portal gates.
+4. VER-28 — issue founder GO only after all gates are simultaneously green on
+   the exact current release.
 
-## Non-negotiable controls
+If any evidence is missing or conflicting, preserve the checkpoint and identify
+the smallest safe repair or approval. No real Momo media processing, production
+migration, deployment, external-provider action, or customer-facing write is
+authorized by this milestone alone.
 
-- IMG_4257 must not be deleted, re-uploaded, replaced, or retried again.
-- `Ready` remains separate from Team approval, schedule-ready, scheduling, and
-  publication.
-- External publishing, scheduling, account connection, outreach, messaging,
-  pricing changes, and repository-visibility changes remain locked.
-- The restaurant has no normal action after a valid upload.
+## Historical record
+
+Earlier sections in CURRENT_STATE.json, deployment manifests, and older
+date-stamped documents remain evidence inputs only until R3-02 revalidates
+their exact claims.
