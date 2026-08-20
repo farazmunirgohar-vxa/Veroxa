@@ -1,12 +1,6 @@
 <!-- GUARDED_INTERNAL_AI_ROLLOUT_AUTHORITY -->
 
-## 2026-08-20 — R3 pre-intervention authority (current)
-
-Read [`R3_PREINTERVENTION_AUTHORITY_2026-08-20.md`](artifacts/veroxa/docs/R3_PREINTERVENTION_AUTHORITY_2026-08-20.md) before taking Veroxa action. It is the controlling written authority while R3-01 through R3-09 are incomplete.
-
-Live verified evidence and the ordered R3 Linear program override every older “current” release claim below. In particular, IMG_4257 is terminal and read-only with zero retries; `ready_for_team_review` is not Approval; Momo remains the free founding pilot; and all external-action locks remain in force. PR #193 is candidate-only and PR #187 is deferred.
-
-## 2026-08-15 — private media-recovery host-inspection diagnostic closeout; Sites v56 and database58 live (historical)
+## 2026-08-15 — private media-recovery host-inspection diagnostic closeout; Sites v56 and database58 live (current authority)
 
 Current reconciliation markers: private media-recovery host-inspection diagnostic closeout; GitHub application source 77dadd67505642353b431db3802d2ec365966869; PR #185; Sites v56; database58 through `20260813175640_durable_media_ingestion_path_regex_repair_v1.sql`; environment revision 22; USD 0 incremental spend.
 
