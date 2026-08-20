@@ -1151,6 +1151,31 @@
       "productionEvidence": [],
       "rollbackMethod": "Do not merge until the authenticated registered-object probe and all remaining pgTAP assertions pass on the exact repaired head.",
       "finalStatus": "pgtap_temp_fixture_permission_repair_pending_exact_head_supabase_verify"
+    },
+    {
+      "findingId": "F-046",
+      "originalConcern": "Two restaurant-wide deduplication assertions counted every historical upload session and alias, so the newly preserved expired-orphan evidence made the hosted test expect one session while correctly observing one registered canonical session plus one expired session.",
+      "freshVerificationResult": "The deduplication assertions now measure their actual invariant: one live registered canonical session for the replayed SHA and exactly three aliases attached to that canonical session. Expired orphan evidence remains immutable and is no longer misclassified as a duplicate live upload.",
+      "severity": "low",
+      "affectedSystems": [
+        "Supabase Verify",
+        "restaurant-wide exact-byte deduplication test",
+        "expired upload evidence coexistence"
+      ],
+      "rootCause": "The original assertions relied on the fixture set containing no unrelated historical sessions and used tenant-wide row counts instead of scoping to live/canonical replay evidence.",
+      "correctiveAction": "Scope the session counts to live or registered rows for the canonical SHA and scope alias cardinality to the committed upload session, while preserving the expired fixture.",
+      "branch": "agent/veroxa-pre-intervention-proof-20260815",
+      "pullRequest": 193,
+      "commit": null,
+      "migrationOrDeployment": "pending exact-head Supabase Verify rerun",
+      "tests": [
+        "hosted run 32340680377 completed all 61 pgTAP assertions and isolated failures 42-43 to stale tenant-wide fixture counts",
+        "the observed [2,1,1,1,4] contained one registered canonical session plus the intentionally preserved expired session and alias",
+        "full hosted database rerun is pending"
+      ],
+      "productionEvidence": [],
+      "rollbackMethod": "Do not merge until hosted pgTAP proves canonical replay uniqueness while expired immutable evidence coexists.",
+      "finalStatus": "pgtap_dedup_scope_alignment_pending_exact_head_supabase_verify"
     }
   ]
 }

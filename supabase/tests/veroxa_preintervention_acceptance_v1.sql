@@ -839,7 +839,8 @@ reset role;
 select is(
   pg_catalog.jsonb_build_array(
     (select pg_catalog.count(*) from veroxa_private.media_upload_sessions_v1
-      where restaurant_id = '21000000-0000-4000-8000-000000000191'::uuid),
+      where restaurant_id = '21000000-0000-4000-8000-000000000191'::uuid
+        and state in ('initiated','registered')),
     (select pg_catalog.count(*) from public.veroxa_media_assets
       where restaurant_id = '21000000-0000-4000-8000-000000000191'::uuid),
     (select pg_catalog.count(*) from public.veroxa_media_rights
@@ -847,7 +848,7 @@ select is(
     (select pg_catalog.count(*) from veroxa_private.momo_media_ingestion_outbox_v1
       where restaurant_id = '21000000-0000-4000-8000-000000000191'::uuid),
     (select pg_catalog.count(*) from veroxa_private.media_upload_session_aliases_v1
-      where restaurant_id = '21000000-0000-4000-8000-000000000191'::uuid)
+      where upload_session_id = (select upload_session_id from acceptance_commit_v1))
   ),
   '[1,1,1,1,3]'::jsonb,
   'restaurant-wide replay leaves one session, object identity, rights row, and receipt with actor aliases'
@@ -858,9 +859,11 @@ select is(
     from veroxa_private.media_upload_sessions_v1 session
     where session.restaurant_id =
       '21000000-0000-4000-8000-000000000191'::uuid
+      and session.original_sha256 = repeat('1', 64)
+      and session.state = 'registered'
   ),
   1,
-  'exact replay leaves one upload session'
+  'exact replay leaves one registered canonical upload session'
 );
 select is(
   (

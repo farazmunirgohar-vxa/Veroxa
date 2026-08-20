@@ -101,8 +101,8 @@
     },
     "pgTap": {
       "filename": "veroxa_preintervention_acceptance_v1.sql",
-      "sha256": "4cd2de09c4c6ace1f12929abcb8bdba077017abfc1823e6b40ef5c88b6cda619",
-      "byteLength": 50269,
+      "sha256": "5ef63b0644a6c6c84d785a973b80e86a7437937e9285db554db59d592b8abe31",
+      "byteLength": 50441,
       "plannedAssertions": 61,
       "mirrored": true,
       "hostedExecutionPassed": false
