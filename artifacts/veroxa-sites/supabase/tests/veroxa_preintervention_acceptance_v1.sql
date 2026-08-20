@@ -858,7 +858,9 @@ select throws_ok(
       veroxa_private.momo_canonical_json_v1(snapshot) canonical
     from verification
   )
-  select * from public.veroxa_finalize_private_media_assessment_intake_v1(
+  select finalized.*
+  from canonical
+  cross join lateral public.veroxa_finalize_private_media_assessment_intake_v1(
     '21000000-0000-4000-8000-000000000191'::uuid,
     canonical.asset_id, canonical.object_id, canonical.object_version,
     'image/jpeg', 12000, 1000, 1000, repeat('2', 64),
@@ -868,7 +870,7 @@ select throws_ok(
     ), 'sha256'), 'hex'),
     repeat('3', 64),
     '11000000-0000-4000-8000-000000000191'::uuid
-  ) from canonical$$,
+  ) finalized$$,
   '23514',
   'media_upload_expected_sha256_mismatch',
   'the full-byte verifier cannot complete against a different expected SHA'

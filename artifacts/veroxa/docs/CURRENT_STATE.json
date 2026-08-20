@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "recordKind": "veroxa_current_state",
   "stateAuthority": "current_deployed_state_and_explicit_forward_candidate",
-  "updatedAt": "2026-08-20T05:49:59Z",
+  "updatedAt": "2026-08-20T05:56:11Z",
   "phase": "preintervention_acceptance_candidate_pending_exact_head_gates_and_live_proof",
   "currentVerdict": "NOT READY — AUTONOMOUS WORK REMAINS",
   "production": {
@@ -91,18 +91,18 @@
     ],
     "migration": {
       "filename": "20260815191500_veroxa_preintervention_acceptance_v1.sql",
-      "sha256": "52f2375950a8a576ed72368b08b300835150806a463f29e3a7761857af5c9e72",
-      "byteLength": 76215,
+      "sha256": "2c3af8bb96a98f3ed60a5f803f42873936a87879f43b87dc73f0fe991bc6ebd1",
+      "byteLength": 76297,
       "candidateMigrationCount": 60,
-      "candidateMigrationTreeSha256": "8ce1353e622a5e1dfb95d44c95dbdb7e31471e917b4c7512a89590ce9d1e20ea",
+      "candidateMigrationTreeSha256": "142ef68873b0c53085eeeea52a39b9cd6c65b060720ade995d84d8bdccd8b62e",
       "productionBaselineMigrationCount": 59,
       "productionBaselineMigrationTreeSha256": "5c2cb401005a3828117b4a67da82be9557e5f7bdc1fe2fdd60332c9b6b07c61c",
       "applied": false
     },
     "pgTap": {
       "filename": "veroxa_preintervention_acceptance_v1.sql",
-      "sha256": "ced77a84731cc76b9dc8baf514dbda80992125e44d2590032a9976c7317621ea",
-      "byteLength": 45400,
+      "sha256": "412e49695b26bf6ce1494399e831c49772eea9920013c093d96dc26071333bd0",
+      "byteLength": 45438,
       "plannedAssertions": 57,
       "mirrored": true,
       "hostedExecutionPassed": false

@@ -428,7 +428,10 @@ begin
        'veroxa_activity_events'
      ]::text[]) then
     if tg_table_name = 'veroxa_activity_events'
-       and new.report_eligible then
+       and coalesce(
+         (pg_catalog.to_jsonb(new) ->> 'report_eligible')::boolean,
+         false
+       ) then
       raise exception using errcode = '23514',
         message = 'internal_acceptance_report_evidence_forbidden';
     end if;

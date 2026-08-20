@@ -999,6 +999,56 @@
       "productionEvidence": [],
       "rollbackMethod": "Do not merge until the Storage-API-equivalent RLS probe and all remaining hosted assertions pass.",
       "finalStatus": "storage_test_guard_repair_pending_exact_head_supabase_verify"
+    },
+    {
+      "findingId": "F-040",
+      "originalConcern": "The shared operational-scope trigger referenced NEW.report_eligible directly even when PostgreSQL invoked it for an allowlisted table such as veroxa_media_assets whose row type has no report_eligible field, blocking the server-authoritative media commit.",
+      "freshVerificationResult": "The trigger now reads report_eligible through a row-type-safe to_jsonb projection; absent keys resolve to false, while true activity-event values still fail closed with internal_acceptance_report_evidence_forbidden.",
+      "severity": "high",
+      "affectedSystems": [
+        "Supabase Verify",
+        "internal acceptance media registration",
+        "operational-scope enforcement"
+      ],
+      "rootCause": "A polymorphic trigger used a statically bound NEW field that exists on only one of the sixteen allowlisted table row types.",
+      "correctiveAction": "Project NEW to jsonb before reading report_eligible in both byte-identical migration mirrors, preserving the table allowlist and report exclusion.",
+      "branch": "agent/veroxa-pre-intervention-proof-20260815",
+      "pullRequest": 193,
+      "commit": null,
+      "migrationOrDeployment": "pending repaired migration 20260815191500_veroxa_preintervention_acceptance_v1.sql",
+      "tests": [
+        "hosted migration chain applied successfully",
+        "hosted pgTAP reached the first service-authoritative commit and exposed the row-type mismatch",
+        "full hosted Supabase Verify rerun is pending"
+      ],
+      "productionEvidence": [],
+      "rollbackMethod": "Do not merge or apply the candidate migration unless the full hosted database suite proves both media registration and report-evidence rejection.",
+      "finalStatus": "polymorphic_trigger_repair_pending_exact_head_supabase_verify"
+    },
+    {
+      "findingId": "F-041",
+      "originalConcern": "The expected-SHA mismatch pgTAP query placed a table-function FROM clause before a second FROM canonical clause, which is invalid PostgreSQL syntax and would stop the suite before the intended fail-closed assertion.",
+      "freshVerificationResult": "The query now drives from the canonical CTE and invokes the set-returning finalizer through a correlated CROSS JOIN LATERAL, preserving every argument and the expected 23514 assertion.",
+      "severity": "low",
+      "affectedSystems": [
+        "Supabase Verify",
+        "private media verifier regression test",
+        "expected-SHA fail-closed evidence"
+      ],
+      "rootCause": "The source-only review did not parse the correlated set-returning function call in hosted PostgreSQL before the earlier assertion stopped execution.",
+      "correctiveAction": "Use valid CROSS JOIN LATERAL syntax in both byte-identical pgTAP mirrors without changing the 57-assertion plan.",
+      "branch": "agent/veroxa-pre-intervention-proof-20260815",
+      "pullRequest": 193,
+      "commit": null,
+      "migrationOrDeployment": "pending exact-head Supabase Verify rerun",
+      "tests": [
+        "proactive pgTAP tail review identified the invalid double-FROM form before the next hosted iteration",
+        "root/Sites pgTAP mirrors retain 57 planned assertions",
+        "full hosted database rerun is pending"
+      ],
+      "productionEvidence": [],
+      "rollbackMethod": "Do not merge until the expected-SHA mismatch and all remaining hosted assertions pass.",
+      "finalStatus": "pgtap_lateral_query_repair_pending_exact_head_supabase_verify"
     }
   ]
 }
