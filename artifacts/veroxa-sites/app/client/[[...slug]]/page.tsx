@@ -32,6 +32,7 @@ export default async function MomoClientRoute({ params }: { params: Promise<{ sl
   return <MomoClientPortal
     initialPath={requestedPath}
     displayName={access.displayName}
+    restaurantName={access.restaurantName}
     restaurantId={access.restaurantId}
     supabaseConfig={supabaseConfig}
   />;

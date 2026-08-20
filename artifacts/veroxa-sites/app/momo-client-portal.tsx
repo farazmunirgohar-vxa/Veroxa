@@ -18,6 +18,7 @@ import {
   signOutMomoClient,
   submitMomoClientDecision,
   uploadMomoClientMedia,
+  MomoClientMediaUploadRetryError,
   type MomoClientMessage,
   type MomoClientMediaUploadOutcome,
   type MomoClientAttentionReason,
@@ -55,6 +56,8 @@ const clientLabels: Record<ClientView, string> = {
 };
 
 const MOMO_CLIENT_UPLOAD_SCOPE = ["instagram", "facebook", "google_business"] as const;
+const MEDIA_UPLOAD_RETRY_MESSAGE =
+  "Your private file reached storage, but Veroxa could not confirm a durable media record. Keep this file selected and choose Confirm and upload again so the reserved upload can be reconciled safely. Nothing was posted, scheduled, or connected.";
 
 const pathToView = (path: string): ClientView =>
   (Object.entries(clientRoutes).find(([, value]) => value === path)?.[0] as ClientView | undefined) ?? "dashboard";
@@ -68,6 +71,13 @@ const EMPTY_SNAPSHOT: MomoClientSnapshot = {
 };
 
 const label = (value: string) => value.replace(/[._-]+/g, " ").replace(/\b\w/g, (character) => character.toUpperCase());
+const restaurantInitials = (value: string) => value
+  .trim()
+  .split(/\s+/u)
+  .filter(Boolean)
+  .slice(0, 2)
+  .map((part) => part[0]?.toUpperCase())
+  .join("") || "R";
 const clientAttentionMessage: Record<MomoClientAttentionReason, string> = {
   permission_needs_update: "Permission needs to be renewed or confirmed before preparation can continue.",
   image_needs_replacement: "This image needs a clearer replacement before preparation can continue.",
@@ -109,11 +119,13 @@ function Empty({ title, detail }: { title: string; detail: string }) {
 export function MomoClientPortal({
   initialPath,
   displayName,
+  restaurantName,
   restaurantId,
   supabaseConfig,
 }: {
   initialPath: string;
   displayName: string;
+  restaurantName: string;
   restaurantId: string;
   supabaseConfig: MomoClientPublicConfig;
 }) {
@@ -189,8 +201,10 @@ export function MomoClientPortal({
       const outcomeMessage = await action();
       await refresh();
       setToast(outcomeMessage || success);
-    } catch {
-      setToast("That update was not saved. Nothing was changed; please try again.");
+    } catch (error) {
+      setToast(error instanceof MomoClientMediaUploadRetryError
+        ? MEDIA_UPLOAD_RETRY_MESSAGE
+        : "That update was not saved. Nothing was changed; please try again.");
     } finally {
       setBusy(false);
       window.setTimeout(() => setToast(""), 4200);
@@ -201,38 +215,40 @@ export function MomoClientPortal({
   const nav = Object.keys(clientRoutes) as ClientView[];
   const mobilePrimaryNav: ClientView[] = ["dashboard", "requests", "media", "content"];
   const mobileMoreNav: ClientView[] = ["setup", "reports", "services"];
-  return <main className="app-shell" aria-label="Secure Momo client portal">
+  const restaurantEyebrow = restaurantName.toLocaleUpperCase("en-US");
+  const initials = restaurantInitials(restaurantName);
+  return <main className="app-shell" aria-label={`Secure ${restaurantName} client portal`}>
     <aside className="sidebar">
       <a className="brand" href={clientRoutes.dashboard} aria-label="Veroxa home"><Mark>V</Mark><span className="brand-copy"><strong>VEROXA</strong><small>GROWTH SYSTEMS</small></span></a>
       <nav className="main-nav" aria-label="Main navigation"><p className="nav-label">CLIENT PORTAL</p>{nav.map((item) => <a key={item} href={clientRoutes[item]} className={view === item ? "nav-item active" : "nav-item"} aria-current={view === item ? "page" : undefined}><span>{clientLabels[item]}</span></a>)}</nav>
       <div className="sidebar-spacer" />
       <div className="help-card"><strong>Need something?</strong><p>Send Veroxa a private request. Nothing becomes public without your decision.</p><a href={clientRoutes.requests}>Open requests</a></div>
-      <Link className="profile-card" href="/account/security"><span className="avatar">MH</span><span><strong>{displayName}</strong><small>Account security · password</small></span></Link>
+      <Link className="profile-card" href="/account/security"><span className="avatar">{initials}</span><span><strong>{displayName}</strong><small>Account security · password</small></span></Link>
     </aside>
     <section className="workspace">
-      <header className="topbar"><div className="mobile-brand"><Mark>V</Mark><strong>VEROXA</strong></div><div className="breadcrumbs"><span>Client portal</span><b>/</b><strong>{clientLabels[view]}</strong></div><div className="top-actions"><span className="live-pill"><i/> Signed in</span><Link className="top-avatar" href="/account/security" aria-label="Open account security" title="Account security">MH</Link><button type="button" className="client-sign-out" onClick={signOut}>Sign out</button></div></header>
+      <header className="topbar"><div className="mobile-brand"><Mark>V</Mark><strong>VEROXA</strong></div><div className="breadcrumbs"><span>{restaurantName}</span><b>/</b><strong>{clientLabels[view]}</strong></div><div className="top-actions"><span className="live-pill"><i/> Signed in</span><Link className="top-avatar" href="/account/security" aria-label="Open account security" title="Account security">{initials}</Link><button type="button" className="client-sign-out" onClick={signOut}>Sign out</button></div></header>
       <div className="content">
-        {state === "loading" && <div className="view"><Intro eyebrow="MOMO’S HOUSE SAN ANTONIO" title="Loading your workspace…" description="Veroxa is checking your private restaurant records." /></div>}
+        {state === "loading" && <div className="view"><Intro eyebrow={restaurantEyebrow} title="Loading your workspace…" description="Veroxa is checking your private restaurant records." /></div>}
         {state === "error" && <div className="view"><Intro eyebrow="PRIVATE WORKSPACE" title="Workspace temporarily unavailable" description="No data was changed. Try loading the private workspace again." /><button className="primary-button" onClick={() => void refresh()}>Try again</button></div>}
-        {state === "ready" && view === "dashboard" && <Dashboard snapshot={snapshot} />}
+        {state === "ready" && view === "dashboard" && <Dashboard snapshot={snapshot} restaurantName={restaurantName} />}
         {state === "ready" && view === "requests" && <Requests restaurantId={restaurantId} busy={busy} run={run} />}
-        {state === "ready" && view === "setup" && <Setup snapshot={snapshot} restaurantId={restaurantId} busy={busy} run={run} />}
-        {state === "ready" && view === "media" && <Media snapshot={snapshot} restaurantId={restaurantId} busy={busy} run={run} />}
+        {state === "ready" && view === "setup" && <Setup snapshot={snapshot} restaurantName={restaurantName} restaurantId={restaurantId} busy={busy} run={run} />}
+        {state === "ready" && view === "media" && <Media snapshot={snapshot} restaurantName={restaurantName} restaurantId={restaurantId} busy={busy} run={run} />}
         {state === "ready" && view === "content" && <Content snapshot={snapshot} restaurantId={restaurantId} busy={busy} run={run} />}
-        {state === "ready" && view === "reports" && <Reports snapshot={snapshot} />}
+        {state === "ready" && view === "reports" && <Reports snapshot={snapshot} restaurantName={restaurantName} />}
         {state === "ready" && view === "services" && <Services snapshot={snapshot} navigate={navigate} />}
       </div>
       <nav className="mobile-nav client-mobile-nav" aria-label="Mobile navigation">{mobilePrimaryNav.map((item) => <a key={item} href={clientRoutes[item]} className={view === item ? "active" : ""} aria-current={view === item ? "page" : undefined}><span>{clientLabels[item]}</span></a>)}<button type="button" className={mobileMoreOpen || mobileMoreNav.includes(view) ? "active" : ""} aria-expanded={mobileMoreOpen} aria-controls="client-mobile-more" onClick={() => setMobileMoreOpen((open) => !open)}><span>More</span></button></nav>
     </section>
-    {mobileMoreOpen && <div className="client-mobile-more-backdrop" onClick={() => setMobileMoreOpen(false)}><section id="client-mobile-more" className="client-mobile-more" role="dialog" aria-modal="true" aria-label="More client sections" onClick={(event) => event.stopPropagation()}><header><div><p className="eyebrow">MOMO’S HOUSE</p><h2>More</h2></div><button ref={mobileMoreCloseRef} type="button" onClick={() => setMobileMoreOpen(false)} aria-label="Close more menu">Close</button></header>{mobileMoreNav.map((item) => <a key={item} href={clientRoutes[item]} className={view === item ? "active" : ""}><strong>{clientLabels[item]}</strong><span>{item === "setup" ? "Review restaurant details" : item === "reports" ? "Read approved updates" : "Review online presence records"}</span></a>)}<Link href="/account/security"><strong>Account</strong><span>Password and sign-in security</span></Link><button type="button" className="client-more-sign-out" onClick={signOut}>Sign out of Veroxa</button></section></div>}
+    {mobileMoreOpen && <div className="client-mobile-more-backdrop" onClick={() => setMobileMoreOpen(false)}><section id="client-mobile-more" className="client-mobile-more" role="dialog" aria-modal="true" aria-label="More client sections" onClick={(event) => event.stopPropagation()}><header><div><p className="eyebrow">{restaurantEyebrow}</p><h2>More</h2></div><button ref={mobileMoreCloseRef} type="button" onClick={() => setMobileMoreOpen(false)} aria-label="Close more menu">Close</button></header>{mobileMoreNav.map((item) => <a key={item} href={clientRoutes[item]} className={view === item ? "active" : ""}><strong>{clientLabels[item]}</strong><span>{item === "setup" ? "Review restaurant details" : item === "reports" ? "Read approved updates" : "Review online presence records"}</span></a>)}<Link href="/account/security"><strong>Account</strong><span>Password and sign-in security</span></Link><button type="button" className="client-more-sign-out" onClick={signOut}>Sign out of Veroxa</button></section></div>}
     {toast && <div className="toast" role="status" aria-live="polite">{toast}</div>}
   </main>;
 }
 
-function Dashboard({ snapshot }: { snapshot: MomoClientSnapshot }) {
+function Dashboard({ snapshot, restaurantName }: { snapshot: MomoClientSnapshot; restaurantName: string }) {
   const pendingDecisions = snapshot.contentDirections.filter((item) => !["pending", "in_review", "approved"].includes(item.confirmationStatus || "")).length;
   return <div className="view">
-    <Intro eyebrow="MOMO’S HOUSE SAN ANTONIO" title="Momo’s House workspace" description="Review restaurant details, share media, make content decisions, send requests, and read approved updates." />
+    <Intro eyebrow={restaurantName.toLocaleUpperCase("en-US")} title={`${restaurantName} workspace`} description="Review restaurant details, share media, make content decisions, send requests, and read approved updates." />
     <section className="momo-boundary"><strong>Your decisions stay in your control</strong><span>Veroxa keeps work private until the required review and your approval are recorded.</span><em>Private</em></section>
     <section className="momo-metrics"><article><span>Profile details</span><strong>{snapshot.profile.truthFields.length}</strong><small>restaurant facts on file</small></article><article><span>Media</span><strong>{snapshot.media.length}</strong><small>private items shared</small></article><article><span>Content decisions</span><strong>{pendingDecisions}</strong><small>waiting for you</small></article><article><span>Approved updates</span><strong>{snapshot.reports.length}</strong><small>available reports</small></article></section>
     <section className="momo-module-grid client-action-grid"><a href={clientRoutes.requests}><strong>Requests</strong><span>Ask Veroxa for help and keep the conversation together.</span><b>Open requests →</b></a><a href={clientRoutes.setup}><strong>Restaurant setup</strong><span>Review the business details Veroxa has on file.</span><b>Review setup →</b></a><a href={clientRoutes.media}><strong>Media library</strong><span>Share a private JPG food image and follow it to unscheduled Veroxa Ready.</span><b>Open media →</b></a><a href={clientRoutes.content}><strong>Content</strong><span>Review only directions that need your decision; routine preparation continues privately.</span><b>Open content →</b></a><a href={clientRoutes.reports}><strong>Reports</strong><span>Read only approved, evidence-backed updates.</span><b>Open reports →</b></a><a href={clientRoutes.services}><strong>Services</strong><span>See public profile records and what information may be needed later.</span><b>Review records →</b></a></section>
@@ -284,10 +300,10 @@ function Requests({ restaurantId, busy, run }: { restaurantId: string; busy: boo
   </div>;
 }
 
-function Setup({ snapshot, restaurantId, busy, run }: { snapshot: MomoClientSnapshot; restaurantId: string; busy: boolean; run: MomoClientRun }) {
+function Setup({ snapshot, restaurantName, restaurantId, busy, run }: { snapshot: MomoClientSnapshot; restaurantName: string; restaurantId: string; busy: boolean; run: MomoClientRun }) {
   const [notes, setNotes] = useState<Record<string, string>>({});
   const pendingFor = (subjectId: string) => snapshot.decisions.some((item) => item.subjectId === subjectId && ["pending", "in_review"].includes(item.status));
-  return <div className="view"><Intro eyebrow="RESTAURANT SETUP" title="Review Momo’s House details" description="Confirm accurate details, flag an issue, or ask Veroxa for help. Your decision is reviewed before the record changes." />
+  return <div className="view"><Intro eyebrow="RESTAURANT SETUP" title={`Review ${restaurantName} details`} description="Confirm accurate details, flag an issue, or ask Veroxa for help. Your decision is reviewed before the record changes." />
     <section className="momo-panel"><div className="momo-panel-heading"><div><p className="eyebrow">BUSINESS DETAILS</p><h2>Restaurant profile</h2></div><span>{snapshot.profile.truthFields.length}</span></div>{snapshot.profile.truthFields.length === 0 ? <Empty title="No business details are ready." detail="Veroxa will add reviewable details here first." /> : <div className="momo-record-list">{snapshot.profile.truthFields.map((item) => { const pending = pendingFor(item.id); return <article key={item.id}><div><strong>{label(item.fieldKey)}</strong><p>{compactValue(item.value)}</p><small>{label(item.status)}</small></div><Status value={pending ? "pending" : item.status} /><label>Optional note<input value={notes[item.id] || ""} onChange={(event) => setNotes((current) => ({ ...current, [item.id]: event.target.value }))} placeholder="Add context or describe a correction" /></label><div className="momo-decision"><button disabled={busy || pending} onClick={() => void run(() => submitMomoClientDecision({ restaurantId, subjectType: "truth_field", subjectId: item.id, kind: "business_truth", decision: "confirm", proposedValue: item.value, notes: notes[item.id] }), "Your confirmation was submitted for review.")}>Confirm accurate</button><button disabled={busy || pending || (notes[item.id] || "").trim().length < 3} onClick={() => void run(() => submitMomoClientDecision({ restaurantId, subjectType: "truth_field", subjectId: item.id, kind: "business_truth", decision: "needs_help", notes: notes[item.id] }), "Veroxa was asked to help with this detail.")}>Needs attention</button></div></article>; })}</div>}</section>
     <section className="momo-panel"><div className="momo-panel-heading"><div><p className="eyebrow">SETUP CHECKLIST</p><h2>Items for your review</h2></div><span>{snapshot.profile.steps.length}</span></div>{snapshot.profile.steps.map((step) => { const pending = pendingFor(step.id); return <article className="momo-mini" key={step.id}><span><strong>{step.title}</strong><small>{label(step.status)}</small></span><Status value={pending ? "pending" : step.status} /><div className="momo-decision"><button disabled={busy || pending || step.status !== "ready_for_review"} onClick={() => void run(() => submitMomoClientDecision({ restaurantId, subjectType: "onboarding_step", subjectId: step.id, kind: "onboarding", decision: "confirm", proposedValue: { stepKey: step.stepKey } }), "This setup item was submitted as complete.")}>Confirm complete</button><button disabled={busy || pending} onClick={() => void run(() => submitMomoClientDecision({ restaurantId, subjectType: "onboarding_step", subjectId: step.id, kind: "onboarding", decision: "needs_help", notes: `Help requested for ${step.title}.` }), "Veroxa was asked to help with this setup item.")}>Need help</button></div></article>; })}</section>
   </div>;
@@ -312,15 +328,15 @@ function mediaUploadAttentionMessage(
   return `Your original and upload instruction were saved privately. Veroxa is handling a processing exception.${handoff} Nothing was posted or connected.`;
 }
 
-function Media({ snapshot, restaurantId, busy, run }: { snapshot: MomoClientSnapshot; restaurantId: string; busy: boolean; run: MomoClientRun }) {
+function Media({ snapshot, restaurantName, restaurantId, busy, run }: { snapshot: MomoClientSnapshot; restaurantName: string; restaurantId: string; busy: boolean; run: MomoClientRun }) {
   const [file, setFile] = useState<File | null>(null);
   const [uploadKey, setUploadKey] = useState(0);
-  const [rightsConfirmed, setRightsConfirmed] = useState(false);
+  const [uploadAttested, setUploadAttested] = useState(false);
   const [uploadError, setUploadError] = useState("");
   const [revokeReason, setRevokeReason] = useState<Record<string, string>>({});
   const chooseFile = async (next: File | null) => {
     setUploadError("");
-    setRightsConfirmed(false);
+    setUploadAttested(false);
     if (!next) { setFile(null); return; }
     if (!["image/jpeg", "image/png"].includes(next.type)) {
       setFile(null);
@@ -348,19 +364,26 @@ function Media({ snapshot, restaurantId, busy, run }: { snapshot: MomoClientSnap
   };
   const finishUploadOutcome = (outcome: MomoClientMediaUploadOutcome): string => {
     if (outcome.status === "uploaded_but_needs_attention") {
+      if (outcome.assetId === null &&
+        outcome.failureReceipt?.status !== "team_exception_recorded") {
+        throw new MomoClientMediaUploadRetryError(
+          outcome.errorCode,
+          outcome.storagePath,
+        );
+      }
       const message = mediaUploadAttentionMessage(
         outcome.errorCode,
         outcome.failureReceipt,
       );
       setFile(null);
       setUploadKey((value) => value + 1);
-      setRightsConfirmed(false);
+      setUploadAttested(false);
       setUploadError(message);
       return message;
     }
     setFile(null);
     setUploadKey((value) => value + 1);
-    setRightsConfirmed(false);
+    setUploadAttested(false);
     setUploadError("");
     if (!outcome.assessment) {
       return "Your image and upload instruction were saved. Veroxa is handling the remaining private assessment; you do not need to do anything. Nothing was posted or connected.";
@@ -374,15 +397,23 @@ function Media({ snapshot, restaurantId, busy, run }: { snapshot: MomoClientSnap
   };
   const submitUpload = async (): Promise<string> => {
     if (!file) throw new Error("media_file_required");
-    if (!rightsConfirmed) throw new Error("media_rights_attestation_required");
+    if (!uploadAttested) throw new Error("media_rights_attestation_required");
     setUploadError("");
-    return finishUploadOutcome(await uploadMomoClientMedia({
-      restaurantId,
-      file,
-      usageScope: [...MOMO_CLIENT_UPLOAD_SCOPE],
-      restaurantAssociation: "not_for_restaurant",
-      rightsAttested: rightsConfirmed,
-    }));
+    try {
+      return finishUploadOutcome(await uploadMomoClientMedia({
+        restaurantId,
+        file,
+        usageScope: [...MOMO_CLIENT_UPLOAD_SCOPE],
+        restaurantAssociation: "represents_current_restaurant_offering",
+        associationNote: "Authenticated restaurant uploader attested that this image depicts a current restaurant offering.",
+        rightsAttested: uploadAttested,
+      }));
+    } catch (error) {
+      if (error instanceof MomoClientMediaUploadRetryError) {
+        setUploadError(MEDIA_UPLOAD_RETRY_MESSAGE);
+      }
+      throw error;
+    }
   };
   const newest = snapshot.media[0];
   const newestAssessable = Boolean(newest &&
@@ -431,13 +462,13 @@ function Media({ snapshot, restaurantId, busy, run }: { snapshot: MomoClientSnap
       <ol><li className={newestWorkflow.uploaded ? "done" : "current"}><b>1</b><span><strong>Uploaded</strong><small>{newestWorkflow.uploaded ? "Private original saved" : "Choose a file"}</small></span></li><li className={newest?.privateAssessmentStatus === "completed" ? "done" : newestWorkflow.uploaded ? "current" : ""}><b>2</b><span><strong>Assess privately</strong><small>{newest?.privateAssessmentStatus === "completed" ? "Neutral tags ready" : newest?.privateAssessmentStatus === "failed" ? "Assessment stopped safely" : "Visible evidence only"}</small></span></li><li className={!newestSourceMediaDiscarded && newestPrepared ? newestV2Ready ? "done" : "current" : !newestSourceMediaDiscarded && newestVerified ? "current" : ""}><b>3</b><span><strong>Prepare content</strong><small>{newestV2Ready ? "Claims and copy validated" : newestSourceMediaDiscarded ? "Permanently excluded" : "Owner rights + association required"}</small></span></li><li className={newestReady ? "done" : ""}><b>4</b><span><strong>Veroxa Ready</strong><small>{newestReady ? "Evidence complete · unscheduled" : newestSourceMediaDiscarded ? "Future use excluded" : "No schedule or posting"}</small></span></li></ol>
       <em>Private · no posting</em>
     </section>
-    <form id="client-media-upload" className="momo-panel momo-form client-media-upload" onSubmit={(event) => { event.preventDefault(); if (!file || !rightsConfirmed) return; void run(submitUpload, "Your image and upload instruction were saved privately."); }}>
+    <form id="client-media-upload" className="momo-panel momo-form client-media-upload" onSubmit={(event) => { event.preventDefault(); if (!file || !uploadAttested) return; void run(submitUpload, "Your image and upload instruction were saved privately."); }}>
       <div className="momo-panel-heading"><div><p className="eyebrow">STEP 1 · UPLOAD</p><h2>Add a food image</h2><small>JPEG or PNG · portrait or landscape · high-resolution originals supported · 10 KB to 10 MB · original unchanged. WebP, HEIC/HEIF, and video are not supported yet.</small></div></div>
       <label className="client-file-picker">Food image<input key={uploadKey} type="file" accept="image/jpeg,image/png,.jpg,.jpeg,.png" onChange={(event) => void chooseFile(event.target.files?.[0] || null)} /><span>{file ? file.name : "Choose from your phone or computer"}</span></label>
       {uploadError && <p className="momo-warning" role="alert">{uploadError}</p>}
-      <label className="momo-check client-rights-check"><input type="checkbox" checked={rightsConfirmed} onChange={(event) => setRightsConfirmed(event.target.checked)} required /><span>I confirm I own this image or have permission to provide it for Instagram, Facebook, and Google Business content preparation. This attestation applies only to this upload and does not authorize posting or connect any account.</span></label>
-      <p className="momo-form-note">Choose the image, confirm permission, and stop there. Veroxa and Team Faraz handle the private checks, processing, and restaurant association; they will contact you only if a specific restaurant fact is genuinely needed. Nothing is posted or connected from this screen.</p>
-      <button className="primary-button" disabled={busy || !file || !rightsConfirmed}>{busy ? "Saving your upload…" : "Confirm permission and upload"}</button>
+      <label className="momo-check client-rights-check"><input type="checkbox" checked={uploadAttested} onChange={(event) => setUploadAttested(event.target.checked)} required /><span>I confirm I own this image or have permission to provide it, and that it depicts a current offering from {restaurantName}, for Instagram, Facebook, and Google Business content preparation. This attestation applies only to this upload and does not authorize posting or connect any account.</span></label>
+      <p className="momo-form-note">Choose the image, confirm permission and restaurant association, and stop there. Veroxa and Team Faraz handle the private checks and processing; they will contact you only if a specific restaurant fact is genuinely needed. Nothing is posted or connected from this screen.</p>
+      <button className="primary-button" disabled={busy || !file || !uploadAttested}>{busy ? "Saving your upload…" : "Confirm and upload"}</button>
     </form>
     {!snapshot.mediaPipelineReadbackAvailable && snapshot.media.length > 0 && <p className="momo-warning client-readback-warning" role="status">Preparation status is temporarily unavailable. Originals and permissions remain safe; refresh this page to check again.</p>}
     <section className="momo-panel" id="client-media-library"><div className="momo-panel-heading"><div><p className="eyebrow">YOUR MEDIA</p><h2>Private originals and verified history</h2><small>Newest first. Veroxa uses an unchanged original when it already meets the platform-safe envelope; any actual legacy rendition is labeled separately.</small></div><span>{snapshot.media.length}</span></div>{snapshot.media.length === 0 ? <Empty title="No media has been shared." detail="Upload a first image above when it is ready." /> : <div className="momo-card-grid client-media-grid">{snapshot.media.map((item, index) => <ClientMediaCard key={item.id} item={item} eager={index === 0} readbackAvailable={snapshot.mediaReadbackAvailable} restaurantId={restaurantId} busy={busy} revokeReason={revokeReason[item.id] || ""} setRevokeReason={(value) => setRevokeReason((current) => ({ ...current, [item.id]: value }))} run={run} />)}</div>}</section>
@@ -511,7 +542,7 @@ function ClientMediaCard({
     {item.uploadInstruction && <p className="momo-form-note"><strong>Upload instruction saved:</strong> {label(item.uploadInstruction)}{item.uploadInstructionNote ? ` · ${item.uploadInstructionNote}` : ""}</p>}
     {item.sourceMediaDiscarded && <div className="momo-warning"><strong>Discarded from future content and Veroxa Ready.</strong><p>These exact image bytes and every duplicate upload and asset record for this restaurant with the same SHA-256 hash are permanently excluded from future preparation and Ready. The immutable original, private assessment, and audit evidence remain stored.</p><small>Discarded {when(item.sourceMediaDiscardedAt)} · immutable original and audit retained</small></div>}
     {!item.sourceMediaDiscarded && !assessableImage && <p className="momo-warning">This earlier file remains private, but its format cannot enter the current verified assessment workflow. Team Faraz will contact you only if a replacement is genuinely needed.</p>}
-    {assessableImage && item.mimeType !== "image/jpeg" && <p className="momo-form-note">PNG can be fully assessed and tagged privately, but only an eligible unchanged JPEG can proceed to Momo content or Veroxa Ready.</p>}
+    {assessableImage && item.mimeType !== "image/jpeg" && <p className="momo-form-note">PNG can be fully assessed and tagged privately, but only an eligible unchanged JPEG can proceed to restaurant content or Veroxa Ready.</p>}
     {item.privateAssessment && <section className="client-private-assessment" aria-label={`Private visual assessment for ${item.displayFileName}`}><p className="eyebrow">VISIBLE EVIDENCE ONLY</p><strong>{item.privateAssessment.visualSummary}</strong><div className="momo-tag-row">{item.privateAssessment.tags.map((tag) => <span key={tag.slug} title={tag.uncertainty || "Directly visible"}>{tag.label} · {Math.round(tag.confidence * 100)}%</span>)}</div><small>{item.privateAssessment.uncertainties.join(" ")}</small></section>}
     {item.assessmentReusedFromId && <p className="momo-form-note">Identical bytes reused only the private visual assessment. This upload keeps separate permission and restaurant-association records.</p>}
     {item.exactDuplicate && !item.assessmentReusedFromId && <p className="momo-form-note">Veroxa recognized the same bytes. Permission and restaurant association remain separate for this upload.</p>}
@@ -558,8 +589,8 @@ function Content({ snapshot, restaurantId, busy, run }: { snapshot: MomoClientSn
   </div>;
 }
 
-function Reports({ snapshot }: { snapshot: MomoClientSnapshot }) {
-  return <div className="view"><Intro eyebrow="APPROVED REPORTS" title="Evidence-backed updates" description="Only reports reviewed and approved for Momo appear here." /><section className="momo-panel"><div className="momo-panel-heading"><div><p className="eyebrow">REPORT HISTORY</p><h2>Available updates</h2></div><span>{snapshot.reports.length}</span></div>{snapshot.reports.length === 0 ? <Empty title="No approved report is available." detail="Veroxa will show an update here only after its evidence and wording are reviewed." /> : <div className="momo-record-list">{snapshot.reports.map((report) => <article key={report.id}><div><strong>{label(report.reportType)}</strong><p>{compactValue(report.summary)}</p><small>{report.periodStart} – {report.periodEnd} · approved {when(report.approvedAt)}</small></div><Status value={report.status} /></article>)}</div>}</section></div>;
+function Reports({ snapshot, restaurantName }: { snapshot: MomoClientSnapshot; restaurantName: string }) {
+  return <div className="view"><Intro eyebrow="APPROVED REPORTS" title="Evidence-backed updates" description={`Only reports reviewed and approved for ${restaurantName} appear here.`} /><section className="momo-panel"><div className="momo-panel-heading"><div><p className="eyebrow">REPORT HISTORY</p><h2>Available updates</h2></div><span>{snapshot.reports.length}</span></div>{snapshot.reports.length === 0 ? <Empty title="No approved report is available." detail="Veroxa will show an update here only after its evidence and wording are reviewed." /> : <div className="momo-record-list">{snapshot.reports.map((report) => <article key={report.id}><div><strong>{label(report.reportType)}</strong><p>{compactValue(report.summary)}</p><small>{report.periodStart} – {report.periodEnd} · approved {when(report.approvedAt)}</small></div><Status value={report.status} /></article>)}</div>}</section></div>;
 }
 
 function ActionScope({ item }: { item: MomoClientSnapshot["actionConsents"][number] }) {

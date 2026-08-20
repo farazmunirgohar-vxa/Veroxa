@@ -12,6 +12,11 @@ const ATTEMPT_ID = "22222222-2222-4222-8222-222222222222";
 const CORRELATION_ID = "33333333-3333-4333-8333-333333333333";
 const DURABLE_CORRELATION_ID = "44444444-4444-4444-8444-444444444444";
 const CANONICAL_ASSET_ID = "11111111-1111-4111-8111-111111111111";
+const UPLOAD_SESSION_ID = "55555555-5555-4555-8555-555555555555";
+const CLIENT_IDEMPOTENCY_KEY = "66666666-6666-4666-8666-666666666666";
+const RIGHTS_ID = "77777777-7777-4777-8777-777777777777";
+const INSTRUCTION_ID = "88888888-8888-4888-8888-888888888888";
+const RECEIPT_ID = "99999999-9999-4999-8999-999999999999";
 const STORAGE_PATH = `restaurants/${RESTAURANT_ID}/uploads/2026/07/ffffffff-ffff-4fff-8fff-ffffffffffff.jpg`;
 const VERIFIED_RESULT = {
   verificationId: VERIFICATION_ID,
@@ -55,11 +60,26 @@ function request(overrides = {}, headers = {}) {
   });
 }
 
+function sessionRequest(overrides = {}, headers = {}) {
+  return new Request("https://veroxa.example/api/media/finalize", {
+    method: "POST",
+    headers: { "content-type": "application/json", origin: "https://veroxa.example", ...headers },
+    body: JSON.stringify({
+      restaurantId: RESTAURANT_ID,
+      uploadSessionId: UPLOAD_SESSION_ID,
+      clientIdempotencyKey: CLIENT_IDEMPOTENCY_KEY,
+      storagePath: STORAGE_PATH,
+      ...overrides,
+    }),
+  });
+}
+
 function harness(overrides = {}) {
   const source = jpeg();
   const calls = {
     download: [],
     info: [],
+    commit: [],
     finalize: [],
     recordFailure: [],
     recordFailureContext: [],
@@ -71,6 +91,21 @@ function harness(overrides = {}) {
     async info(path) {
       calls.info.push(path);
       return { id: OBJECT_ID, version: "storage-v1", name: path, bucketId: "restaurant-media", size: source.length, contentType: "image/jpeg" };
+    },
+    async commit(input) {
+      calls.commit.push(input);
+      return {
+        upload_session_id: input.uploadSessionId,
+        storage_path: input.storagePath,
+        session_status: "registered",
+        asset_id: ASSET_ID,
+        rights_id: RIGHTS_ID,
+        instruction_id: INSTRUCTION_ID,
+        ingestion_receipt_id: RECEIPT_ID,
+        ingestion_correlation_id: DURABLE_CORRELATION_ID,
+        original_sha256: input.observedSha256,
+        external_write_allowed: false,
+      };
     },
     async finalize(input) { calls.finalize.push(input); return VERIFIED_RESULT; },
     async recordFailure(input, context) {
@@ -107,6 +142,50 @@ test("byte-verifies one scoped JPG and sends immutable evidence to finalization"
   assert.match(evidence.verificationSha256, /^[0-9a-f]{64}$/u);
   assert.match(evidence.idempotencyHash, /^[0-9a-f]{64}$/u);
   assert.deepEqual(JSON.parse(evidence.verificationCanonical), evidence.verificationSnapshot);
+});
+
+test("session upload is registered only after server byte hashing through the signed bridge", async () => {
+  const { calls, handler } = harness();
+  const response = await handler(sessionRequest());
+  const result = await response.json();
+  assert.equal(response.status, 200);
+  assert.equal(calls.commit.length, 1);
+  assert.equal(calls.finalize.length, 1);
+  assert.match(calls.commit[0].observedSha256, /^[0-9a-f]{64}$/u);
+  assert.equal(calls.commit[0].observedSha256, calls.finalize[0].contentSha256);
+  assert.equal(calls.commit[0].storageObjectId, OBJECT_ID);
+  assert.equal(calls.commit[0].storageObjectVersion, "storage-v1");
+  assert.equal(calls.finalize[0].assetId, ASSET_ID);
+  assert.deepEqual(result, {
+    ...VERIFIED_RESULT,
+    uploadSessionId: UPLOAD_SESSION_ID,
+    assetId: ASSET_ID,
+    rightsId: RIGHTS_ID,
+    externalWriteAllowed: false,
+  });
+});
+
+test("session registration fails closed on an invalid bridge receipt", async () => {
+  const { calls, handler } = harness({
+    commit: async (input) => ({
+      upload_session_id: input.uploadSessionId,
+      storage_path: input.storagePath,
+      session_status: "registered",
+      asset_id: ASSET_ID,
+      rights_id: RIGHTS_ID,
+      instruction_id: INSTRUCTION_ID,
+      ingestion_receipt_id: RECEIPT_ID,
+      ingestion_correlation_id: DURABLE_CORRELATION_ID,
+      original_sha256: "0".repeat(64),
+      external_write_allowed: false,
+    }),
+  });
+  const response = await handler(sessionRequest());
+  assert.equal(response.status, 503);
+  assert.equal((await response.json()).error, "media_registration_unavailable");
+  assert.equal(calls.finalize.length, 0);
+  assert.equal(calls.recordFailure.length, 0,
+    "no asset-scoped failure may be invented before registration");
 });
 
 test("accepts a high-resolution original without a total-pixel ceiling", async () => {

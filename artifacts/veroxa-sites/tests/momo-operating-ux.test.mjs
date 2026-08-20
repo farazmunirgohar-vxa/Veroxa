@@ -56,11 +56,11 @@ test("a one-step upload saves the instruction, clears the form, and leaves recov
     /setRights\(false\)/,
     /setScope\(\[\.\.\.MOMO_MEDIA_DEFAULT_SCOPE\]\)/,
     /setExpiresAt\(""\)/,
-    /setRestaurantAssociation\("not_for_restaurant"\)/,
     /setPrivateAssessmentRequested\(false\)/,
     /fileInputRef\.current\.value = ""/,
   ]) assert.match(uploadAction, reset);
   assert.ok(uploadAction.indexOf("await uploadMomoClientMedia") < uploadAction.indexOf("setFile(null)"), "The form must reset only after the upload and immutable instruction are saved");
+  assert.match(uploadAction, /restaurantAssociation: "represents_current_restaurant_offering"[\s\S]*?associationNote: "Authenticated restaurant uploader attested that this image depicts a current restaurant offering\."/);
   assert.match(operating, /Upload once and let Veroxa handle it/);
   assert.match(operating, /role === "team" && !intake[\s\S]{0,500}Retry secure verification/, "Only Team may recover a saved upload's verification");
   assert.doesNotMatch(operating, /role === "client" && !intake[\s\S]{0,500}Retry secure verification/);
@@ -78,7 +78,7 @@ test("background AI preparation is card-local, enqueue-only, and duplicate-call 
   assert.match(preparation, /momoActionErrorMessage\(code\)[\s\S]*?setContentPreparationState\("needs_refresh"\)/, "Enqueue uncertainty must preserve the truthful error contract and require readback");
   assert.match(queuePackage, /setContentPreparationState\("queueing"\)[\s\S]*?await generateMomoContentPackage[\s\S]*?contentPreparationMounted\.current[\s\S]*?await reloadWorkspace\(\)/, "A completed enqueue must not reload a stale workspace after navigation");
 
-  assert.match(operating, /Queueing this exact Momo package[\s\S]{0,360}duplicate paid calls are blocked[\s\S]{0,120}external posting remains off/);
+  assert.match(operating, /Queueing this exact \{restaurantName\} package[\s\S]{0,360}duplicate paid calls are blocked[\s\S]{0,120}external posting remains off/);
   assert.match(operating, /\["reserved", "provider_running", "result_staged"\]\.includes\(run\.status\)/);
   assert.match(operating, /AI content is being prepared/);
   assert.match(operating, /Content preparation is queued/);

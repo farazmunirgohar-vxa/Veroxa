@@ -183,6 +183,9 @@ function harness(options = {}) {
     },
     async complete(input) {
       calls.complete.push(input);
+      if (options.completeExpectedShaMismatch) {
+        throw new Error("media_upload_expected_sha256_mismatch");
+      }
       if (options.completeError) throw new Error("completion unavailable");
       if (options.complete !== undefined) return options.complete;
       return [{
@@ -610,6 +613,25 @@ test("completion outage is durably recorded and exact replay evidence stays idem
     replay.calls.complete[0].verificationSha256,
     replay.calls.complete[1].verificationSha256,
   );
+});
+
+test("an expected original SHA mismatch is stable, terminal, and fail-closed", async () => {
+  const { calls, handler } = harness({ completeExpectedShaMismatch: true });
+  const response = await handler(recoveryRequest());
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), {
+    status: "failed",
+    assetId: ASSET_ID,
+    error: "media_upload_expected_sha256_mismatch",
+    externalWriteAllowed: false,
+  });
+  assert.equal(calls.complete.length, 1);
+  assert.equal(calls.fail.length, 1);
+  assert.equal(
+    calls.fail[0].failureCode,
+    "media_upload_expected_sha256_mismatch",
+  );
+  assert.equal(calls.fail[0].retryable, false);
 });
 
 test("a failed durable failure write never reports recovery or terminal ownership", async () => {

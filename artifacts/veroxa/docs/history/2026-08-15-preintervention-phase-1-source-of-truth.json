@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "recordKind": "veroxa_preintervention_phase_1_source_of_truth",
+  "observedAt": "2026-08-15T18:51:59.215582Z",
+  "repository": {
+    "name": "farazmunirgohar-vxa/Veroxa",
+    "mainCommit": "7cb6173ce76cff840017b2b4ecfa37c31cb07a09",
+    "mainTree": "86afd2ac1a08d8486ea9d1bb30e8fff31478739e",
+    "pullRequest191Head": "aabb1efc72cfcc1ee649572dd033c7806a28dbb0",
+    "pullRequest191Merge": "7cb6173ce76cff840017b2b4ecfa37c31cb07a09",
+    "pullRequest191TreeMatchesMain": true,
+    "workflowRuns": {
+      "supabaseVerify": 31873987150,
+      "veroxaVerify": 31873987157,
+      "sitesVerify": 31873987170,
+      "ci": 31873987160
+    },
+    "allFourExactHeadWorkflowsGreen": true,
+    "unresolvedNonOutdatedP1Threads": 1,
+    "approvedReviews": 0,
+    "mainProtected": false,
+    "pullRequest187DraftAndUnmerged": true
+  },
+  "sites": {
+    "projectId": "appgprj_6a53d07c7c28819182801cf35dfd30de",
+    "lastProvenDeploymentId": "appgdep_6a8016eee874819184f031daa896048c",
+    "lastProvenVersion": 59,
+    "lastProvenRepositoryTree": "6445d25718fee4fc4321b9336302d604ad623fc3",
+    "lastProvenApplicationTree": "602b6c339c285b62667064ba5094f95359002ddd",
+    "savedVersion": 60,
+    "savedVersionApplicationTree": "35a8ea7d8efc4723c65622675c177e77ee575138",
+    "savedVersionLiveDeploymentProven": false,
+    "pullRequest191LiveParityProven": false,
+    "environmentRevision": 22,
+    "customDomainsAndSslActive": true
+  },
+  "supabase": {
+    "projectRef": "mwqkhsvdezeykdpqhqec",
+    "health": "ACTIVE_HEALTHY",
+    "plan": "pro",
+    "region": "us-east-2",
+    "appliedMigrationCount": 59,
+    "latestRepositoryMigration": "20260815090000_media_inspection_preflight_canary_v1.sql",
+    "latestPlatformVersion": "20260815062451",
+    "completedIntakeCount": 0,
+    "canonicalIdentityCount": 0,
+    "privateAssessmentCount": 0,
+    "contentAiRunCount": 0,
+    "readyPackageCount": 0
+  },
+  "img4257": {
+    "assetId": "05ab2303-f7ea-4056-8f75-9cd7e523a4f4",
+    "storageObjectId": "3df8b899-f438-41be-9e21-f15e6e7cb6c7",
+    "storageObjectVersion": "a6a293a9-4364-4867-878c-64bfc662dff9",
+    "attemptCount": 4,
+    "lastOutcome": "media_recovery_completion_unavailable",
+    "outboxState": "dead_letter",
+    "verificationPersisted": false,
+    "ready": false,
+    "authorizedRetriesRemaining": 0,
+    "permittedAccess": "read_only_evidence_reconciliation"
+  },
+  "externalActionCounts": {
+    "publishedPosts": 0,
+    "scheduledExternalPosts": 0,
+    "publishAttempts": 0,
+    "externalMessages": 0,
+    "publishedReviewReplies": 0,
+    "restaurantAccountConnections": 0,
+    "websiteProviderWrites": 0,
+    "orderingProviderWrites": 0,
+    "advertisingProviderWrites": 0
+  },
+  "acceptanceBlockers": [
+    "pull_request_191_has_post_merge_unresolved_p1_thread",
+    "live_sites_tree_does_not_have_proven_pull_request_191_parity",
+    "operational_tenant_contract_is_momo_singleton",
+    "client_upload_instruction_records_not_for_restaurant",
+    "exact_content_replay_creates_a_new_object_and_asset",
+    "authenticated_portal_copy_contains_momo_specific_and_stale_plan_text"
+  ],
+  "externalWriteAllowed": false
+}

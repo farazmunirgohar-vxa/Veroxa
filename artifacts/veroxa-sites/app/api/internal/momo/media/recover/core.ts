@@ -660,7 +660,14 @@ export function createMomoMediaRecoveryHandler(
           verificationSha256,
           idempotencyHash,
         });
-      } catch {
+      } catch (error) {
+        if (error instanceof Error &&
+            error.message === "media_upload_expected_sha256_mismatch") {
+          throw new RecoveryProcessingError(
+            "media_upload_expected_sha256_mismatch",
+            false,
+          );
+        }
         throw new RecoveryProcessingError(
           "media_recovery_completion_unavailable",
           true,

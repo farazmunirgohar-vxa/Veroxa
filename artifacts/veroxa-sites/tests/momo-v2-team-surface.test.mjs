@@ -69,7 +69,7 @@ test("Team media supports assessment-only recognition and owns saved-instruction
   assert.doesNotMatch(teamIntake, /Instagram|Facebook|Google Business Profile|Private preparation scope/);
   assert.match(teamIntake, /outcome\.assessment\.assessment/);
   assert.match(teamIntake, /assessment\.tags\.map/);
-  assert.match(teamIntake, /assessment-only[\s\S]{0,260}cannot claim a current Momo offering[\s\S]{0,160}become Ready/);
+  assert.match(teamIntake, /assessment-only[\s\S]{0,260}cannot claim a current \{restaurantName\} offering[\s\S]{0,160}become Ready/);
   assert.doesNotMatch(teamIntake, /represents_current_restaurant_offering|recordMomoMediaRestaurantAssociation/);
   assert.match(clientData, /export async function uploadMomoTeamPrivateMedia[\s\S]{0,700}usageScope: \[MOMO_TEAM_PRIVATE_MEDIA_SCOPE\][\s\S]{0,400}registrationRpc: "veroxa_register_team_private_media_v1"[\s\S]{0,120}skipAssociation: true/);
   assert.match(teamUpload, /const teamClient = getVeroxaSupabase\(\);[\s\S]*?if \(!teamClient\) throw new Error\("configuration_unavailable"\)/);
@@ -103,6 +103,37 @@ test("Team media supports assessment-only recognition and owns saved-instruction
   assert.match(ready, /selected processing upload[\s\S]{0,300}rights record/);
 });
 
+test("acceptance portal headings resolve the active restaurant instead of exposing Momo-only labels", async () => {
+  const [page, clientPortal, operating, browserAccess, serverAccess] = await Promise.all([
+    readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/momo-client-portal.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/momo-operating-center.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/veroxa-supabase.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/veroxa-supabase-server.ts", import.meta.url), "utf8"),
+  ]);
+
+  for (const accessSource of [browserAccess, serverAccess]) {
+    assert.match(accessSource, /veroxa_restaurants!inner\(name,status\)/);
+    assert.match(accessSource, /restaurantName: restaurant\.name\.trim\(\)/);
+  }
+  assert.match(page, /const restaurantName = access\.status === "authenticated" \? access\.value\.restaurantName/);
+  assert.match(page, /<strong>\{restaurantName\}<\/strong><small>Upload → Veroxa Ready → Team decision/);
+  assert.match(clientPortal, /aria-label=\{`Secure \$\{restaurantName\} client portal`\}/);
+  assert.match(clientPortal, /title=\{`\$\{restaurantName\} workspace`\}/);
+  assert.match(operating, /<MomoIntro eyebrow=\{restaurantName\.toLocaleUpperCase\("en-US"\)\} title="Media"/);
+  assert.match(operating, /<MomoIntro eyebrow=\{restaurantName\.toLocaleUpperCase\("en-US"\)\} title="Content"/);
+  assert.match(operating, /<h2>Validated \{restaurantName\} packages<\/h2>/);
+  assert.match(operating, /const tenantCopy = \(value: string\)[\s\S]*?replaceAll\("Momo", restaurantName\)/, "Static Team summary copy must resolve to the active restaurant before rendering");
+  const operatingAcceptance = [
+    operating.slice(operating.indexOf("function DashboardPanel"), operating.indexOf("const requestErrorMessage")),
+    operating.slice(operating.indexOf("function MediaPanel"), operating.indexOf("type MomoContentPreparationState")),
+    operating.slice(operating.indexOf("function ContentPanel"), operating.indexOf("function PendingContentConfirmationCard")),
+  ].join("\n");
+  for (const source of [page, clientPortal, operatingAcceptance]) {
+    assert.doesNotMatch(source, /eyebrow="MOMO’S HOUSE(?: SAN ANTONIO)?"/, "Acceptance headings must not be hardcoded to Momo");
+  }
+});
+
 test("Client copy presents safe outcomes without internal processing details", async () => {
   const [portal, data] = await Promise.all([
     readFile(new URL("../app/momo-client-portal.tsx", import.meta.url), "utf8"),
@@ -128,7 +159,11 @@ test("Client copy presents safe outcomes without internal processing details", a
   assert.match(data, /client\.rpc\("veroxa_momo_client_upload_status_v4"/);
   assert.doesNotMatch(data, /client\.rpc\("veroxa_momo_client_upload_status_v3"/);
   assert.match(data, /pipelineAttentionReasons: effectiveAttentionReasons/);
-  assert.match(data, /"veroxa_register_momo_media_v3"/);
+  assert.match(data, /"veroxa_begin_media_upload_v1"/);
+  assert.doesNotMatch(data, /"veroxa_commit_media_upload_v1"/);
+  assert.match(data, /finalizeMomoMediaUploadSession/);
+  assert.doesNotMatch(data, /"veroxa_register_momo_media_v1"/);
+  assert.doesNotMatch(data, /"veroxa_register_momo_media_v3"/);
   assert.match(data, /p_requested_association: input\.restaurantAssociation/);
   assert.doesNotMatch(portal, /\bAI\b|\bautomatic(?:ally)?\b|provider_|content_ai_|canonical identity|processing identity|processing source|exact (?:saved )?bytes|storage record|registration identifier|processing upload/iu);
   assert.doesNotMatch(portal, /processingAssetId\.slice|canonicalAssetId\?\.slice/);

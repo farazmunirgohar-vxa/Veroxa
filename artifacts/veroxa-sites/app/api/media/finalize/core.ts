@@ -40,13 +40,32 @@ type ObjectInfo = {
   size: number;
   contentType: string;
 };
-type ParsedInput = { restaurantId: string; assetId: string; storagePath: string };
+type ParsedInput = {
+  restaurantId: string;
+  assetId: string;
+  storagePath: string;
+  uploadSessionId: null;
+  clientIdempotencyKey: null;
+} | {
+  restaurantId: string;
+  assetId: null;
+  storagePath: string;
+  uploadSessionId: string;
+  clientIdempotencyKey: string;
+};
+type RegisteredUploadSession = {
+  uploadSessionId: string;
+  storagePath: string;
+  assetId: string;
+  rightsId: string;
+};
 type FinalizeCallContext = { correlationId: string };
 type IntakeFailureStage =
   | "download"
   | "storage_metadata"
   | "byte_inspection"
   | "trusted_decode"
+  | "commit_bridge"
   | "finalize_bridge";
 type IntakeFailureObservation = {
   failureStage: IntakeFailureStage | null;
@@ -66,6 +85,15 @@ export type MomoMediaFinalizeDependencies = {
   authenticate(): Promise<Actor | null>;
   download(storagePath: string): Promise<Blob>;
   info(storagePath: string): Promise<ObjectInfo>;
+  commit(input: {
+    restaurantId: string;
+    uploadSessionId: string;
+    clientIdempotencyKey: string;
+    storagePath: string;
+    observedSha256: string;
+    storageObjectId: string;
+    storageObjectVersion: string;
+  }, context: FinalizeCallContext): Promise<unknown>;
   finalize(input: {
     restaurantId: string;
     assetId: string;
@@ -137,11 +165,59 @@ async function parse(request: Request): Promise<ParsedInput> {
   try { body = JSON.parse(raw); } catch { throw new PublicError("invalid_request", 400); }
   if (typeof body !== "object" || body === null || Array.isArray(body)) throw new PublicError("invalid_request", 400);
   const value = body as Record<string, unknown>;
-  if (Object.keys(value).sort().join(",") !== "assetId,restaurantId,storagePath" ||
-    !isMomoContentUuid(value.restaurantId) || !isMomoContentUuid(value.assetId) ||
+  const keys = Object.keys(value).sort().join(",");
+  if (!isMomoContentUuid(value.restaurantId) ||
     typeof value.storagePath !== "string" || value.storagePath.length > 500 ||
     !new RegExp(`^restaurants/${value.restaurantId}/uploads/[0-9]{4}/(0[1-9]|1[0-2])/[0-9a-f-]{36}\\.(jpg|jpeg|png)$`, "u").test(value.storagePath)) throw new PublicError("invalid_request", 400);
-  return { restaurantId: value.restaurantId.toLowerCase(), assetId: value.assetId.toLowerCase(), storagePath: value.storagePath };
+  if (keys === "assetId,restaurantId,storagePath" &&
+    isMomoContentUuid(value.assetId)) {
+    return {
+      restaurantId: value.restaurantId.toLowerCase(),
+      assetId: value.assetId.toLowerCase(),
+      storagePath: value.storagePath,
+      uploadSessionId: null,
+      clientIdempotencyKey: null,
+    };
+  }
+  if (keys === "clientIdempotencyKey,restaurantId,storagePath,uploadSessionId" &&
+    isMomoContentUuid(value.uploadSessionId) &&
+    isMomoContentUuid(value.clientIdempotencyKey)) {
+    return {
+      restaurantId: value.restaurantId.toLowerCase(),
+      assetId: null,
+      storagePath: value.storagePath,
+      uploadSessionId: value.uploadSessionId.toLowerCase(),
+      clientIdempotencyKey: value.clientIdempotencyKey.toLowerCase(),
+    };
+  }
+  throw new PublicError("invalid_request", 400);
+}
+
+function registeredUploadSession(
+  value: unknown,
+  input: Extract<ParsedInput, { assetId: null }>,
+  observedSha256: string,
+): RegisteredUploadSession | null {
+  const row = Array.isArray(value) ? value[0] : value;
+  if (typeof row !== "object" || row === null || Array.isArray(row)) return null;
+  const result = row as Record<string, unknown>;
+  return result.upload_session_id === input.uploadSessionId &&
+      result.storage_path === input.storagePath &&
+      result.session_status === "registered" &&
+      isMomoContentUuid(result.asset_id) &&
+      isMomoContentUuid(result.rights_id) &&
+      isMomoContentUuid(result.instruction_id) &&
+      isMomoContentUuid(result.ingestion_receipt_id) &&
+      isMomoContentUuid(result.ingestion_correlation_id) &&
+      result.original_sha256 === observedSha256 &&
+      result.external_write_allowed === false
+    ? {
+      uploadSessionId: input.uploadSessionId,
+      storagePath: input.storagePath,
+      assetId: result.asset_id.toLowerCase(),
+      rightsId: result.rights_id.toLowerCase(),
+    }
+    : null;
 }
 
 function recordedIntakeFailure(
@@ -185,6 +261,7 @@ export function createMomoMediaFinalizeHandler(dependencies: MomoMediaFinalizeDe
       : crypto.randomUUID();
     let actor: Actor | null = null;
     let input: ParsedInput | null = null;
+    let assetId: string | null = null;
     let recordable = false;
     const observed: IntakeFailureObservation = {
       failureStage: null,
@@ -204,7 +281,8 @@ export function createMomoMediaFinalizeHandler(dependencies: MomoMediaFinalizeDe
       if (!actor || !actor.restaurantId || !isMomoContentUuid(actor.restaurantId) || !isMomoContentUuid(actor.userId)) throw new PublicError("momo_access_required", 403);
       input = await parse(request);
       if (actor.restaurantId.toLowerCase() !== input.restaurantId) throw new PublicError("momo_access_required", 403);
-      recordable = true;
+      assetId = input.assetId;
+      recordable = assetId !== null;
       observed.failureStage = "download";
       let blob: Blob;
       let info: ObjectInfo;
@@ -277,11 +355,31 @@ export function createMomoMediaFinalizeHandler(dependencies: MomoMediaFinalizeDe
       observed.failureStage = "byte_inspection";
       const contentSha256 = await momoBytesSha256(bytes);
       observed.contentSha256 = contentSha256;
+      let registration: RegisteredUploadSession | null = null;
+      if (input.assetId === null) {
+        observed.failureStage = "commit_bridge";
+        registration = registeredUploadSession(await dependencies.commit({
+          restaurantId: input.restaurantId,
+          uploadSessionId: input.uploadSessionId,
+          clientIdempotencyKey: input.clientIdempotencyKey,
+          storagePath: input.storagePath,
+          observedSha256: contentSha256,
+          storageObjectId: info.id.toLowerCase(),
+          storageObjectVersion: info.version,
+        }, { correlationId }), input, contentSha256);
+        if (!registration) {
+          throw new PublicError("media_registration_unavailable", 503);
+        }
+        assetId = registration.assetId;
+        recordable = true;
+        observed.failureStage = "finalize_bridge";
+      }
+      if (!assetId) throw new PublicError("media_registration_unavailable", 503);
       const verificationSnapshot = {
         schemaVersion: 3,
         verifierVersion: VERIFIER_VERSION,
         restaurantId: input.restaurantId,
-        assetId: input.assetId,
+        assetId,
         storagePath: input.storagePath,
         storageObjectId: info.id,
         storageObjectVersion: info.version,
@@ -293,11 +391,11 @@ export function createMomoMediaFinalizeHandler(dependencies: MomoMediaFinalizeDe
       };
       const verificationCanonical = momoCanonicalJson(verificationSnapshot);
       const verificationSha256 = await momoBytesSha256(new TextEncoder().encode(verificationCanonical));
-      const idempotencyHash = await momoBytesSha256(new TextEncoder().encode(`${input.restaurantId}:${input.assetId}:${info.id}:${info.version}:${contentSha256}`));
+      const idempotencyHash = await momoBytesSha256(new TextEncoder().encode(`${input.restaurantId}:${assetId}:${info.id}:${info.version}:${contentSha256}`));
       observed.failureStage = "finalize_bridge";
       const finalized = parseMomoMediaFinalizeResult(await dependencies.finalize({
         restaurantId: input.restaurantId,
-        assetId: input.assetId,
+        assetId,
         storagePath: input.storagePath,
         storageObjectId: info.id,
         storageObjectVersion: info.version,
@@ -310,13 +408,21 @@ export function createMomoMediaFinalizeHandler(dependencies: MomoMediaFinalizeDe
         verificationCanonical,
         verificationSha256,
         idempotencyHash,
-      }, { correlationId }), input.assetId);
+      }, { correlationId }), assetId);
       if (!finalized) {
         observed.failureStage = "finalize_bridge";
         throw new PublicError("media_verification_unavailable", 503);
       }
       return noStore(
-        { ...finalized, externalWriteAllowed: false },
+        registration
+          ? {
+            ...finalized,
+            uploadSessionId: registration.uploadSessionId,
+            assetId: registration.assetId,
+            rightsId: registration.rightsId,
+            externalWriteAllowed: false,
+          }
+          : { ...finalized, externalWriteAllowed: false },
         200,
         correlationId,
       );
@@ -325,11 +431,14 @@ export function createMomoMediaFinalizeHandler(dependencies: MomoMediaFinalizeDe
         ? error
         : new PublicError("media_verification_unavailable", 503);
       if (error instanceof MomoContentAiLifecycleBridgeError) {
-        observed.failureStage = "finalize_bridge";
+        observed.failureStage = observed.failureStage === "commit_bridge"
+          ? "commit_bridge"
+          : "finalize_bridge";
       } else if (!observed.failureStage && !(error instanceof PublicError)) {
         observed.failureStage = "finalize_bridge";
       }
-      if (recordable && actor && input && [
+      const failureAssetId = input?.assetId ?? (recordable ? assetId : null);
+      if (recordable && actor && input && failureAssetId && [
         "media_verification_unavailable",
         "media_verification_failed",
         "media_not_platform_ready",
@@ -344,7 +453,7 @@ export function createMomoMediaFinalizeHandler(dependencies: MomoMediaFinalizeDe
           verifierVersion: VERIFIER_VERSION,
           correlationId,
           restaurantId: input.restaurantId,
-          assetId: input.assetId,
+          assetId: failureAssetId,
           storagePath: input.storagePath,
           outcome,
           reasonCodes,
@@ -360,7 +469,7 @@ export function createMomoMediaFinalizeHandler(dependencies: MomoMediaFinalizeDe
           ));
           const recorded = await dependencies.recordFailure({
             restaurantId: input.restaurantId,
-            assetId: input.assetId,
+            assetId: failureAssetId,
             failureStage: observed.failureStage ?? "finalize_bridge",
             errorCode: publicError.code,
             outcome,
@@ -370,7 +479,7 @@ export function createMomoMediaFinalizeHandler(dependencies: MomoMediaFinalizeDe
             evidenceSha256,
             idempotencySha256,
           }, { correlationId });
-          const durableReceipt = recordedIntakeFailure(recorded, input.assetId);
+          const durableReceipt = recordedIntakeFailure(recorded, failureAssetId);
           if (!durableReceipt) {
             return noStore({
               error: "media_verification_unavailable",

@@ -4,8 +4,28 @@ import {
   type MomoMediaFinalizeApiResult,
   type MomoMediaFinalizeFailureReceipt,
 } from "./momo-media-finalize-contract.ts";
+import { isMomoContentUuid } from "./momo-content-ai-contract.ts";
 
 const MAX_RESPONSE_BYTES = 8_192;
+
+export type MomoMediaRegisteredFinalizeInput = {
+  restaurantId: string;
+  assetId: string;
+  storagePath: string;
+};
+
+export type MomoMediaSessionFinalizeInput = {
+  restaurantId: string;
+  uploadSessionId: string;
+  clientIdempotencyKey: string;
+  storagePath: string;
+};
+
+export type MomoMediaSessionFinalizeApiResult = MomoMediaFinalizeApiResult & {
+  uploadSessionId: string;
+  assetId: string;
+  rightsId: string;
+};
 
 export class MomoMediaFinalizeRequestError extends Error {
   readonly code: string;
@@ -36,10 +56,10 @@ function responseErrorCode(value: unknown): string {
     : "media_verification_unavailable";
 }
 
-export async function finalizeMomoMediaUpload(
-  input: { restaurantId: string; assetId: string; storagePath: string },
+async function requestMomoMediaFinalize(
+  input: MomoMediaRegisteredFinalizeInput | MomoMediaSessionFinalizeInput,
   fetchImplementation: typeof fetch = fetch,
-): Promise<MomoMediaFinalizeApiResult> {
+): Promise<MomoMediaFinalizeApiResult | MomoMediaSessionFinalizeApiResult> {
   const correlationId = crypto.randomUUID();
   let response: Response;
   try {
@@ -110,7 +130,59 @@ export async function finalizeMomoMediaUpload(
       responseCorrelationId === correlationId ? correlationId : null,
     );
   }
-  const result = parseMomoMediaFinalizeApiResult(value, input.assetId);
+  let expectedAssetId: string;
+  let apiValue = value;
+  let sessionRegistration: {
+    uploadSessionId: string;
+    assetId: string;
+    rightsId: string;
+  } | null = null;
+  if ("assetId" in input) {
+    expectedAssetId = input.assetId;
+  } else {
+    if (typeof value !== "object" || value === null || Array.isArray(value) ||
+      Object.keys(value).sort().join(",") !== [
+        "assetId", "canonicalAssetId", "duplicateAssetId",
+        "externalWriteAllowed", "rightsId", "status", "uploadSessionId",
+        "verificationId",
+      ].sort().join(",")) {
+      throw new MomoMediaFinalizeRequestError(
+        "media_verification_unavailable",
+        503,
+        null,
+        response.headers.get("x-veroxa-correlation-id") === correlationId
+          ? correlationId
+          : null,
+      );
+    }
+    const registration = value as Record<string, unknown>;
+    if (registration.uploadSessionId !== input.uploadSessionId ||
+      !isMomoContentUuid(registration.assetId) ||
+      !isMomoContentUuid(registration.rightsId)) {
+      throw new MomoMediaFinalizeRequestError(
+        "media_verification_unavailable",
+        503,
+        null,
+        response.headers.get("x-veroxa-correlation-id") === correlationId
+          ? correlationId
+          : null,
+      );
+    }
+    expectedAssetId = registration.assetId;
+    sessionRegistration = {
+      uploadSessionId: registration.uploadSessionId as string,
+      assetId: registration.assetId,
+      rightsId: registration.rightsId,
+    };
+    apiValue = {
+      verificationId: registration.verificationId,
+      status: registration.status,
+      canonicalAssetId: registration.canonicalAssetId,
+      duplicateAssetId: registration.duplicateAssetId,
+      externalWriteAllowed: registration.externalWriteAllowed,
+    };
+  }
+  const result = parseMomoMediaFinalizeApiResult(apiValue, expectedAssetId);
   if (!result) {
     throw new MomoMediaFinalizeRequestError(
       "media_verification_unavailable",
@@ -121,5 +193,21 @@ export async function finalizeMomoMediaUpload(
         : null,
     );
   }
-  return result;
+  return sessionRegistration ? { ...result, ...sessionRegistration } : result;
+}
+
+export async function finalizeMomoMediaUpload(
+  input: MomoMediaRegisteredFinalizeInput,
+  fetchImplementation: typeof fetch = fetch,
+): Promise<MomoMediaFinalizeApiResult> {
+  return requestMomoMediaFinalize(input, fetchImplementation) as
+    Promise<MomoMediaFinalizeApiResult>;
+}
+
+export async function finalizeMomoMediaUploadSession(
+  input: MomoMediaSessionFinalizeInput,
+  fetchImplementation: typeof fetch = fetch,
+): Promise<MomoMediaSessionFinalizeApiResult> {
+  return requestMomoMediaFinalize(input, fetchImplementation) as
+    Promise<MomoMediaSessionFinalizeApiResult>;
 }

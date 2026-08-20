@@ -12,5 +12,5 @@ export default async function AccountSecurityRoute() {
   if (!access) redirect("/login?return_to=%2Faccount%2Fsecurity");
   const supabaseConfig = getServerSupabasePublicConfig();
   if (!supabaseConfig) redirect("/login");
-  return <AccountSecurity displayName={access.displayName} role={access.role} supabaseConfig={supabaseConfig} />;
+  return <AccountSecurity displayName={access.displayName} restaurantName={access.restaurantName} role={access.role} supabaseConfig={supabaseConfig} />;
 }

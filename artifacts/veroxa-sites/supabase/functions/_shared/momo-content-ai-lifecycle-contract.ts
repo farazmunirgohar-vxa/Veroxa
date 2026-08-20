@@ -8,6 +8,16 @@ const CONTEXT = "veroxa:momo-content-ai-lifecycle:v1\nPOST\n/functions/v1/momo-c
 export type JsonObject = Record<string, unknown>;
 export type MomoContentAiLifecycleRequest =
   | {
+    operation: "commit_upload";
+    restaurantId: string;
+    uploadSessionId: string;
+    clientIdempotencyKey: string;
+    storagePath: string;
+    observedSha256: string;
+    storageObjectId: string;
+    storageObjectVersion: string;
+  }
+  | {
     operation: "finalize_upload";
     restaurantId: string;
     assetId: string;
@@ -181,6 +191,22 @@ function usageMicrousd(value: unknown, maxOutputTokens: number): number | null {
 }
 
 export function validMomoContentAiLifecycleRequest(body: JsonObject): body is MomoContentAiLifecycleRequest {
+  if (body.operation === "commit_upload") {
+    return exact(body, [
+      "operation", "restaurantId", "uploadSessionId",
+      "clientIdempotencyKey", "storagePath", "observedSha256",
+      "storageObjectId", "storageObjectVersion",
+    ]) && typeof body.restaurantId === "string" && UUID.test(body.restaurantId) &&
+      typeof body.uploadSessionId === "string" && UUID.test(body.uploadSessionId) &&
+      typeof body.clientIdempotencyKey === "string" && UUID.test(body.clientIdempotencyKey) &&
+      typeof body.storagePath === "string" &&
+      body.storagePath.length >= 40 && body.storagePath.length <= 500 &&
+      new RegExp(`^restaurants/${body.restaurantId}/uploads/[0-9]{4}/(0[1-9]|1[0-2])/[0-9a-f-]{36}\\.(jpg|jpeg|png)$`, "u").test(body.storagePath) &&
+      typeof body.observedSha256 === "string" && SHA256.test(body.observedSha256) &&
+      typeof body.storageObjectId === "string" && UUID.test(body.storageObjectId) &&
+      typeof body.storageObjectVersion === "string" &&
+      body.storageObjectVersion.length >= 1 && body.storageObjectVersion.length <= 200;
+  }
   if (body.operation === "finalize_upload") {
     return exact(body, [
       "operation", "restaurantId", "assetId", "storagePath",

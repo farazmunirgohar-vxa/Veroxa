@@ -5,7 +5,43 @@ import { validMomoContentAiLifecycleRequest } from "../supabase/functions/_share
 
 const UUID = "11111111-1111-4111-8111-111111111111";
 const SHA = "a".repeat(64);
-const edgeSource = await readFile(new URL("../supabase/functions/momo-content-ai-lifecycle/index.ts", import.meta.url), "utf8");
+const [
+  edgeSource,
+  rootEdgeSource,
+  siteContractSource,
+  rootContractSource,
+  finalizeCoreSource,
+  finalizeRouteSource,
+  clientUploadSource,
+] =
+  await Promise.all([
+    readFile(new URL("../supabase/functions/momo-content-ai-lifecycle/index.ts", import.meta.url), "utf8"),
+    readFile(new URL("../../../supabase/functions/momo-content-ai-lifecycle/index.ts", import.meta.url), "utf8"),
+    readFile(new URL("../supabase/functions/_shared/momo-content-ai-lifecycle-contract.ts", import.meta.url), "utf8"),
+    readFile(new URL("../../../supabase/functions/_shared/momo-content-ai-lifecycle-contract.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/media/finalize/core.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/media/finalize/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/momo-client-data.ts", import.meta.url), "utf8"),
+  ]);
+
+test("root and Sites lifecycle commit boundaries remain byte-identical", () => {
+  assert.equal(edgeSource, rootEdgeSource);
+  assert.equal(siteContractSource, rootContractSource);
+});
+
+test("browser registration is removed and the server hashes before signed commit", () => {
+  assert.doesNotMatch(clientUploadSource, /client\.rpc\(\s*"veroxa_commit_media_upload_v1"/u);
+  assert.match(clientUploadSource, /finalizeMomoMediaUploadSession/u);
+  assert.match(finalizeRouteSource, /\{ operation: "commit_upload", \.\.\.input \}/u);
+  const hash = finalizeCoreSource.indexOf(
+    "const contentSha256 = await momoBytesSha256(bytes)",
+  );
+  const commit = finalizeCoreSource.indexOf("dependencies.commit({", hash);
+  const finalize = finalizeCoreSource.indexOf("dependencies.finalize({", commit);
+  assert.ok(hash >= 0 && commit > hash && finalize > commit);
+  assert.match(edgeSource, /admin\.rpc\("veroxa_commit_media_upload_v2"/u);
+  assert.doesNotMatch(edgeSource, /admin\.rpc\("veroxa_commit_media_upload_v1"/u);
+});
 
 test("the lifecycle Edge boundary cancels oversized streams before buffering", () => {
   assert.match(edgeSource, /request\.body\.getReader\(\)/u);
@@ -32,6 +68,39 @@ function finalizeUpload() {
     idempotencyHash: SHA,
   };
 }
+
+function commitUpload(overrides = {}) {
+  return {
+    operation: "commit_upload",
+    restaurantId: UUID,
+    uploadSessionId: "22222222-2222-4222-8222-222222222222",
+    clientIdempotencyKey: "33333333-3333-4333-8333-333333333333",
+    storagePath: `restaurants/${UUID}/uploads/2026/08/44444444-4444-4444-8444-444444444444.jpg`,
+    observedSha256: SHA,
+    storageObjectId: "55555555-5555-4555-8555-555555555555",
+    storageObjectVersion: "storage-v1",
+    ...overrides,
+  };
+}
+
+test("upload commit bridge accepts only exact server-observed object identity", () => {
+  assert.equal(validMomoContentAiLifecycleRequest(commitUpload()), true);
+  for (const mutation of [
+    { observedSha256: "client-claimed" },
+    { storageObjectId: UUID, unexpected: true },
+    { storageObjectVersion: "" },
+    { storagePath: `restaurants/${UUID}/uploads/2026/08/other.jpg` },
+  ]) {
+    assert.equal(
+      validMomoContentAiLifecycleRequest(commitUpload(mutation)),
+      false,
+      JSON.stringify(mutation),
+    );
+  }
+  assert.match(edgeSource, /admin\.rpc\("veroxa_commit_media_upload_v2"/u);
+  assert.match(edgeSource, /p_observed_sha256: body\.observedSha256/u);
+  assert.match(edgeSource, /p_actor_id: userData\.user\.id/u);
+});
 
 test("private assessment intake accepts only its bounded JPEG and PNG envelope", () => {
   assert.equal(validMomoContentAiLifecycleRequest(finalizeUpload()), true);

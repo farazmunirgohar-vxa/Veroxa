@@ -2,11 +2,11 @@ import { mkdirSync } from "node:fs";
 import { resolve } from "node:path";
 import {
   MEDIA_INSPECTION_PREFLIGHT_MIGRATION,
+  activeMediaInspectionForwardCandidateMigration,
   assertDeploymentAttestationManifest,
   deploymentManifestPath,
   ensureParentPath,
   hashTree,
-  hasActiveMediaInspectionForwardCandidate,
   readDeploymentManifest,
   repoRoot,
   repositoryRelative,
@@ -16,7 +16,8 @@ import {
 
 const manifest = readDeploymentManifest();
 assertDeploymentAttestationManifest(manifest);
-const activeForwardCandidate = hasActiveMediaInspectionForwardCandidate();
+const activeForwardMigration = activeMediaInspectionForwardCandidateMigration();
+const activeForwardCandidate = activeForwardMigration !== null;
 const githubSha = (process.env.GITHUB_SHA || "").trim().toLowerCase();
 if (!/^[a-f0-9]{40}$/.test(githubSha)) {
   throw new Error(
@@ -30,12 +31,11 @@ const sourceTree = hashTree(resolve(repoRoot, manifest.source.root), {
 const migrationTree = hashTree(resolve(repoRoot, manifest.migrations.root), {
   suffix: ".sql",
 });
-const latestCandidateMigration = activeForwardCandidate
-  ? MEDIA_INSPECTION_PREFLIGHT_MIGRATION
-  : manifest.releaseCandidate.latestCandidateMigration;
+const latestCandidateMigration = activeForwardMigration ??
+  manifest.releaseCandidate.latestCandidateMigration;
 if (activeForwardCandidate
-  ? (!migrationTree.files.includes(MEDIA_INSPECTION_PREFLIGHT_MIGRATION) ||
-    migrationTree.files.at(-1) !== MEDIA_INSPECTION_PREFLIGHT_MIGRATION)
+  ? (!migrationTree.files.includes(latestCandidateMigration) ||
+    migrationTree.files.at(-1) !== latestCandidateMigration)
   : (
     sourceTree.fileCount !== manifest.source.fileCount ||
     sourceTree.sha256 !== manifest.source.treeSha256 ||
@@ -49,7 +49,7 @@ if (activeForwardCandidate
 ) {
   throw new Error(
     activeForwardCandidate
-      ? "Refusing to attest an active forward candidate without its explicit media-inspection migration"
+      ? "Refusing to attest an active forward candidate without its explicit latest migration"
       : "Refusing to attest source whose deterministic hashes do not match the current manifest and release-candidate fingerprints",
   );
 }
@@ -116,7 +116,8 @@ writeJson(output, {
     ? {
         state: "active_media_inspection_forward_candidate",
         currentStatePath: "artifacts/veroxa/docs/CURRENT_STATE.json",
-        preflightMigration: MEDIA_INSPECTION_PREFLIGHT_MIGRATION,
+        candidateMigration: latestCandidateMigration,
+        preflightPrerequisite: MEDIA_INSPECTION_PREFLIGHT_MIGRATION,
         productionMigrationApplyProvenByThisAttestation: false,
         historicalManifestReleaseCandidate: manifest.releaseCandidate,
       }

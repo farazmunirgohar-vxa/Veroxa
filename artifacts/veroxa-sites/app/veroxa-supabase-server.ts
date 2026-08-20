@@ -5,6 +5,7 @@ import { cookies } from "next/headers";
 export type ServerAccess = {
   role: "team" | "client";
   displayName: string;
+  restaurantName: string;
   restaurantId: string | null;
 };
 
@@ -72,16 +73,17 @@ export async function getServerVeroxaContext(): Promise<ServerVeroxaContext | nu
   if (profile.role !== "team" && profile.role !== "client") return null;
   const { data: membership, error: membershipError } = await client
     .from("veroxa_restaurant_members")
-    .select("restaurant_id, role, status, veroxa_restaurants!inner(status)")
+    .select("restaurant_id, role, status, veroxa_restaurants!inner(name,status)")
     .eq("user_id", userData.user.id)
     .eq("role", profile.role)
     .eq("status", "active")
     .maybeSingle();
-  const restaurant = membership?.veroxa_restaurants as { status?: string } | null;
+  const restaurant = membership?.veroxa_restaurants as { name?: string; status?: string } | null;
   if (
     membershipError ||
     !membership?.restaurant_id ||
     membership.role !== profile.role ||
+    !restaurant?.name?.trim() ||
     restaurant?.status !== "active"
   ) {
     return null;
@@ -89,7 +91,8 @@ export async function getServerVeroxaContext(): Promise<ServerVeroxaContext | nu
   return {
     access: {
       role: profile.role,
-      displayName: profile.display_name || userData.user.email || (profile.role === "team" ? "Team Faraz" : "Momo’s House"),
+      displayName: profile.display_name || userData.user.email || (profile.role === "team" ? "Team Faraz" : "Restaurant account"),
+      restaurantName: restaurant.name.trim(),
       restaurantId: membership.restaurant_id,
     },
     userId: userData.user.id,

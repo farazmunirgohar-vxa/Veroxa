@@ -76,6 +76,69 @@ const ACTIVE_PRIVATE_MEDIA_VERIFIER_CONTRACT_CANDIDATE_ALLOWED_PATHS = new Set([
   "scripts/src/generate-deployment-attestation.ts",
   "scripts/src/release-manifest.ts",
 ]);
+const ACTIVE_PREINTERVENTION_ACCEPTANCE_CANDIDATE_BASE_COMMIT =
+  "a05e7a79b2c527ff93a4c3810afc6ada193fce6c";
+const ACTIVE_PREINTERVENTION_ACCEPTANCE_CANDIDATE_BASE_TREE =
+  "a0c26f7df224ec00d366edc8e7f38f8e829999d2";
+const PREINTERVENTION_ACCEPTANCE_MIGRATION =
+  "20260815191500_veroxa_preintervention_acceptance_v1.sql";
+const PREINTERVENTION_ACCEPTANCE_PGTAP =
+  "veroxa_preintervention_acceptance_v1.sql";
+const ACTIVE_PREINTERVENTION_ACCEPTANCE_CANDIDATE_ALLOWED_PATHS = new Set([
+  ".github/workflows/supabase-verify.yml",
+  "AGENTS.md",
+  "artifacts/veroxa-sites/app/account-security.tsx",
+  "artifacts/veroxa-sites/app/account/security/page.tsx",
+  "artifacts/veroxa-sites/app/api/internal/momo/media/recover/core.ts",
+  "artifacts/veroxa-sites/app/api/internal/momo/media/recover/route.ts",
+  "artifacts/veroxa-sites/app/api/internal/veroxa/media/inspection-preflight/core.ts",
+  "artifacts/veroxa-sites/app/api/media/finalize/core.ts",
+  "artifacts/veroxa-sites/app/api/media/finalize/route.ts",
+  "artifacts/veroxa-sites/app/client/[[...slug]]/page.tsx",
+  "artifacts/veroxa-sites/app/momo-client-data.ts",
+  "artifacts/veroxa-sites/app/momo-client-portal.tsx",
+  "artifacts/veroxa-sites/app/momo-media-finalize-client.ts",
+  "artifacts/veroxa-sites/app/momo-operating-center.tsx",
+  "artifacts/veroxa-sites/app/page.tsx",
+  "artifacts/veroxa-sites/app/veroxa-supabase-server.ts",
+  "artifacts/veroxa-sites/app/veroxa-supabase.ts",
+  "artifacts/veroxa-sites/supabase/functions/_shared/momo-content-ai-lifecycle-contract.ts",
+  "artifacts/veroxa-sites/supabase/functions/momo-content-ai-lifecycle/index.ts",
+  `artifacts/veroxa-sites/supabase/migrations/${PREINTERVENTION_ACCEPTANCE_MIGRATION}`,
+  `artifacts/veroxa-sites/supabase/tests/${PREINTERVENTION_ACCEPTANCE_PGTAP}`,
+  "artifacts/veroxa-sites/tests/momo-client-media-portal.test.mjs",
+  "artifacts/veroxa-sites/tests/momo-client-media-upload.test.mjs",
+  "artifacts/veroxa-sites/tests/momo-client-requests-contract.test.mjs",
+  "artifacts/veroxa-sites/tests/momo-content-lifecycle-contract.test.mjs",
+  "artifacts/veroxa-sites/tests/momo-media-guidance.test.mjs",
+  "artifacts/veroxa-sites/tests/momo-media-finalize-client.test.mjs",
+  "artifacts/veroxa-sites/tests/momo-media-finalize-route.test.mjs",
+  "artifacts/veroxa-sites/tests/momo-media-ingestion-recovery.test.mjs",
+  "artifacts/veroxa-sites/tests/momo-operating-ux.test.mjs",
+  "artifacts/veroxa-sites/tests/momo-upload-veroxa-ready-v2-contract.test.mjs",
+  "artifacts/veroxa-sites/tests/momo-v2-team-surface.test.mjs",
+  "artifacts/veroxa-sites/tests/rendered-html.test.mjs",
+  "artifacts/veroxa/docs/ACTIVE_DOCS_INDEX.md",
+  "artifacts/veroxa/docs/CHATGPT_SITES_MIGRATION_AND_SOURCE_OF_TRUTH.md",
+  "artifacts/veroxa/docs/CURRENT_BUILD_STATUS.md",
+  "artifacts/veroxa/docs/CURRENT_MILESTONE.md",
+  "artifacts/veroxa/docs/CURRENT_STATE.json",
+  "artifacts/veroxa/docs/FINDINGS_LEDGER.json",
+  "artifacts/veroxa/docs/README_CURRENT_STATE.md",
+  "artifacts/veroxa/docs/RR_CHECKPOINT.md",
+  "artifacts/veroxa/docs/VEROXA_CURRENT_MILESTONE.md",
+  "artifacts/veroxa/docs/VEROXA_LOCKED_OPERATING_MEMORY.md",
+  "artifacts/veroxa/docs/history/2026-08-15-preintervention-phase-1-source-of-truth.json",
+  "scripts/src/check-chatgpt-sites-migration-source-truth.ts",
+  "scripts/src/generate-deployment-attestation.ts",
+  "scripts/src/check-sites-momo-operating-contract.ts",
+  "scripts/src/release-manifest.ts",
+  "scripts/src/check-supabase-migration-ledger.ts",
+  "supabase/functions/_shared/momo-content-ai-lifecycle-contract.ts",
+  "supabase/functions/momo-content-ai-lifecycle/index.ts",
+  `supabase/migrations/${PREINTERVENTION_ACCEPTANCE_MIGRATION}`,
+  `supabase/tests/${PREINTERVENTION_ACCEPTANCE_PGTAP}`,
+]);
 
 export const TREE_HASH_ALGORITHM = "veroxa-path-null-content-null-sha256-v1";
 export const REVIEWED_LOCAL_CANDIDATE_RELEASE_STATE =
@@ -978,11 +1041,23 @@ type ActiveMediaInspectionCandidateState = {
     github?: {
       latestApplicationSourceCommit?: unknown;
       mainCommit?: unknown;
+      mainTree?: unknown;
+      latestMergedPullRequest?: unknown;
+      pullRequest191?: Record<string, any>;
+      mainProtected?: unknown;
     };
     sites?: {
       version?: unknown;
       versionId?: unknown;
       sourceCommit?: unknown;
+      lastProvenVersion?: unknown;
+      lastProvenDeploymentId?: unknown;
+      lastProvenRepositoryTree?: unknown;
+      lastProvenApplicationTree?: unknown;
+      savedVersion?: unknown;
+      savedVersionApplicationTree?: unknown;
+      savedVersionLiveDeploymentProven?: unknown;
+      pullRequest191LiveParityProven?: unknown;
     };
     supabase?: {
       migrationCount?: unknown;
@@ -991,6 +1066,11 @@ type ActiveMediaInspectionCandidateState = {
     };
   };
   asset?: { authorizedRetriesRemaining?: unknown };
+  img4257?: Record<string, any>;
+  currentVerdict?: unknown;
+  syntheticAcceptance?: Record<string, unknown>;
+  pr187?: Record<string, unknown>;
+  externalActionCounts?: Record<string, unknown>;
   externalActionLock?: Record<string, unknown>;
   activeCandidate?: {
     kind?: unknown;
@@ -1004,10 +1084,22 @@ type ActiveMediaInspectionCandidateState = {
       candidateMigrationTreeSha256?: unknown;
       productionBaselineMigrationCount?: unknown;
       productionBaselineMigrationTreeSha256?: unknown;
+      byteLength?: unknown;
+      applied?: unknown;
     };
     preflightMigrationStatus?: unknown;
     externalActionLockRequired?: unknown;
     img4257RetryConsumed?: unknown;
+    basedOnGitHubMainCommit?: unknown;
+    basedOnGitHubMainTree?: unknown;
+    pullRequest?: unknown;
+    reviewedHead?: unknown;
+    mergeCommit?: unknown;
+    sourceTree?: unknown;
+    productionDeploymentId?: unknown;
+    pgTap?: Record<string, any>;
+    requiredGates?: Record<string, unknown>;
+    img4257RetriesRemaining?: unknown;
   };
 };
 
@@ -1037,7 +1129,13 @@ function readActiveMediaInspectionCandidateState():
       candidate.kind === "private_media_verifier_contract_repair" &&
       candidate.state ===
         "local_focused_test_passed_pending_pr_review_and_synthetic_production_proof";
-    if (!isPreflightCandidate && !isVerifierContractCandidate) {
+    const isPreinterventionCandidate = value.phase ===
+        "preintervention_acceptance_candidate_pending_exact_head_gates_and_live_proof" &&
+      candidate.kind === "veroxa_preintervention_acceptance" &&
+      candidate.state ===
+        "local_candidate_pending_exact_head_ci_review_merge_migration_apply_deploy_and_production_proof";
+    if (!isPreflightCandidate && !isVerifierContractCandidate &&
+      !isPreinterventionCandidate) {
       return null;
     }
     return value as unknown as ActiveMediaInspectionCandidateState;
@@ -1048,6 +1146,14 @@ function readActiveMediaInspectionCandidateState():
 
 export function hasActiveMediaInspectionForwardCandidate(): boolean {
   return readActiveMediaInspectionCandidateState() !== null;
+}
+
+export function activeMediaInspectionForwardCandidateMigration(): string | null {
+  const filename = readActiveMediaInspectionCandidateState()
+    ?.activeCandidate?.migration?.filename;
+  return typeof filename === "string" && /^[0-9]{14}_[a-z0-9_]+[.]sql$/u.test(filename)
+    ? filename
+    : null;
 }
 
 export function activeMediaInspectionPreflightMigrationIsApplied(): boolean {
@@ -1205,6 +1311,90 @@ function assertActivePrivateMediaVerifierContractCandidateDiffScope(): void {
           missing.length > 0 ? `missing=${missing.join(",")}` : null,
           deletedPaths.length > 0 ? `deleted=${deletedPaths.join(",")}` : null,
         ].filter(Boolean).join("; "),
+    );
+  }
+}
+
+/**
+ * Bind the pre-intervention acceptance candidate to PR #191's exact merged
+ * tree and to one complete, auditable path set. Include committed, staged,
+ * unstaged, and untracked paths so a local staging operation cannot weaken the
+ * scope check. Deletions, renames, type changes, and unmerged entries fail.
+ */
+function assertActivePreinterventionAcceptanceCandidateDiffScope(): void {
+  let comparisonRange: string | null = null;
+  try {
+    execFileSync("git", [
+      "merge-base",
+      "--is-ancestor",
+      ACTIVE_PREINTERVENTION_ACCEPTANCE_CANDIDATE_BASE_COMMIT,
+      "HEAD",
+    ], { cwd: repoRoot, stdio: "ignore" });
+    comparisonRange =
+      `${ACTIVE_PREINTERVENTION_ACCEPTANCE_CANDIDATE_BASE_COMMIT}...HEAD`;
+  } catch {
+    const equivalentBase = ["HEAD", "HEAD^"].find((ref) =>
+      gitTreeSha(ref) === ACTIVE_PREINTERVENTION_ACCEPTANCE_CANDIDATE_BASE_TREE
+    );
+    if (!equivalentBase) {
+      throw new Error(
+        "pre-intervention candidate lacks PR #191 merge ancestry or its exact equivalent tree",
+      );
+    }
+    if (equivalentBase === "HEAD^") comparisonRange = "HEAD^...HEAD";
+  }
+
+  try {
+    const committed = comparisonRange
+      ? gitPathList([
+        "diff", "--name-only", "--diff-filter=ACM", comparisonRange, "--",
+      ])
+      : [];
+    const forbiddenCommitted = comparisonRange
+      ? gitPathList([
+        "diff", "--name-only", "--diff-filter=DRTUXB", comparisonRange, "--",
+      ])
+      : [];
+    const paths = Array.from(new Set([
+      ...committed,
+      ...gitPathList(["diff", "--name-only", "--diff-filter=ACM", "--"]),
+      ...gitPathList([
+        "diff", "--cached", "--name-only", "--diff-filter=ACM", "--",
+      ]),
+      ...gitPathList(["ls-files", "--others", "--exclude-standard"]),
+    ])).sort();
+    const forbidden = Array.from(new Set([
+      ...forbiddenCommitted,
+      ...gitPathList([
+        "diff", "--name-only", "--diff-filter=DRTUXB", "--",
+      ]),
+      ...gitPathList([
+        "diff", "--cached", "--name-only", "--diff-filter=DRTUXB", "--",
+      ]),
+      ...gitPathList(["ls-files", "--unmerged"]),
+    ])).sort();
+    const unexpected = paths.filter((path) =>
+      !ACTIVE_PREINTERVENTION_ACCEPTANCE_CANDIDATE_ALLOWED_PATHS.has(path)
+    );
+    const missing = Array.from(
+      ACTIVE_PREINTERVENTION_ACCEPTANCE_CANDIDATE_ALLOWED_PATHS,
+    ).filter((path) => !paths.includes(path)).sort();
+    if (unexpected.length > 0 || missing.length > 0 || forbidden.length > 0) {
+      throw new Error(
+        "pre-intervention candidate Git scope drifted: " + [
+          unexpected.length > 0 ? `unexpected=${unexpected.join(",")}` : null,
+          missing.length > 0 ? `missing=${missing.join(",")}` : null,
+          forbidden.length > 0 ? `forbidden=${forbidden.join(",")}` : null,
+        ].filter(Boolean).join("; "),
+      );
+    }
+  } catch (error) {
+    if (error instanceof Error && error.message.startsWith(
+      "pre-intervention candidate Git scope drifted:",
+    )) throw error;
+    throw new Error(
+      "pre-intervention candidate cannot verify its exact Git diff scope: " +
+        (error instanceof Error ? error.message : String(error)),
     );
   }
 }
@@ -1461,6 +1651,401 @@ function assertActivePrivateMediaVerifierContractCandidate(
   if (failures.length > 0) {
     throw new Error(
       "Unsafe active private-media verifier contract candidate: " +
+        failures.join("; "),
+    );
+  }
+}
+
+function assertActivePreinterventionAcceptanceCandidate(
+  manifest: DeploymentManifest,
+  state: ActiveMediaInspectionCandidateState,
+): void {
+  const failures: string[] = [];
+  const must = (condition: boolean, message: string): void => {
+    if (!condition) failures.push(message);
+  };
+  const candidate = state.activeCandidate;
+  const migrationEvidence = candidate?.migration;
+  const pgTapEvidence = candidate?.pgTap;
+  const github = state.production.github as Record<string, any> | undefined;
+  const sites = state.production.sites as Record<string, any> | undefined;
+  const supabase = state.production.supabase as Record<string, any> | undefined;
+  const img4257 = state.img4257 ?? {};
+  const synthetic = state.syntheticAcceptance ?? {};
+  const pr187 = state.pr187 ?? {};
+  const locks = state.externalActionLock ?? {};
+  const counts = state.externalActionCounts ?? {};
+  const gates = candidate?.requiredGates ?? {};
+  const rootMigrationDir = resolve(repoRoot, ROOT_MIGRATION_SOURCE_ROOT);
+  const mirrorMigrationDir = resolve(repoRoot, SITES_MIGRATION_MIRROR_ROOT);
+  const rootMigrationPath = resolve(
+    rootMigrationDir,
+    PREINTERVENTION_ACCEPTANCE_MIGRATION,
+  );
+  const mirrorMigrationPath = resolve(
+    mirrorMigrationDir,
+    PREINTERVENTION_ACCEPTANCE_MIGRATION,
+  );
+  const rootPgTapPath = resolve(
+    repoRoot,
+    "supabase/tests",
+    PREINTERVENTION_ACCEPTANCE_PGTAP,
+  );
+  const mirrorPgTapPath = resolve(
+    repoRoot,
+    "artifacts/veroxa-sites/supabase/tests",
+    PREINTERVENTION_ACCEPTANCE_PGTAP,
+  );
+  const rootMigrationTree = hashTree(rootMigrationDir, { suffix: ".sql" });
+  const mirrorMigrationTree = hashTree(mirrorMigrationDir, { suffix: ".sql" });
+  const productionBaselineTree = hashTree(rootMigrationDir, {
+    exclusions: [PREINTERVENTION_ACCEPTANCE_MIGRATION],
+    suffix: ".sql",
+  });
+  const read = (path: string): string =>
+    readFileSync(resolve(repoRoot, path), "utf8");
+  const migration = read(
+    `supabase/migrations/${PREINTERVENTION_ACCEPTANCE_MIGRATION}`,
+  );
+  const pgTap = read(`supabase/tests/${PREINTERVENTION_ACCEPTANCE_PGTAP}`);
+  const uploadAdapter = read("artifacts/veroxa-sites/app/momo-client-data.ts");
+  const finalizeCore = read(
+    "artifacts/veroxa-sites/app/api/media/finalize/core.ts",
+  );
+  const lifecycleContract = read(
+    "supabase/functions/_shared/momo-content-ai-lifecycle-contract.ts",
+  );
+  const lifecycleEdge = read(
+    "supabase/functions/momo-content-ai-lifecycle/index.ts",
+  );
+  const clientPortal = read("artifacts/veroxa-sites/app/momo-client-portal.tsx");
+  const teamPortal = read("artifacts/veroxa-sites/app/momo-operating-center.tsx");
+  const recovery = read(
+    "artifacts/veroxa-sites/app/api/internal/momo/media/recover/core.ts",
+  );
+  const recoveryTests = read(
+    "artifacts/veroxa-sites/tests/momo-media-ingestion-recovery.test.mjs",
+  );
+  const uploadTests = read(
+    "artifacts/veroxa-sites/tests/momo-client-media-upload.test.mjs",
+  );
+  const workflow = read(".github/workflows/supabase-verify.yml");
+  const phaseOne = JSON.parse(read(
+    "artifacts/veroxa/docs/history/2026-08-15-preintervention-phase-1-source-of-truth.json",
+  )) as Record<string, any>;
+
+  try {
+    assertActivePreinterventionAcceptanceCandidateDiffScope();
+  } catch (error) {
+    failures.push(error instanceof Error ? error.message : String(error));
+  }
+
+  must(
+    manifest.schemaVersion === 13 &&
+      manifest.recordKind ===
+        "veroxa_momo_media_recovery_host_inspection_diagnostics_closeout",
+    "pre-intervention candidate must preserve the immutable schema-13 deployment manifest",
+  );
+  must(
+    state.phase ===
+        "preintervention_acceptance_candidate_pending_exact_head_gates_and_live_proof" &&
+      state.currentVerdict === "NOT READY — AUTONOMOUS WORK REMAINS" &&
+      candidate?.kind === "veroxa_preintervention_acceptance" &&
+      candidate.branch === "agent/veroxa-pre-intervention-proof-20260815" &&
+      candidate.state ===
+        "local_candidate_pending_exact_head_ci_review_merge_migration_apply_deploy_and_production_proof" &&
+      candidate.basedOnGitHubMainCommit ===
+        ACTIVE_PREINTERVENTION_ACCEPTANCE_CANDIDATE_BASE_COMMIT &&
+      candidate.basedOnGitHubMainTree ===
+        ACTIVE_PREINTERVENTION_ACCEPTANCE_CANDIDATE_BASE_TREE,
+    "pre-intervention candidate identity or not-ready boundary drifted",
+  );
+  must(
+    candidate?.pullRequest === 193 &&
+      candidate.reviewedHead === null &&
+      candidate.mergeCommit === null &&
+      candidate.sourceTree === null &&
+      candidate.productionDeploymentId === null &&
+      sameJson(candidate.pendingMigrations, [PREINTERVENTION_ACCEPTANCE_MIGRATION]) &&
+      candidate.externalActionLockRequired === true &&
+      candidate.img4257RetriesRemaining === 0 &&
+      sameJson(gates, {
+        exactHeadCiGreen: false,
+        independentCodeSecurityReviewPassed: false,
+        zeroUnresolvedReviewThreads: false,
+        merged: false,
+        migrationAppliedAndReadBack: false,
+        exactSourceDeployed: false,
+        syntheticSuccessPassed: false,
+        duplicateReplayIdempotent: false,
+        controlledFailureFailedClosed: false,
+        restaurantPortalVerified: false,
+        teamPortalVerified: false,
+        mobileVerified: false,
+        tenantAndRoleIsolationPassed: false,
+        externalActionAuditPassed: false,
+      }),
+    "candidate preclaims a PR, review, merge, deployment, migration, or production acceptance gate",
+  );
+  must(
+    github?.mainCommit ===
+        ACTIVE_PREINTERVENTION_ACCEPTANCE_CANDIDATE_BASE_COMMIT &&
+      github.mainTree === ACTIVE_PREINTERVENTION_ACCEPTANCE_CANDIDATE_BASE_TREE &&
+      github.latestApplicationSourceCommit ===
+        "7cb6173ce76cff840017b2b4ecfa37c31cb07a09" &&
+      github.latestMergedPullRequest === 195 &&
+      github.pullRequest191?.head ===
+        "aabb1efc72cfcc1ee649572dd033c7806a28dbb0" &&
+      github.pullRequest191?.mergeCommit ===
+        "7cb6173ce76cff840017b2b4ecfa37c31cb07a09" &&
+      github.pullRequest191?.sourceTreeMatchesMain === true &&
+      github.pullRequest191?.allFourExactHeadWorkflowsGreen === true &&
+      sameJson(github.pullRequest191?.workflowRuns, {
+        ci: 31873987160,
+        sitesVerify: 31873987170,
+        supabaseVerify: 31873987150,
+        veroxaVerify: 31873987157,
+      }) &&
+      github.pullRequest191?.unresolvedNonOutdatedP1Threads === 1 &&
+      github.pullRequest191?.approvedReviews === 0 &&
+      github.mainProtected === false,
+    "GitHub PR #191 baseline or unresolved governance evidence drifted",
+  );
+  must(
+    sites?.lastProvenVersion === 59 &&
+      sites.lastProvenDeploymentId ===
+        "appgdep_6a8016eee874819184f031daa896048c" &&
+      sites.lastProvenRepositoryTree ===
+        "6445d25718fee4fc4321b9336302d604ad623fc3" &&
+      sites.lastProvenApplicationTree ===
+        "602b6c339c285b62667064ba5094f95359002ddd" &&
+      sites.savedVersion === 60 &&
+      sites.savedVersionApplicationTree ===
+        "35a8ea7d8efc4723c65622675c177e77ee575138" &&
+      sites.savedVersionLiveDeploymentProven === false &&
+      sites.pullRequest191LiveParityProven === false,
+    "Sites baseline overclaims PR #191 or candidate deployment parity",
+  );
+  must(
+    supabase?.migrationCount === 59 &&
+      supabase.latestMigration === MEDIA_INSPECTION_PREFLIGHT_MIGRATION &&
+      supabase.appliedMigrationVersion === "20260815062451" &&
+      supabase.completedIntakeCount === 0 &&
+      supabase.canonicalIdentityCount === 0 &&
+      supabase.privateAssessmentCount === 0 &&
+      supabase.contentAiRunCount === 0 &&
+      supabase.readyPackageCount === 0,
+    "Supabase live baseline or zero-work evidence drifted",
+  );
+  must(
+    existsSync(rootMigrationPath) && existsSync(mirrorMigrationPath) &&
+      sha256File(rootMigrationPath) === sha256File(mirrorMigrationPath) &&
+      statSync(rootMigrationPath).size === statSync(mirrorMigrationPath).size &&
+      migrationEvidence?.filename === PREINTERVENTION_ACCEPTANCE_MIGRATION &&
+      migrationEvidence.sha256 === sha256File(rootMigrationPath) &&
+      migrationEvidence.byteLength === statSync(rootMigrationPath).size &&
+      migrationEvidence.candidateMigrationCount === rootMigrationTree.fileCount &&
+      migrationEvidence.candidateMigrationTreeSha256 === rootMigrationTree.sha256 &&
+      migrationEvidence.productionBaselineMigrationCount ===
+        productionBaselineTree.fileCount &&
+      migrationEvidence.productionBaselineMigrationTreeSha256 ===
+        productionBaselineTree.sha256 &&
+      migrationEvidence.applied === false &&
+      rootMigrationTree.fileCount === mirrorMigrationTree.fileCount &&
+      rootMigrationTree.sha256 === mirrorMigrationTree.sha256 &&
+      sameJson(rootMigrationTree.files, mirrorMigrationTree.files) &&
+      rootMigrationTree.files.at(-1) === PREINTERVENTION_ACCEPTANCE_MIGRATION &&
+      productionBaselineTree.fileCount === 59 &&
+      productionBaselineTree.sha256 ===
+        "5c2cb401005a3828117b4a67da82be9557e5f7bdc1fe2fdd60332c9b6b07c61c",
+    "pre-intervention migration identity, pending split, or root/Sites mirror drifted",
+  );
+  must(
+    existsSync(rootPgTapPath) && existsSync(mirrorPgTapPath) &&
+      sha256File(rootPgTapPath) === sha256File(mirrorPgTapPath) &&
+      statSync(rootPgTapPath).size === statSync(mirrorPgTapPath).size &&
+      pgTapEvidence?.filename === PREINTERVENTION_ACCEPTANCE_PGTAP &&
+      pgTapEvidence.sha256 === sha256File(rootPgTapPath) &&
+      pgTapEvidence.byteLength === statSync(rootPgTapPath).size &&
+      pgTapEvidence.plannedAssertions === 61 &&
+      pgTapEvidence.mirrored === true &&
+      pgTapEvidence.hostedExecutionPassed === false,
+    "pre-intervention pgTAP identity, mirror, or unproven hosted-execution boundary drifted",
+  );
+  const authenticatedV3Revoke =
+    /revoke execute on function public[.]veroxa_register_momo_media_v3[(][\s\S]*?[)] from authenticated;/u;
+  const authenticatedV3Grant =
+    /grant execute on function public[.]veroxa_register_momo_media_v3[(][\s\S]*?[)] to authenticated;/u;
+  must(
+    migration.includes("create or replace function public.veroxa_begin_media_upload_v1(") &&
+      migration.includes("create or replace function public.veroxa_commit_media_upload_v1(") &&
+      migration.includes("create or replace function public.veroxa_commit_media_upload_v2(") &&
+      migration.includes("media_upload_sessions_live_sha_v1") &&
+      migration.includes("initiation_expires_at timestamptz not null") &&
+      migration.includes("message = 'media_upload_session_expired'") &&
+      migration.includes("upload_session_expires_at > pg_catalog.clock_timestamp()") &&
+      migration.includes("upload session before deciding so cleanup") &&
+      migration.includes("message = 'media_upload_alias_limit_reached'") &&
+      migration.includes("message = 'media_upload_session_rate_or_active_limit_reached'") &&
+      migration.includes("unique (singleton_slot)") &&
+      migration.includes("create table veroxa_private.media_upload_session_aliases_v1") &&
+      migration.includes("primary key (restaurant_id, actor_id, client_idempotency_key)") &&
+      migration.includes("request_snapshot jsonb not null") &&
+      migration.includes("message = 'media_upload_session_alias_is_immutable'") &&
+      migration.includes("message = 'media_upload_owner_attestation_invalid'") &&
+      migration.includes("message = 'internal_acceptance_scope_singleton_conflict'") &&
+      authenticatedV3Revoke.test(migration) &&
+      !authenticatedV3Grant.test(migration) &&
+      migration.includes("message = 'media_upload_registration_rpc_acl_invalid'") &&
+      migration.includes("public.veroxa_register_momo_media_v1(uuid,text,text,bigint,text,text,jsonb,timestamptz)") &&
+      migration.includes("public.veroxa_register_momo_media_v2(uuid,text,text,bigint,text,text,jsonb,date)") &&
+      migration.includes("public.veroxa_register_momo_media_v3(uuid,text,text,bigint,text,jsonb,date,text,text)") &&
+      migration.includes("public.veroxa_begin_media_upload_v1(uuid,uuid,text,text,bigint,text,jsonb,jsonb,date,text,text)") &&
+      migration.includes("public.veroxa_commit_media_upload_v1(uuid,uuid)") &&
+      migration.includes("public.veroxa_commit_media_upload_v2(uuid,uuid,uuid,text,uuid,text,uuid)") &&
+      pgTap.includes("authenticated Clients can only begin; service_role alone can commit v2") &&
+      pgTap.includes("mismatch creates no durable row or committed session evidence") &&
+      pgTap.includes("an expired idempotency alias cannot be replayed or rebound") &&
+      pgTap.includes("orphan cleanup locks the upload session before its expiry decision") &&
+      pgTap.includes("a timed-out initiated path is deletable without a later begin sweep") &&
+      pgTap.includes("immutable registered evidence keeps its Storage object protected") &&
+      pgTap.includes("a ninth actor/session alias fails closed") &&
+      pgTap.includes("a second restaurant Client reuses the canonical restaurant/SHA session") &&
+      uploadAdapter.includes('"veroxa_begin_media_upload_v1"') &&
+      !uploadAdapter.includes('"veroxa_commit_media_upload_v1"') &&
+      !uploadAdapter.includes('"veroxa_commit_media_upload_v2"') &&
+      uploadAdapter.includes("finalizeMomoMediaUploadSession") &&
+      uploadAdapter.includes("p_owner_attestation") &&
+      uploadAdapter.includes("p_client_idempotency_key: clientIdempotencyKey.toLowerCase()") &&
+      finalizeCore.includes("observedSha256: contentSha256") &&
+      lifecycleContract.includes('operation: "commit_upload"') &&
+      lifecycleEdge.includes('admin.rpc("veroxa_commit_media_upload_v2"') &&
+      migration.includes("grant execute on function public.veroxa_commit_media_upload_v2(") &&
+      migration.includes(") to service_role;") &&
+      uploadTests.includes("an already registered replay skips object creation and reuses the same IDs") &&
+      uploadTests.includes("an initiated replay can commit an already-present reserved object") &&
+      uploadAdapter.includes("isMomoReservedStorageObjectConflict") &&
+      uploadTests.includes("non-conflict Storage failures stop before server registration and finalization") &&
+      uploadTests.includes("unproven object durability must block server finalization"),
+    "bounded begin/server-commit replay, content uniqueness, immutable alias, or RPC ACL contract drifted",
+  );
+  must(
+    uploadAdapter.includes("export class MomoClientMediaUploadRetryError") &&
+      uploadAdapter.includes('readonly code = "media_upload_retry_required"') &&
+      uploadAdapter.includes('failureReceipt?.status !== "team_exception_recorded"') &&
+      uploadAdapter.includes('session.status === "registered"') &&
+      uploadAdapter.includes("finalizeRegisteredMomoClientMedia") &&
+      clientPortal.includes("Keep this file selected and choose Confirm and upload again") &&
+      clientPortal.includes("outcome.assetId === null") &&
+      clientPortal.includes('outcome.failureReceipt?.status !== "team_exception_recorded"') &&
+      uploadTests.includes("pre-registration finalization without a durable receipt requires a truthful retry") &&
+      uploadTests.includes("an unconfirmed exception receipt remains retryable instead of claiming recovery") &&
+      uploadTests.includes("a registered session replay keeps its durable IDs when finalization needs attention"),
+    "pre-registration retry preservation or registered-session recovery contract drifted",
+  );
+  const offeringAttestation =
+    "Authenticated restaurant uploader attested that this image depicts a current restaurant offering.";
+  must(
+    clientPortal.includes('restaurantAssociation: "represents_current_restaurant_offering"') &&
+      clientPortal.includes(`associationNote: "${offeringAttestation}"`) &&
+      teamPortal.includes('restaurantAssociation: "represents_current_restaurant_offering"') &&
+      teamPortal.includes(`associationNote: "${offeringAttestation}"`) &&
+      migration.includes("'represents_current_restaurant_offering'") &&
+      migration.includes("'veroxa-media-owner-attestation-v1'") &&
+      migration.includes("'currentOfferingAccepted'") &&
+      pgTap.includes("'represents_current_restaurant_offering'"),
+    "truthful current-offering attestation contract drifted",
+  );
+  must(
+    migration.includes("message = 'media_upload_expected_sha256_mismatch'") &&
+      pgTap.includes("'media_upload_expected_sha256_mismatch'") &&
+      recovery.includes('error.message === "media_upload_expected_sha256_mismatch"') &&
+      recovery.includes('"media_upload_expected_sha256_mismatch",\n            false') &&
+      recoveryTests.includes("an expected original SHA mismatch is stable, terminal, and fail-closed") &&
+      !migration.includes("05ab2303-f7ea-4056-8f75-9cd7e523a4f4") &&
+      !pgTap.includes("05ab2303-f7ea-4056-8f75-9cd7e523a4f4"),
+    "stable fail-closed expected-SHA contract drifted or references terminal IMG_4257",
+  );
+  must(
+    migration.includes("create table veroxa_private.internal_acceptance_scope_v1") &&
+      migration.includes("customer_visible boolean not null default false") &&
+      migration.includes("excluded_from_reports boolean not null default true") &&
+      migration.includes("and scope.excluded_from_reports") &&
+      migration.includes("check (not external_write_allowed)") &&
+      migration.includes("message = 'internal_acceptance_surface_not_allowed'") &&
+      migration.includes("message = 'internal_acceptance_report_evidence_forbidden'") &&
+      migration.includes("provider_writes = false") &&
+      migration.includes("external_scheduling = false") &&
+      pgTap.includes("scope.excluded_from_reports") &&
+      pgTap.includes("session, runtime, and budget all keep external actions false") &&
+      pgTap.includes("the test tenant cannot create a restaurant-platform connection") &&
+      pgTap.includes("test-tenant activity cannot enter operational reports") &&
+      workflow.includes(`acceptance_migration="${PREINTERVENTION_ACCEPTANCE_MIGRATION}"`) &&
+      workflow.includes("ci_external_write_or_runtime_secret_fixture_forbidden"),
+    "test-tenant isolation, external locks, or clean-chain workflow contract drifted",
+  );
+  must(
+    img4257.assetId === "05ab2303-f7ea-4056-8f75-9cd7e523a4f4" &&
+      img4257.attemptCount === 4 &&
+      img4257.lastOutcome === "media_recovery_completion_unavailable" &&
+      img4257.outboxState === "dead_letter" &&
+      img4257.verificationPersisted === false &&
+      img4257.ready === false &&
+      img4257.authorizedRetriesRemaining === 0 &&
+      img4257.permittedAccess ===
+        "read_only_immutable_evidence_reconciliation" &&
+      phaseOne.img4257?.authorizedRetriesRemaining === 0 &&
+      phaseOne.img4257?.ready === false,
+    "IMG_4257 terminal evidence or zero-retry authority drifted",
+  );
+  must(
+    sameJson(synthetic, {
+      testRestaurantCreated: false,
+      successAssetUploaded: false,
+      successAssetReady: false,
+      duplicateReplayed: false,
+      invalidFixtureSubmitted: false,
+      portalProofCompleted: false,
+      productionProofStarted: false,
+      customerMediaUsed: false,
+    }),
+    "candidate preclaims synthetic, portal, Ready, or customer-media proof",
+  );
+  must(
+    pr187.number === 187 && pr187.draft === true && pr187.merged === false &&
+      pr187.deployed === false &&
+      pr187.disposition ===
+        "deferred_follow_up_not_part_of_preintervention_acceptance",
+    "PR #187 draft/unmerged/undeployed deferral drifted",
+  );
+  must(
+    locks.publishing === false && locks.externalScheduling === false &&
+      locks.accountConnection === false && locks.customerMessaging === false &&
+      locks.outreach === false && locks.reviewReplies === false &&
+      locks.websiteProviderWritesAllowed === false &&
+      locks.orderingProviderWritesAllowed === false &&
+      locks.advertisingProviderWritesAllowed === false &&
+      locks.pricingChange === false && locks.repositoryVisibilityChange === false &&
+      counts.publishedPosts === 0 && counts.scheduledExternalPosts === 0 &&
+      counts.publishAttempts === 0 && counts.externalMessages === 0 &&
+      counts.publishedReviewReplies === 0 &&
+      counts.restaurantAccountConnections === 0 &&
+      counts.websiteProviderWrites === 0 &&
+      counts.orderingProviderWrites === 0 &&
+      counts.advertisingProviderWrites === 0,
+    "candidate weakens an external-action lock or its observed zero-count audit",
+  );
+  const hold = manifest.operationalHold as Record<string, unknown> | undefined;
+  must(
+    hold?.providerWrites === false && hold.reviewReplies === false &&
+      hold.websiteWrites === false && hold.externalScheduling === false &&
+      hold.externalPublishing === false,
+    "pre-intervention candidate weakens immutable historical external locks",
+  );
+
+  if (failures.length > 0) {
+    throw new Error(
+      "Unsafe active pre-intervention acceptance candidate: " +
         failures.join("; "),
     );
   }
@@ -2447,6 +3032,12 @@ function assertMediaRecoveryByteInspectionCandidateManifest(
     } else if (activeForwardCandidate.activeCandidate?.kind ===
       "private_media_verifier_contract_repair") {
       assertActivePrivateMediaVerifierContractCandidate(
+        manifest,
+        activeForwardCandidate,
+      );
+    } else if (activeForwardCandidate.activeCandidate?.kind ===
+      "veroxa_preintervention_acceptance") {
+      assertActivePreinterventionAcceptanceCandidate(
         manifest,
         activeForwardCandidate,
       );

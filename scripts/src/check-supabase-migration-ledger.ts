@@ -53,9 +53,8 @@ must(
     rootTree.sha256 === manifest.migrations.treeSha256 &&
     manifest.releaseCandidate.candidateMigrationsMatchLiveLedger ===
       (pending.length === 0)
-  )) &&
-    (activeForwardCandidate && preflightMigrationApplied ||
-      manifest.currentProductionObservation.productionMigrationCount ===
+  )) && (activeForwardCandidate ||
+    manifest.currentProductionObservation.productionMigrationCount ===
       liveTree.fileCount &&
     manifest.currentProductionObservation.migrationTreeSha256 ===
       liveTree.sha256 &&
@@ -86,9 +85,7 @@ if (failures.length > 0) {
 } else {
   console.log(
     activeForwardCandidate
-      ? preflightMigrationApplied
-        ? `PASS: exact mirrored ${rootTree.fileCount}-migration source records the applied preflight migration while the active private-media forward candidate adds no migration.`
-        : `PASS: exact mirrored ${rootTree.fileCount}-migration candidate preserves the observed ${liveTree.fileCount}-migration production ledger.`
+      ? `PASS: exact mirrored ${rootTree.fileCount}-migration source preserves the guarded CURRENT_STATE live-ledger and pending-migration split.`
       : `PASS: exact mirrored source matches the reconciled ${rootTree.fileCount}-migration ledger.`,
   );
 }

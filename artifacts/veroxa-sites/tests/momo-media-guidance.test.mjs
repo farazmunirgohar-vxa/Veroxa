@@ -180,9 +180,9 @@ test("Client and Team source preserve real links, real-image-first selection, in
   assert.doesNotMatch(client, /history\.pushState/, "Client routing must not depend on a click-only pushState handler");
   assert.doesNotMatch(client, /Share private photos or videos/, "Client dashboard must not promise unsupported video intake");
   assert.match(client, /const MOMO_CLIENT_UPLOAD_SCOPE = \["instagram", "facebook", "google_business"\]/, "Momo upload defaults must stay internal to the Team handoff");
-  assert.match(client, /onSubmit=\{\(event\) => \{ event\.preventDefault\(\); if \(!file \|\| !rightsConfirmed\) return;/, "Momo must require explicit owner permission before creating scoped rights");
-  assert.match(client, /rightsAttested: rightsConfirmed/, "Momo must carry the checked permission state into the fail-closed upload adapter");
-  assert.match(client, /I confirm I own this image or have permission to provide it for Instagram, Facebook, and Google Business content preparation/, "Momo must name every scope covered by the owner attestation");
+  assert.match(client, /onSubmit=\{\(event\) => \{ event\.preventDefault\(\); if \(!file \|\| !uploadAttested\) return;/, "The restaurant must explicitly attest rights and current-offering association before upload");
+  assert.match(client, /restaurantAssociation: "represents_current_restaurant_offering"[\s\S]*?associationNote: "Authenticated restaurant uploader attested that this image depicts a current restaurant offering\."[\s\S]*?rightsAttested: uploadAttested/, "The checked contract must reach the fail-closed upload adapter with a fixed truthful note");
+  assert.match(client, /I confirm I own this image or have permission to provide it, and that it depicts a current offering from \{restaurantName\}, for Instagram, Facebook, and Google Business content preparation/, "The restaurant must attest both rights and a current restaurant offering for every named scope");
   assert.match(client, /getMomoClientMediaPreview\(storagePath\)/, "Client media must open signed private original and derivative previews inline");
   assert.match(client, /<img src=\{previewUrl\}/, "Client must show the actual private image instead of a placeholder");
   assert.match(client, /renditionStatus: item\.renditionStatus/, "Client Ready must come from sanitized rendition readback");
