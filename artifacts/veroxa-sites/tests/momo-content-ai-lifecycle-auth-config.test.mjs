@@ -3,10 +3,12 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 function functionVerifyJwt(config, slug) {
-  const match = config.match(new RegExp(
-    `\\[functions\\.${slug.replaceAll("-", "\\-")}\\]\\n(?:#.*\\n)*verify_jwt = (true|false)`,
-    "u",
-  ));
+  const section = `[functions.${slug}]`;
+  const sectionStart = config.indexOf(section);
+  if (sectionStart < 0) return null;
+  const nextSection = config.indexOf("\n[functions.", sectionStart + section.length);
+  const block = config.slice(sectionStart, nextSection < 0 ? undefined : nextSection);
+  const match = block.match(/(?:^|\n)verify_jwt = (true|false)(?:\n|$)/u);
   return match?.[1] ?? null;
 }
 
