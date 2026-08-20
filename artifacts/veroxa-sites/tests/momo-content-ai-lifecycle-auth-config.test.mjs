@@ -36,6 +36,7 @@ test("content lifecycle bypasses only the platform JWT precheck while preserving
   assert.ok(userGate >= 0, "handler must validate the access token through Supabase Auth");
   assert.ok(adminClient >= 0, "handler must retain an explicit privileged client boundary");
   assert.ok(bearerGate < adminClient, "bearer gate must run before privileged access");
+  assert.ok(bridgeSignatureGate < userGate, "bridge signature must fail closed before user lookup");
   assert.ok(bridgeSignatureGate < adminClient, "bridge signature invocation must run before privileged access");
   assert.ok(userGate < adminClient, "Supabase Auth validation must run before privileged access");
   assert.match(source, /if \(!verified\) return response\(\{ error: "bridge_access_required" \}, 403\)/u);
