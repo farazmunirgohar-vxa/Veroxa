@@ -1,8 +1,12 @@
 [functions.momo-media-ai-lifecycle]
 verify_jwt = true
 
+# VER-39: the content lifecycle performs its own dual authorization inside the
+# handler (Supabase Auth getUser(accessToken) + the dedicated Ed25519 bridge
+# signature). The platform JWT precheck returned 401 before the handler for the
+# production acceptance session, so it must not shadow the stronger handler gate.
 [functions.momo-content-ai-lifecycle]
-verify_jwt = true
+verify_jwt = false
 
 [functions.momo-content-ai-webhook-lifecycle]
 verify_jwt = false
