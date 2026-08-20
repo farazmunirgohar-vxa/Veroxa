@@ -115,6 +115,7 @@ const ACTIVE_PREINTERVENTION_ACCEPTANCE_CANDIDATE_ALLOWED_PATHS = new Set([
   "artifacts/veroxa-sites/tests/momo-media-finalize-route.test.mjs",
   "artifacts/veroxa-sites/tests/momo-media-ingestion-recovery.test.mjs",
   "artifacts/veroxa-sites/tests/momo-operating-ux.test.mjs",
+  "artifacts/veroxa-sites/tests/momo-upload-veroxa-ready-v2-contract.test.mjs",
   "artifacts/veroxa-sites/tests/momo-v2-team-surface.test.mjs",
   "artifacts/veroxa-sites/tests/rendered-html.test.mjs",
   "artifacts/veroxa/docs/ACTIVE_DOCS_INDEX.md",

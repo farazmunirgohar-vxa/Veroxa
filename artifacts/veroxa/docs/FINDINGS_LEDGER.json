@@ -899,6 +899,56 @@
       "productionEvidence": [],
       "rollbackMethod": "Do not apply the candidate if registered evidence fields are mutable or replay is not bound to them.",
       "finalStatus": "local_evidence_repair_pending_exact_head_hosted_replay_proof"
+    },
+    {
+      "findingId": "F-036",
+      "originalConcern": "Sites Verify failed two contract assertions because the suite still expected pre-server-authoritative registration IDs on a session-finalize error and matched the superseded input.assetId failure-ledger expression.",
+      "freshVerificationResult": "The upload test now reflects the truthful initiated-session result (reserved bytes with no asset or rights identity until trusted commit), and the lifecycle guard follows the hardened failureAssetId used for durable failure recording.",
+      "severity": "low",
+      "affectedSystems": [
+        "Sites verification",
+        "media upload contract tests",
+        "release confidence"
+      ],
+      "rootCause": "Two source-level expectations lagged the server-authoritative registration refactor even though the implementation behavior was intentional and fail-closed.",
+      "correctiveAction": "Update the stale assertions, retain the no-delete retry guarantee, and include the lifecycle contract test in the exact candidate path allowlist.",
+      "branch": "agent/veroxa-pre-intervention-proof-20260815",
+      "pullRequest": 193,
+      "commit": null,
+      "migrationOrDeployment": "pending exact-head Sites Verify rerun",
+      "tests": [
+        "momo-client-media-upload.test.mjs expects null identities before trusted commit",
+        "momo-upload-veroxa-ready-v2-contract.test.mjs binds durable failure evidence to failureAssetId",
+        "full hosted Sites Verify rerun is pending"
+      ],
+      "productionEvidence": [],
+      "rollbackMethod": "Do not merge while Sites Verify is not green on the exact repaired head.",
+      "finalStatus": "contract_test_repair_pending_exact_head_sites_verify"
+    },
+    {
+      "findingId": "F-037",
+      "originalConcern": "Hosted pgTAP stopped at the first begin-upload validation because COALESCE, which is PostgreSQL syntax rather than a schema-qualified function, was written as pg_catalog.coalesce.",
+      "freshVerificationResult": "Every invalid pg_catalog.coalesce occurrence in the mirrored candidate migration is now the valid built-in COALESCE expression, preserving the same null-safe validation and claim-restoration semantics.",
+      "severity": "high",
+      "affectedSystems": [
+        "Supabase Verify",
+        "media upload session creation",
+        "service-authoritative upload commit"
+      ],
+      "rootCause": "Search-path hardening was applied mechanically to the COALESCE expression even though PostgreSQL does not expose it as a callable pg_catalog function.",
+      "correctiveAction": "Use unqualified COALESCE syntax at all six affected call sites in both byte-identical migration mirrors and refresh the candidate fingerprints.",
+      "branch": "agent/veroxa-pre-intervention-proof-20260815",
+      "pullRequest": 193,
+      "commit": null,
+      "migrationOrDeployment": "pending repaired migration 20260815191500_veroxa_preintervention_acceptance_v1.sql",
+      "tests": [
+        "hosted migration chain applied successfully before pgTAP",
+        "pgTAP tests 14 and 15 reached the invalid expression and exposed SQLSTATE 42883",
+        "full hosted Supabase Verify rerun is pending"
+      ],
+      "productionEvidence": [],
+      "rollbackMethod": "Do not apply the candidate migration unless all 57 hosted pgTAP assertions and database lint pass.",
+      "finalStatus": "sql_expression_repair_pending_exact_head_supabase_verify"
     }
   ]
 }

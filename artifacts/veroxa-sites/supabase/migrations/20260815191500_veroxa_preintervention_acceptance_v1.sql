@@ -1224,7 +1224,7 @@ begin
   if p_original_sha256 is null
      or p_original_sha256 !~ '^[0-9a-f]{64}$'
      or p_mime_type not in ('image/jpeg','image/png')
-     or not pg_catalog.coalesce(
+     or not coalesce(
        p_file_size between 10240 and 10485760, false
      )
      or normalized_file_name is null
@@ -1238,7 +1238,7 @@ begin
        'licensed_generic_only',
        'represents_current_restaurant_offering'
      )
-     or pg_catalog.char_length(pg_catalog.coalesce(p_association_note, '')) > 2000
+     or pg_catalog.char_length(coalesce(p_association_note, '')) > 2000
      or (p_expires_on is not null and p_expires_on <
        (pg_catalog.now() at time zone 'America/Chicago')::date)
      or (p_requested_association =
@@ -1737,10 +1737,10 @@ begin
      or storage_object.name is distinct from session.storage_path
      or storage_object.owner_id is distinct from
        session.created_by_actor_id::text
-     or pg_catalog.coalesce(
+     or coalesce(
        storage_object.metadata ->> 'mimetype', ''
      ) is distinct from session.declared_mime_type
-     or (case when pg_catalog.coalesce(
+     or (case when coalesce(
        storage_object.metadata ->> 'size', ''
      ) ~ '^[0-9]{1,30}$'
        then (storage_object.metadata ->> 'size')::numeric is distinct from
@@ -1790,10 +1790,10 @@ begin
     session.association_note
   );
   perform pg_catalog.set_config(
-    'request.jwt.claim.sub', pg_catalog.coalesce(prior_claim_sub, ''), true
+    'request.jwt.claim.sub', coalesce(prior_claim_sub, ''), true
   );
   perform pg_catalog.set_config(
-    'request.jwt.claims', pg_catalog.coalesce(prior_claims, ''), true
+    'request.jwt.claims', coalesce(prior_claims, ''), true
   );
 
   select * into strict receipt

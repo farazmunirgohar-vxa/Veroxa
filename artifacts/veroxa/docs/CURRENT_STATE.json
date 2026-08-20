@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "recordKind": "veroxa_current_state",
   "stateAuthority": "current_deployed_state_and_explicit_forward_candidate",
-  "updatedAt": "2026-08-20T05:19:12Z",
+  "updatedAt": "2026-08-20T05:38:07Z",
   "phase": "preintervention_acceptance_candidate_pending_exact_head_gates_and_live_proof",
   "currentVerdict": "NOT READY — AUTONOMOUS WORK REMAINS",
   "production": {
@@ -91,10 +91,10 @@
     ],
     "migration": {
       "filename": "20260815191500_veroxa_preintervention_acceptance_v1.sql",
-      "sha256": "b4dc1a2278466eab3896579fafefd402040b47e4d9aaa3663c5c2aecc8042842",
-      "byteLength": 76281,
+      "sha256": "52f2375950a8a576ed72368b08b300835150806a463f29e3a7761857af5c9e72",
+      "byteLength": 76215,
       "candidateMigrationCount": 60,
-      "candidateMigrationTreeSha256": "a305c68d76e73d416eef148929f8ae3bf8c9470836d4a6a6f80628fe02a72652",
+      "candidateMigrationTreeSha256": "8ce1353e622a5e1dfb95d44c95dbdb7e31471e917b4c7512a89590ce9d1e20ea",
       "productionBaselineMigrationCount": 59,
       "productionBaselineMigrationTreeSha256": "5c2cb401005a3828117b4a67da82be9557e5f7bdc1fe2fdd60332c9b6b07c61c",
       "applied": false

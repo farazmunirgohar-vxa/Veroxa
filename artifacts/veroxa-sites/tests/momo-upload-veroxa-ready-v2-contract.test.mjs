@@ -585,5 +585,5 @@ test("finalize advances through the signed lifecycle and records failures indepe
   assert.doesNotMatch(routeFailure, /invokeMomoContentAiLifecycleBridge/u);
   assert.match(finalizeCore, /\[\s*"media_verification_unavailable",\s*"media_verification_failed",\s*"media_not_platform_ready",\s*"media_not_assessable",\s*\]\.includes\(publicError\.code\)/u);
   assert.match(finalizeCore, /`momo-intake-failure-v2:\$\{evidenceSha256\}`/u);
-  assert.match(finalizeCore, /recordedIntakeFailure\(recorded, input\.assetId\)[\s\S]*?team_exception_recorded/u);
+  assert.match(finalizeCore, /recordedIntakeFailure\(recorded, failureAssetId\)[\s\S]*?team_exception_recorded/u);
 });

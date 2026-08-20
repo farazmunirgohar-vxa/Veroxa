@@ -219,7 +219,7 @@ test("Team assessment registration rejects every external preparation scope", as
   }
 });
 
-test("registered originals remain saved and retryable when finalization needs attention", async () => {
+test("reserved originals remain saved and retryable when session finalization needs attention", async () => {
   const { calls, dependencies } = harness({ finalize: async () => { throw new MomoMediaFinalizeRequestError("media_not_platform_ready", 422); } });
   const result = await uploadMomoClientMediaWithDependencies({
     restaurantId: RESTAURANT_ID,
@@ -230,14 +230,14 @@ test("registered originals remain saved and retryable when finalization needs at
   }, dependencies);
   assert.deepEqual(result, {
     status: "uploaded_but_needs_attention",
-    assetId: ASSET_ID,
+    assetId: null,
     storagePath: calls.upload[0].path,
     errorCode: "media_not_platform_ready",
     failureReceipt: null,
     externalWriteAllowed: false,
-    rightsId: RIGHTS_ID,
+    rightsId: null,
   });
-  assert.equal(calls.remove.length, 0, "a registered original must never be deleted after finalize failure");
+  assert.equal(calls.remove.length, 0, "a reserved original must never be deleted after session-finalize failure");
   assert.equal(calls.rpc[0].name, "veroxa_begin_media_upload_v1");
   assert.equal(calls.rpc[0].parameters.p_requested_association, "not_for_restaurant",
     "the upload instruction must be registered before finalization starts");
