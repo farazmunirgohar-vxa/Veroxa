@@ -85,6 +85,10 @@ const PREINTERVENTION_ACCEPTANCE_MIGRATION =
 const PREINTERVENTION_ACCEPTANCE_PGTAP =
   "veroxa_preintervention_acceptance_v1.sql";
 const ACTIVE_PREINTERVENTION_ACCEPTANCE_CANDIDATE_ALLOWED_PATHS = new Set([
+  "artifacts/veroxa-sites/supabase/config.toml",
+  "artifacts/veroxa-sites/tests/momo-content-ai-lifecycle-auth-config.test.mjs",
+  "artifacts/veroxa-sites/tests/momo-upload-ready-contract.test.mjs",
+  "supabase/config.toml",
   ".github/workflows/supabase-verify.yml",
   "AGENTS.md",
   "artifacts/veroxa-sites/app/account-security.tsx",
