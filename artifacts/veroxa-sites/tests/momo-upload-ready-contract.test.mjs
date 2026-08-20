@@ -6,6 +6,7 @@ const sql = await readFile(new URL("../supabase/migrations/20260801011047_momo_u
 const indexSql = await readFile(new URL("../supabase/migrations/20260801011301_momo_upload_ready_index_hardening.sql", import.meta.url), "utf8");
 const supabaseConfig = await readFile(new URL("../supabase/config.toml", import.meta.url), "utf8");
 const contentRoute = await readFile(new URL("../app/api/team/content-ai/package/route.ts", import.meta.url), "utf8");
+const contentLifecycleEdge = await readFile(new URL("../supabase/functions/momo-content-ai-lifecycle/index.ts", import.meta.url), "utf8");
 
 test("server intake accepts only an exact three-platform-ready JPG profile", () => {
   assert.match(sql, /detected_mime_type text not null check \(detected_mime_type = 'image\/jpeg'\)/);
@@ -63,8 +64,22 @@ test("Ready recomputes exact copy, SEO, hashtags, schedule, and posting-off stat
   assert.match(sql, /variant\.scheduled_for <= now\(\)/);
 });
 
-test("the content lifecycle edge function requires a verified JWT", () => {
-  assert.match(supabaseConfig, /\[functions\.momo-content-ai-lifecycle\]\s+verify_jwt = true/u);
+test("content lifecycle bypasses only the platform JWT precheck while enforcing handler dual auth", () => {
+  assert.match(supabaseConfig, /\[functions\.momo-content-ai-lifecycle\]\s+verify_jwt = false/u);
+  assert.match(supabaseConfig, /\[functions\.momo-media-ai-lifecycle\]\s+verify_jwt = true/u);
+  const bearerGate = contentLifecycleEdge.indexOf('authorization.startsWith("Bearer ")');
+  const signatureGate = contentLifecycleEdge.indexOf("verifyMomoContentAiBridgeSignature");
+  const userGate = contentLifecycleEdge.indexOf("userClient.auth.getUser(accessToken)");
+  const adminClient = contentLifecycleEdge.indexOf("const admin = createClient");
+  assert.ok(bearerGate >= 0, "handler must require a bearer user session");
+  assert.ok(signatureGate >= 0, "handler must verify the dedicated bridge signature");
+  assert.ok(userGate >= 0, "handler must validate the access token with Supabase Auth");
+  assert.ok(adminClient >= 0, "handler must preserve a privileged client boundary");
+  assert.ok(bearerGate < adminClient, "bearer gate must run before privileged access");
+  assert.ok(signatureGate < adminClient, "bridge signature gate must run before privileged access");
+  assert.ok(userGate < adminClient, "Supabase Auth validation must run before privileged access");
+  assert.match(contentLifecycleEdge, /if \(!verified\) return response\(\{ error: "bridge_access_required" \}, 403\)/u);
+  assert.match(contentLifecycleEdge, /if \(userError \|\| !userData\.user/u);
   assert.match(contentRoute, /VEROXA_MOMO_CONTENT_AI_ENABLED === "true"/u);
   assert.match(contentRoute, /width > MOMO_CONTENT_AI_MAX_SOURCE_WIDTH/);
   assert.match(contentRoute, /height > MOMO_CONTENT_AI_MAX_SOURCE_HEIGHT/);
