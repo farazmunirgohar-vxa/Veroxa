@@ -1,5 +1,39 @@
 <!-- GUARDED_INTERNAL_AI_ROLLOUT_AUTHORITY -->
 
+## 2026-08-21 — reconciled R3 live status (current authority)
+
+- **Authority chain:** read `CURRENT_STATE.json`, `CURRENT_MILESTONE.md`, and
+  `VEROXA_LIVE_STATUS_CLOSEOUT_20260821.json` first. Exact connected-platform
+  evidence outranks this snapshot. The schema-13 deployment manifest remains
+  immutable PR #185 / Sites v56 incident history, not current status.
+- **Observed release:** GitHub `main` was PR #202 merge
+  `ccbe2ecffd3df8aa24c9b2994efbab35d01e8f56`. Sites v66 deployment
+  `appgdep_6a87ee29daf88191bd2813485deefb88` succeeded; its 245-file runtime
+  subtree at `85f50c41751f38a49bd6ce3eadfb9bf1f90065615b84b2d6c8707ca7e23d89a7`
+  exactly matches the observed main runtime source. Both domains and SSL are
+  active.
+- **Database/runtime:** Supabase is `ACTIVE_HEALTHY`, plan `pro`, with 60
+  migrations. All five active Edge bundles have exact current-main source-file
+  parity; webhook lifecycle is v6. Both runtime-control rows and the acceptance
+  scope keep all external writes closed.
+- **Blocker and sequence:** VER-40 is Done and VER-41 is Todo. The old synthetic
+  session is expired and unregistered. Preserve it; the next proof requires a
+  fresh Client-authenticated, database-authorized session for the exact same
+  synthetic bytes. VER-26 is In Progress; VER-27 and VER-28 are Todo.
+- **No GO:** synthetic success, replay/failure, authenticated portals, separate
+  Team decision, and founder gates are incomplete. `ready_for_team_review` is
+  internal evidence only. No Momo or founder GO, publication, provider write,
+  schedule, message, account connection, or customer action is authorized.
+- **Pro boundary:** Supabase Pro is governed capacity. Prefer included capacity;
+  require a concrete need, current price/limit evidence, owner, bounded life,
+  rollback/cancellation, and verification for metered or recurring features.
+  Spend Cap, backup, optional-feature, usage, and cost configuration are
+  unverified unless directly observed. Read
+  `SUPABASE_PRO_CAPACITY_AND_WORKFLOW_DIRECTION.md`.
+- **Media boundary:** IMG_4257 remains terminal, immutable, read-only,
+  non-Ready, and has zero retries. Never retry, reprocess, resubmit, move,
+  replace, delete, re-upload, transition it to Ready, or use it as a fixture.
+
 ## 2026-08-21 — GitHub/Copilot capacity and agent ownership (current workflow authority)
 
 This section governs account capacity and task ownership only. Read
@@ -9,7 +43,7 @@ and production state.
 - **GitHub and Copilot account capacity (owner-reported):** Faraz reports that the personal account owning `farazmunirgohar-vxa/Veroxa` now has GitHub Pro and Copilot Pro. Treat the subscriptions as available capacity, not release evidence or blanket spend authority. Use included capacity only; paid AI-credit overage, larger runners, plan upgrades, Copilot autofix/merge, and other paid add-ons remain unauthorized.
 - **Durable agent ownership:** Apply this split immediately to every current and future Veroxa task and automation. Codex owns implementation, tests, fixes, connected-platform operations, release evidence, and authorized release execution. Copilot exclusively owns every pull-request code review assigned to it; Codex must not duplicate that review. Copilot must not edit or create competing work for a Codex-owned task. Request Copilot only on a stable candidate head, never automatically on every draft push; after a material fix, request one re-review on the next stable head. If the reviewer is unavailable or out of included credits, hold and report rather than silently reassigning. Copilot Memory is supplementary and never outranks `AGENTS.md`, the current milestone, exact GitHub state, or verified live evidence.
 
-## 2026-08-20 — R3 pre-intervention readiness (current authority)
+## 2026-08-20 — R3 pre-intervention readiness (historical, superseded)
 
 Read `artifacts/veroxa/docs/CURRENT_MILESTONE.md` first. Live verified state outranks the ordered R3 Linear program; the program outranks exact reviewed code and evidence; older date-stamped claims are historical.
 

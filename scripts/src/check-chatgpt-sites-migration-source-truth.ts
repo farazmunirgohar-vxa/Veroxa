@@ -18,10 +18,122 @@ const read = (relativePath: string): string =>
   readFileSync(resolve(repoRoot, relativePath), "utf8");
 const manifest = readDeploymentManifest();
 const activeForwardCandidate = hasActiveMediaInspectionForwardCandidate();
+const currentState = JSON.parse(
+  read("artifacts/veroxa/docs/CURRENT_STATE.json"),
+) as Record<string, any>;
+const reconciledLiveStatus = currentState.phase ===
+  "r3_acceptance_live_stack_reconciled_auth_session_blocked";
 try {
   assertReviewedLocalCandidateManifest(manifest);
 } catch (error) {
   failures.push(error instanceof Error ? error.message : String(error));
+}
+
+if (reconciledLiveStatus) {
+  const currentAuthorityDocs = [
+    "AGENTS.md",
+    "artifacts/veroxa/docs/ACTIVE_DOCS_INDEX.md",
+    "artifacts/veroxa/docs/VEROXA_LOCKED_OPERATING_MEMORY.md",
+  ];
+  const requiredCurrentMarkers = [
+    "ccbe2ecffd3df8aa24c9b2994efbab35d01e8f56",
+    "Sites v66",
+    "60",
+    "VER-40",
+    "VER-41",
+    "VER-26",
+    "VER-27",
+    "VER-28",
+    "Supabase Pro",
+  ];
+  for (const path of currentAuthorityDocs) {
+    const text = read(path);
+    must(!/^(<<<<<<<|=======|>>>>>>>)/mu.test(text),
+      path + " contains merge markers.");
+    const headings = text.match(/^## .*?\(current authority\)$/gmu) ?? [];
+    must(headings.length === 1,
+      path + " must contain exactly one current-authority heading.");
+    const currentHeading = headings[0] ?? "";
+    const start = headings.length === 1 ? text.indexOf(currentHeading) : -1;
+    const next = start < 0
+      ? -1
+      : text.indexOf("\n## ", start + currentHeading.length);
+    const current = start < 0 ? "" : text.slice(start, next < 0 ? undefined : next);
+    for (const marker of requiredCurrentMarkers) {
+      must(current.includes(marker),
+        path + " is missing reconciled authority marker: " + marker);
+    }
+    must(/no Momo or founder GO/iu.test(current),
+      path + " does not explicitly preserve the no-GO boundary.");
+  }
+
+  const milestone = read("artifacts/veroxa/docs/CURRENT_MILESTONE.md");
+  for (const marker of [
+    "Current Milestone — R3 Acceptance Proof",
+    "NOT READY",
+    "appgdep_6a87ee29daf88191bd2813485deefb88",
+    "45ad07a3-0192-452b-8a01-5d5bf8528ced",
+    "momoGo=false",
+    "VEROXA_LIVE_STATUS_CLOSEOUT_20260821.json",
+  ]) must(milestone.includes(marker),
+    "CURRENT_MILESTONE.md is missing marker: " + marker);
+
+  const capacity = read(
+    "artifacts/veroxa/docs/SUPABASE_PRO_CAPACITY_AND_WORKFLOW_DIRECTION.md",
+  );
+  for (const marker of [
+    "governed capacity",
+    "Spend Cap configuration",
+    "unverified",
+    "Release exact reviewed bytes",
+    "Copilot alone reviews",
+  ]) must(capacity.includes(marker),
+    "Supabase Pro authority is missing marker: " + marker);
+
+  const closeout = JSON.parse(read(
+    "artifacts/veroxa/docs/VEROXA_LIVE_STATUS_CLOSEOUT_20260821.json",
+  )) as Record<string, any>;
+  must(
+    closeout.recordKind === "veroxa_live_status_closeout" &&
+      closeout.status === "live_stack_reconciled_acceptance_incomplete" &&
+      closeout.github?.observedMainCommit ===
+        "ccbe2ecffd3df8aa24c9b2994efbab35d01e8f56" &&
+      closeout.sites?.version === 66 &&
+      closeout.sites?.runtimeSubtree?.matchesObservedGitHubMain === true &&
+      closeout.supabase?.migrations?.count === 60 &&
+      closeout.edge?.allActiveFunctionBundleSourcesMatchObservedGitHubMain === true &&
+      closeout.supabase?.externalActionLocks?.status === "closed" &&
+      closeout.r3Program?.syntheticGate?.complete === false &&
+      closeout.r3Program?.authenticatedPortalGate?.complete === false &&
+      closeout.r3Program?.founderGate?.complete === false &&
+      closeout.r3Program?.founderGate?.momoGo === false &&
+      closeout.productBoundary?.runtimeOrPlatformMutationPerformed === false,
+    "live-status closeout is incomplete, stale, or overclaims an acceptance gate",
+  );
+  must(
+    currentState.currentStatusCloseout ===
+        "artifacts/veroxa/docs/VEROXA_LIVE_STATUS_CLOSEOUT_20260821.json" &&
+      currentState.updatedAt === closeout.observedAt &&
+      currentState.production?.github?.observedMainCommit ===
+        closeout.github?.observedMainCommit &&
+      currentState.production?.sites?.runtimeSubtreeSha256 ===
+        closeout.sites?.runtimeSubtree?.sha256 &&
+      currentState.production?.supabase?.migrationTreeSha256 ===
+        closeout.supabase?.migrations?.treeSha256 &&
+      currentState.activeCandidate?.requiredGates?.syntheticSuccessPassed === false &&
+      currentState.activeCandidate?.requiredGates?.restaurantPortalVerified === false &&
+      currentState.activeCandidate?.requiredGates?.founderGoIssued === false,
+    "CURRENT_STATE does not match the reconciled closeout or preserves no-GO incompletely",
+  );
+
+  if (failures.length > 0) {
+    for (const failure of failures) console.error("FAIL:", failure);
+    process.exit(1);
+  }
+  console.log(
+    "PASS: current Veroxa status, Sites/Supabase/Edge parity, incomplete R3 gates, and governed Supabase Pro capacity are aligned.",
+  );
+  process.exit(0);
 }
 
 

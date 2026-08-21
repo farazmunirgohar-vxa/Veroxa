@@ -2,147 +2,126 @@
   "schemaVersion": 1,
   "recordKind": "veroxa_current_state",
   "stateAuthority": "current_deployed_state_and_explicit_forward_candidate",
-  "updatedAt": "2026-08-20T06:02:51Z",
-  "phase": "preintervention_acceptance_candidate_pending_exact_head_gates_and_live_proof",
-  "currentVerdict": "NOT READY — AUTONOMOUS WORK REMAINS",
+  "updatedAt": "2026-08-21T06:37:49Z",
+  "phase": "r3_acceptance_live_stack_reconciled_auth_session_blocked",
+  "currentVerdict": "NOT READY — R3 ACCEPTANCE GATES OPEN",
+  "currentStatusCloseout": "artifacts/veroxa/docs/VEROXA_LIVE_STATUS_CLOSEOUT_20260821.json",
   "production": {
     "github": {
       "repository": "farazmunirgohar-vxa/Veroxa",
-      "visibility": "public",
       "defaultBranch": "main",
-      "mainCommit": "a05e7a79b2c527ff93a4c3810afc6ada193fce6c",
-      "mainTree": "a0c26f7df224ec00d366edc8e7f38f8e829999d2",
-      "latestApplicationSourceCommit": "7cb6173ce76cff840017b2b4ecfa37c31cb07a09",
-      "latestMergedPullRequest": 195,
-      "pullRequest191": {
-        "head": "aabb1efc72cfcc1ee649572dd033c7806a28dbb0",
-        "mergeCommit": "7cb6173ce76cff840017b2b4ecfa37c31cb07a09",
-        "sourceTreeMatchesMain": true,
-        "workflowRuns": {
-          "ci": 31873987160,
-          "sitesVerify": 31873987170,
-          "supabaseVerify": 31873987150,
-          "veroxaVerify": 31873987157
-        },
-        "allFourExactHeadWorkflowsGreen": true,
-        "unresolvedNonOutdatedP1Threads": 1,
-        "approvedReviews": 0
-      },
-      "mainProtected": false
+      "observedMainCommit": "ccbe2ecffd3df8aa24c9b2994efbab35d01e8f56",
+      "observedMainTree": "0904bd1ddaeb8fc8d981f064a31b20133dae64eb",
+      "latestMergedPullRequest": 202,
+      "pullRequest202Head": "f8e78c3b8f7863151e68867062c387973689ac4f",
+      "runtimeChangedByPullRequest202": false
     },
     "sites": {
       "projectId": "appgprj_6a53d07c7c28819182801cf35dfd30de",
-      "slug": "veroxa-client-experience",
-      "lastProvenVersion": 59,
-      "lastProvenDeploymentId": "appgdep_6a8016eee874819184f031daa896048c",
-      "lastProvenRepositoryTree": "6445d25718fee4fc4321b9336302d604ad623fc3",
-      "lastProvenApplicationTree": "602b6c339c285b62667064ba5094f95359002ddd",
-      "savedVersion": 60,
-      "savedVersionApplicationTree": "35a8ea7d8efc4723c65622675c177e77ee575138",
-      "savedVersionLiveDeploymentProven": false,
-      "pullRequest191LiveParityProven": false,
+      "version": 66,
+      "versionId": "appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_8b15a03fe30c8191869f407d796ce5a8",
+      "deploymentId": "appgdep_6a87ee29daf88191bd2813485deefb88",
+      "deploymentStatus": "succeeded",
+      "internalSourceCommit": "85e2bc4f7eb3a6b23a5bd1d2f3934d0d1c44364f",
+      "runtimeSubtreeFileCount": 245,
+      "runtimeSubtreeSha256": "85f50c41751f38a49bd6ce3eadfb9bf1f90065615b84b2d6c8707ca7e23d89a7",
+      "matchesObservedGitHubMainRuntimeSubtree": true,
       "environmentRevision": 22,
-      "productionUrl": "https://veroxasystems.com"
+      "productionUrl": "https://veroxasystems.com",
+      "apexDomainHealthy": true,
+      "wwwDomainHealthy": true
     },
     "supabase": {
+      "organizationId": "vxenhhycymlsccamhayg",
       "projectRef": "mwqkhsvdezeykdpqhqec",
       "projectName": "Veroxa Dev",
       "health": "ACTIVE_HEALTHY",
       "plan": "pro",
       "region": "us-east-2",
-      "migrationCount": 59,
-      "latestMigration": "20260815090000_media_inspection_preflight_canary_v1.sql",
-      "appliedMigrationVersion": "20260815062451",
-      "appliedMigrationName": "media_inspection_preflight_canary_v1",
-      "completedIntakeCount": 0,
-      "canonicalIdentityCount": 0,
-      "privateAssessmentCount": 0,
-      "contentAiRunCount": 0,
-      "readyPackageCount": 0
+      "migrationCount": 60,
+      "latestPlatformMigrationVersion": "20260820163500",
+      "latestPlatformMigrationName": "veroxa_preintervention_acceptance_v1",
+      "latestCanonicalMigration": "20260815191500_veroxa_preintervention_acceptance_v1.sql",
+      "latestCanonicalMigrationSha256": "fe047343b1bab6a5da5222ab78acbd2c87fa7cd0713cd317dbf51dc64404950e",
+      "migrationTreeSha256": "4c91224d731322539bdea70c3c4e802960b0fa4bc154faef19896a5a23794875",
+      "externalActionLocksClosed": true
+    },
+    "edge": {
+      "allActiveFunctionBundleSourcesMatchObservedGitHubMain": true,
+      "mediaLifecycleVersion": 4,
+      "contentLifecycleVersion": 14,
+      "webhookLifecycleVersion": 6,
+      "dispatchLifecycleVersion": 4,
+      "legacyPurgeVersion": 11
     }
-  },
-  "img4257": {
-    "label": "IMG_4257",
-    "assetId": "05ab2303-f7ea-4056-8f75-9cd7e523a4f4",
-    "storageObjectId": "3df8b899-f438-41be-9e21-f15e6e7cb6c7",
-    "storageObjectVersion": "a6a293a9-4364-4867-878c-64bfc662dff9",
-    "attemptCount": 4,
-    "lastOutcome": "media_recovery_completion_unavailable",
-    "outboxState": "dead_letter",
-    "verificationPersisted": false,
-    "ready": false,
-    "authorizedRetriesRemaining": 0,
-    "permittedAccess": "read_only_immutable_evidence_reconciliation",
-    "terminalInstruction": "never_retry_reprocess_resubmit_move_replace_delete_reupload_or_transition_to_ready"
   },
   "activeCandidate": {
     "kind": "veroxa_preintervention_acceptance",
-    "branch": "agent/veroxa-pre-intervention-proof-20260815",
-    "state": "local_candidate_pending_exact_head_ci_review_merge_migration_apply_deploy_and_production_proof",
-    "basedOnGitHubMainCommit": "a05e7a79b2c527ff93a4c3810afc6ada193fce6c",
-    "basedOnGitHubMainTree": "a0c26f7df224ec00d366edc8e7f38f8e829999d2",
+    "state": "live_platform_reconciled_acceptance_proof_blocked",
     "pullRequest": 193,
-    "reviewedHead": null,
-    "mergeCommit": null,
-    "sourceTree": null,
-    "productionDeploymentId": null,
-    "pendingMigrations": [
-      "20260815191500_veroxa_preintervention_acceptance_v1.sql"
-    ],
+    "mergeCommit": "1663028de4def6a94565fe095691191205a7192a",
+    "pendingMigrations": [],
     "migration": {
       "filename": "20260815191500_veroxa_preintervention_acceptance_v1.sql",
       "sha256": "fe047343b1bab6a5da5222ab78acbd2c87fa7cd0713cd317dbf51dc64404950e",
       "byteLength": 76641,
       "candidateMigrationCount": 60,
       "candidateMigrationTreeSha256": "4c91224d731322539bdea70c3c4e802960b0fa4bc154faef19896a5a23794875",
-      "productionBaselineMigrationCount": 59,
-      "productionBaselineMigrationTreeSha256": "5c2cb401005a3828117b4a67da82be9557e5f7bdc1fe2fdd60332c9b6b07c61c",
-      "applied": false
-    },
-    "pgTap": {
-      "filename": "veroxa_preintervention_acceptance_v1.sql",
-      "sha256": "5ef63b0644a6c6c84d785a973b80e86a7437937e9285db554db59d592b8abe31",
-      "byteLength": 50441,
-      "plannedAssertions": 61,
-      "mirrored": true,
-      "hostedExecutionPassed": false
+      "applied": true
     },
     "requiredGates": {
-      "exactHeadCiGreen": false,
-      "independentCodeSecurityReviewPassed": false,
-      "zeroUnresolvedReviewThreads": false,
-      "merged": false,
-      "migrationAppliedAndReadBack": false,
-      "exactSourceDeployed": false,
+      "releaseSourceMerged": true,
+      "migrationAppliedAndReadBack": true,
+      "exactRuntimeSourceDeployed": true,
+      "edgeBundleParityProven": true,
+      "externalActionLocksClosed": true,
+      "freshAuthenticatedUploadSession": false,
       "syntheticSuccessPassed": false,
       "duplicateReplayIdempotent": false,
       "controlledFailureFailedClosed": false,
       "restaurantPortalVerified": false,
       "teamPortalVerified": false,
-      "mobileVerified": false,
-      "tenantAndRoleIsolationPassed": false,
-      "externalActionAuditPassed": false
+      "separateTeamDecisionVerified": false,
+      "founderGoIssued": false
     },
     "externalActionLockRequired": true,
     "img4257RetriesRemaining": 0
   },
-  "syntheticAcceptance": {
-    "testRestaurantCreated": false,
-    "successAssetUploaded": false,
-    "successAssetReady": false,
-    "duplicateReplayed": false,
-    "invalidFixtureSubmitted": false,
-    "portalProofCompleted": false,
-    "productionProofStarted": false,
-    "customerMediaUsed": false
+  "acceptanceBlocker": {
+    "linearIssue": "VER-41",
+    "linearStatus": "Todo",
+    "uploadSessionId": "45ad07a3-0192-452b-8a01-5d5bf8528ced",
+    "uploadSessionState": "expired",
+    "uploadSessionRegistered": false,
+    "nextSafeStep": "create_a_fresh_client_authenticated_database_authorized_session_for_the_same_synthetic_bytes",
+    "oldSessionEvidenceMustRemainImmutable": true
   },
-  "pr187": {
-    "number": 187,
-    "title": "Add exact-byte R2 backup vault for private media",
-    "draft": true,
-    "merged": false,
-    "deployed": false,
-    "disposition": "deferred_follow_up_not_part_of_preintervention_acceptance"
+  "r3Program": {
+    "ver40Status": "Done",
+    "ver41Status": "Todo",
+    "syntheticGate": {
+      "issue": "VER-26",
+      "status": "In Progress",
+      "complete": false
+    },
+    "portalGate": {
+      "issue": "VER-27",
+      "status": "Todo",
+      "complete": false
+    },
+    "founderGate": {
+      "issue": "VER-28",
+      "status": "Todo",
+      "complete": false,
+      "momoGo": false
+    }
+  },
+  "img4257": {
+    "label": "IMG_4257",
+    "status": "terminal_immutable_read_only_non_ready",
+    "authorizedRetriesRemaining": 0,
+    "permittedAccess": "read_only_immutable_evidence_reconciliation",
+    "terminalInstruction": "never_retry_reprocess_resubmit_move_replace_delete_reupload_or_transition_to_ready"
   },
   "externalActionLock": {
     "publishing": false,
@@ -157,33 +136,20 @@
     "pricingChange": false,
     "repositoryVisibilityChange": false
   },
-  "externalActionCounts": {
-    "observedAt": "2026-08-15T18:51:59.215582Z",
-    "publishedPosts": 0,
-    "scheduledExternalPosts": 0,
-    "publishAttempts": 0,
-    "externalMessages": 0,
-    "publishedReviewReplies": 0,
-    "restaurantAccountConnections": 0,
-    "websiteProviderWrites": 0,
-    "orderingProviderWrites": 0,
-    "advertisingProviderWrites": 0
-  },
-  "deferredLimitations": [
-    "PR #187 remains draft, unmerged, and undeployed.",
-    "The Supabase project is named Veroxa Dev; environment-name reconciliation remains deferred until after the core acceptance proof.",
-    "GitHub main is observed unprotected and repository visibility remains public; no visibility change is authorized in this run."
-  ],
-  "usage": {
-    "workModeCheckpoint": "approximately_50_percent",
-    "assessment": "Phase 1 live reconciliation and the bounded local candidate are recorded. Exact-head CI, review, merge, migration application, deployment, synthetic workflow proof, duplicate/failure proof, authenticated portals, and final security verification remain."
+  "supabaseProGovernance": {
+    "authority": "artifacts/veroxa/docs/SUPABASE_PRO_CAPACITY_AND_WORKFLOW_DIRECTION.md",
+    "planVerified": true,
+    "blanketOperationalAuthority": false,
+    "optionalFeatureConfigurationVerified": false,
+    "spendCapConfigurationVerified": false,
+    "usageAndCostVerified": false
   },
   "evidencePointers": [
-    "artifacts/veroxa/docs/history/2026-08-15-preintervention-phase-1-source-of-truth.json",
-    "artifacts/veroxa/docs/FINDINGS_LEDGER.json",
+    "artifacts/veroxa/docs/VEROXA_LIVE_STATUS_CLOSEOUT_20260821.json",
+    "artifacts/veroxa/docs/SUPABASE_PRO_CAPACITY_AND_WORKFLOW_DIRECTION.md",
     "artifacts/veroxa/docs/VEROXA_DEPLOYMENT_MANIFEST.json",
-    "GitHub PR #191 merge 7cb6173ce76cff840017b2b4ecfa37c31cb07a09",
-    "Sites v59 deployment appgdep_6a8016eee874819184f031daa896048c",
-    "Supabase live ledger through platform version 20260815062451"
+    "GitHub PR #202 merge ccbe2ecffd3df8aa24c9b2994efbab35d01e8f56",
+    "Sites v66 deployment appgdep_6a87ee29daf88191bd2813485deefb88",
+    "Supabase live ledger at 60 migrations"
   ]
 }
