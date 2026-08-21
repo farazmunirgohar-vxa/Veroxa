@@ -5,6 +5,10 @@ const CONTEXT = `veroxa:momo-content-ai-lifecycle:v1\nPOST\n${FUNCTION_PATH}`;
 const KEY_PATTERN = /^[A-Za-z0-9+/]{40,196}={0,2}$/u;
 const ACCESS_TOKEN_PATTERN =
   /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/u;
+const UPSTREAM_AUTH_ERROR_CODES = new Set([
+  "bridge_access_required",
+  "team_access_required",
+] as const);
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
 const PREFLIGHT_MESSAGE = new TextEncoder().encode(
   "veroxa:momo-content-ai-lifecycle:key-pair-preflight:v1",
@@ -40,6 +44,10 @@ export type MomoContentAiLifecycleBridgeErrorCode =
   | "momo_content_ai_lifecycle_response_unavailable"
   | "momo_content_ai_lifecycle_response_invalid";
 
+export type MomoContentAiLifecycleUpstreamAuthErrorCode =
+  | "bridge_access_required"
+  | "team_access_required";
+
 export type MomoContentAiLifecycleBridgeTelemetry = {
   event: "momo_content_ai_lifecycle_bridge_failure";
   correlationId: string;
@@ -47,6 +55,7 @@ export type MomoContentAiLifecycleBridgeTelemetry = {
   code: MomoContentAiLifecycleBridgeErrorCode;
   retryable: boolean;
   httpStatus: number | null;
+  upstreamAuthError: MomoContentAiLifecycleUpstreamAuthErrorCode | null;
 };
 
 export class MomoContentAiLifecycleBridgeError extends Error {
@@ -55,6 +64,8 @@ export class MomoContentAiLifecycleBridgeError extends Error {
   readonly correlationId: string;
   readonly retryable: boolean;
   readonly httpStatus: number | null;
+  readonly upstreamAuthError:
+    MomoContentAiLifecycleUpstreamAuthErrorCode | null;
 
   constructor(input: Omit<MomoContentAiLifecycleBridgeTelemetry, "event">) {
     super(input.code);
@@ -64,6 +75,7 @@ export class MomoContentAiLifecycleBridgeError extends Error {
     this.correlationId = input.correlationId;
     this.retryable = input.retryable;
     this.httpStatus = input.httpStatus;
+    this.upstreamAuthError = input.upstreamAuthError;
   }
 }
 
@@ -102,12 +114,38 @@ function defaultTelemetry(event: MomoContentAiLifecycleBridgeTelemetry): void {
   console.warn("veroxa_bridge_failure", JSON.stringify(event));
 }
 
+function allowlistedUpstreamAuthError(
+  response: Response,
+  text: string,
+): MomoContentAiLifecycleUpstreamAuthErrorCode | null {
+  if (text.length < 2 || text.length > 1_024 ||
+    !response.headers.get("content-type")?.toLowerCase().startsWith(
+      "application/json",
+    )) return null;
+  try {
+    const payload: unknown = JSON.parse(text);
+    if (typeof payload !== "object" || payload === null ||
+      Array.isArray(payload) || Object.keys(payload).length !== 1 ||
+      !Object.hasOwn(payload, "error")) return null;
+    const error = (payload as { error?: unknown }).error;
+    return typeof error === "string" &&
+        UPSTREAM_AUTH_ERROR_CODES.has(
+          error as MomoContentAiLifecycleUpstreamAuthErrorCode,
+        )
+      ? error as MomoContentAiLifecycleUpstreamAuthErrorCode
+      : null;
+  } catch {
+    return null;
+  }
+}
+
 export function momoContentAiLifecycleBridgeFailure(input: {
   stage: MomoContentAiLifecycleBridgeStage;
   code: MomoContentAiLifecycleBridgeErrorCode;
   correlationId?: string;
   retryable?: boolean;
   httpStatus?: number | null;
+  upstreamAuthError?: MomoContentAiLifecycleUpstreamAuthErrorCode | null;
   telemetry?: BridgeTelemetrySink;
 }): MomoContentAiLifecycleBridgeError {
   const event: MomoContentAiLifecycleBridgeTelemetry = {
@@ -117,6 +155,7 @@ export function momoContentAiLifecycleBridgeFailure(input: {
     code: input.code,
     retryable: input.retryable === true,
     httpStatus: input.httpStatus ?? null,
+    upstreamAuthError: input.upstreamAuthError ?? null,
   };
   (input.telemetry ?? defaultTelemetry)(event);
   return new MomoContentAiLifecycleBridgeError(event);
@@ -344,6 +383,7 @@ export async function invokeMomoContentAiLifecycleBridge<T>(
       retryable: response.status === 408 || response.status === 429 ||
         response.status >= 500,
       httpStatus: response.status,
+      upstreamAuthError: allowlistedUpstreamAuthError(response, text),
       telemetry,
     });
   }
