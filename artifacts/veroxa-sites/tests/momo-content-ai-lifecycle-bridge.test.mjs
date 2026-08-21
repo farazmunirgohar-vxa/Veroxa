@@ -330,9 +330,16 @@ test("lifecycle bridge exposes only allowlisted auth rejection codes", async () 
         {
           correlationId: CORRELATION_ID,
           telemetry: (event) => events.push(event),
-          fetchImplementation: async () => Response.json(
-            { error: upstreamAuthError },
-            { status: 403 },
+          fetchImplementation: async () => new Response(
+            JSON.stringify({ error: upstreamAuthError }),
+            {
+              status: 403,
+              headers: {
+                "content-type": upstreamAuthError === "team_access_required"
+                  ? 'application/json; charset="utf-8"'
+                  : "application/json",
+              },
+            },
           ),
         },
       ),
@@ -363,6 +370,25 @@ test("lifecycle bridge redacts malformed and non-allowlisted error responses", a
     new Response('{"error":"team_access_required"}', {
       status: 403,
       headers: { "content-type": "text/plain" },
+    }),
+    new Response('{"error":"team_access_required"}', {
+      status: 403,
+      headers: { "content-type": "application/jsonp" },
+    }),
+    new Response('{"error":"team_access_required"}', {
+      status: 403,
+      headers: { "content-type": "application/json, text/plain" },
+    }),
+    new Response(
+      '{"error":"credential_rejected_secret","error":"team_access_required"}',
+      {
+        status: 403,
+        headers: { "content-type": "application/json" },
+      },
+    ),
+    new Response('{"\\u0065rror":"team_access_required"}', {
+      status: 403,
+      headers: { "content-type": "application/json" },
     }),
     new Response("{not-json", {
       status: 403,
