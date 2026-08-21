@@ -576,9 +576,14 @@ test("signature failures, replays, and failed inspection remain fail-closed", as
 });
 
 test("source-level guard replaces the broken Images-only production dependency with a private canary", () => {
+  const fixtureReaderStart = routeSource.indexOf("async function readFixture");
+  const fixtureReaderEnd = routeSource.indexOf("async function ensureFixture");
+  assert.ok(
+    fixtureReaderStart >= 0 && fixtureReaderEnd > fixtureReaderStart,
+  );
   const fixtureReader = routeSource.slice(
-    routeSource.indexOf("async function readFixture"),
-    routeSource.indexOf("async function ensureFixture"),
+    fixtureReaderStart,
+    fixtureReaderEnd,
   );
   assert.match(fixtureReader, /storage\.download\(FIXTURE_PATH\)/u);
   assert.doesNotMatch(fixtureReader, /\b(?:cache|credentials)\s*:/u);
