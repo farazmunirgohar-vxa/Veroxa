@@ -402,6 +402,7 @@ export async function invokeMomoContentAiLifecycleBridge<T>(
   }
   if (!response.ok) {
     const boundedAuthErrorText = await boundedUpstreamAuthErrorText(response);
+    await response.body?.cancel().catch(() => undefined);
     throw momoContentAiLifecycleBridgeFailure({
       stage: "response_status",
       code: "momo_content_ai_lifecycle_bridge_rejected",
