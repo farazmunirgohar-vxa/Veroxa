@@ -166,8 +166,17 @@ const ACTIVE_VER42_FINALIZE_BEARER_AUTH_ALLOWED_PATHS = new Set([
 ]);
 const ACTIVE_VER42_FINALIZE_BEARER_AUTH_FIXED_HEAD_COMMIT =
   "6b167f0abc08720b03348cc9d8b8665f8df88b47";
-const ACTIVE_WORKER_TRANSPORT_PACKET_BASE_COMMIT =
+const ACTIVE_VER43_LIFECYCLE_AUTH_DIAGNOSTIC_BASE_COMMIT =
   ACTIVE_VER42_FINALIZE_BEARER_AUTH_FIXED_HEAD_COMMIT;
+const ACTIVE_VER43_LIFECYCLE_AUTH_DIAGNOSTIC_FIXED_HEAD_COMMIT =
+  "76bef8567acdc75d25856c47a7de840ebc564dec";
+const ACTIVE_VER43_LIFECYCLE_AUTH_DIAGNOSTIC_ALLOWED_PATHS = new Set([
+  "artifacts/veroxa-sites/app/momo-content-ai-lifecycle-bridge.ts",
+  "artifacts/veroxa-sites/tests/momo-content-ai-lifecycle-bridge.test.mjs",
+  "scripts/src/release-manifest.ts",
+]);
+const ACTIVE_WORKER_TRANSPORT_PACKET_BASE_COMMIT =
+  ACTIVE_VER43_LIFECYCLE_AUTH_DIAGNOSTIC_FIXED_HEAD_COMMIT;
 const ACTIVE_WORKER_TRANSPORT_PACKET_ALLOWED_PATHS = new Set([
   "artifacts/veroxa-sites/app/api/internal/momo/content-ai/dispatch/route.ts",
   "artifacts/veroxa-sites/app/api/internal/veroxa/media/inspection-preflight/route.ts",
@@ -1479,7 +1488,12 @@ function assertActiveVer39WorkerLifecycleBridgeRepairDiffScope(): void {
   }
 }
 
-/** Bind merged VER-42 to its immutable committed slice. */
+/**
+ * Bind the merged VER-42 finalize bearer repair to its immutable committed
+ * slice, including the resolver, route-only token handoff, signed bridge,
+ * focused tests, and release guard. Later candidates own their own forward
+ * and working-tree scopes.
+ */
 function assertActiveVer42FinalizeBearerAuthDiffScope(): void {
   const comparisonRange =
     `${ACTIVE_VER42_FINALIZE_BEARER_AUTH_BASE_COMMIT}...${ACTIVE_VER42_FINALIZE_BEARER_AUTH_FIXED_HEAD_COMMIT}`;
@@ -1532,9 +1546,64 @@ function assertActiveVer42FinalizeBearerAuthDiffScope(): void {
 }
 
 /**
- * Bind the Worker transport packet to the exact VER-42 release base and its
- * committed, staged, unstaged, and untracked paths. Destructive or unmerged
- * changes fail closed.
+ * Bind the merged VER-43 lifecycle auth diagnostic to its immutable committed
+ * slice. Later candidates own their own forward and working-tree scopes.
+ */
+function assertActiveVer43LifecycleAuthDiagnosticDiffScope(): void {
+  const comparisonRange =
+    `${ACTIVE_VER43_LIFECYCLE_AUTH_DIAGNOSTIC_BASE_COMMIT}...${ACTIVE_VER43_LIFECYCLE_AUTH_DIAGNOSTIC_FIXED_HEAD_COMMIT}`;
+  try {
+    execFileSync("git", [
+      "merge-base",
+      "--is-ancestor",
+      ACTIVE_VER43_LIFECYCLE_AUTH_DIAGNOSTIC_BASE_COMMIT,
+      ACTIVE_VER43_LIFECYCLE_AUTH_DIAGNOSTIC_FIXED_HEAD_COMMIT,
+    ], { cwd: repoRoot, stdio: "ignore" });
+  } catch {
+    throw new Error(
+      "VER-43 lifecycle auth diagnostic lacks its immutable 6b167f0...76bef85 range",
+    );
+  }
+
+  try {
+    const paths = gitPathList([
+      "diff", "--find-renames", "--name-only", "--diff-filter=ACM",
+      comparisonRange, "--",
+    ]).sort();
+    const forbidden = gitPathList([
+      "diff", "--find-renames", "--name-only", "--diff-filter=DRTUXB",
+      comparisonRange, "--",
+    ]).sort();
+    const unexpected = paths.filter((path) =>
+      !ACTIVE_VER43_LIFECYCLE_AUTH_DIAGNOSTIC_ALLOWED_PATHS.has(path)
+    );
+    const missing = Array.from(
+      ACTIVE_VER43_LIFECYCLE_AUTH_DIAGNOSTIC_ALLOWED_PATHS,
+    ).filter((path) => !paths.includes(path)).sort();
+    if (unexpected.length > 0 || missing.length > 0 || forbidden.length > 0) {
+      throw new Error(
+        "VER-43 lifecycle auth diagnostic Git scope drifted: " + [
+          unexpected.length > 0 ? `unexpected=${unexpected.join(",")}` : null,
+          missing.length > 0 ? `missing=${missing.join(",")}` : null,
+          forbidden.length > 0 ? `forbidden=${forbidden.join(",")}` : null,
+        ].filter(Boolean).join("; "),
+      );
+    }
+  } catch (error) {
+    if (error instanceof Error && error.message.startsWith(
+      "VER-43 lifecycle auth diagnostic Git scope drifted:",
+    )) throw error;
+    throw new Error(
+      "VER-43 lifecycle auth diagnostic cannot verify its immutable Git diff scope: " +
+        (error instanceof Error ? error.message : String(error)),
+    );
+  }
+}
+
+/**
+ * Bind the VER-44 Worker transport packet to the exact merged VER-43 release
+ * base and its committed, staged, unstaged, and untracked paths. Destructive
+ * or unmerged changes fail closed.
  */
 function assertActiveWorkerTransportPacketDiffScope(): void {
   const comparisonRange =
@@ -1548,7 +1617,7 @@ function assertActiveWorkerTransportPacketDiffScope(): void {
     ], { cwd: repoRoot, stdio: "ignore" });
   } catch {
     throw new Error(
-      "Worker transport packet lacks its exact 6b167f0 release base",
+      "VER-44 Worker transport packet lacks its exact 76bef85 release base",
     );
   }
 
@@ -1591,7 +1660,7 @@ function assertActiveWorkerTransportPacketDiffScope(): void {
     ).filter((path) => !paths.includes(path)).sort();
     if (unexpected.length > 0 || missing.length > 0 || forbidden.length > 0) {
       throw new Error(
-        "Worker transport packet Git scope drifted: " + [
+        "VER-44 Worker transport packet Git scope drifted: " + [
           unexpected.length > 0 ? `unexpected=${unexpected.join(",")}` : null,
           missing.length > 0 ? `missing=${missing.join(",")}` : null,
           forbidden.length > 0 ? `forbidden=${forbidden.join(",")}` : null,
@@ -1600,10 +1669,10 @@ function assertActiveWorkerTransportPacketDiffScope(): void {
     }
   } catch (error) {
     if (error instanceof Error && error.message.startsWith(
-      "Worker transport packet Git scope drifted:",
+      "VER-44 Worker transport packet Git scope drifted:",
     )) throw error;
     throw new Error(
-      "Worker transport packet cannot verify its exact Git diff scope: " +
+      "VER-44 Worker transport packet cannot verify its exact Git diff scope: " +
         (error instanceof Error ? error.message : String(error)),
     );
   }
@@ -1956,6 +2025,11 @@ function assertActivePreinterventionAcceptanceCandidate(
   }
   try {
     assertActiveVer42FinalizeBearerAuthDiffScope();
+  } catch (error) {
+    failures.push(error instanceof Error ? error.message : String(error));
+  }
+  try {
+    assertActiveVer43LifecycleAuthDiagnosticDiffScope();
   } catch (error) {
     failures.push(error instanceof Error ? error.message : String(error));
   }

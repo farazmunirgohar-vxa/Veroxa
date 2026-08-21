@@ -280,7 +280,46 @@ test("lifecycle bridge rejects every manual redirect before response-body parsin
     code: "momo_content_ai_lifecycle_bridge_rejected",
     retryable: false,
     httpStatus: 307,
+    upstreamAuthError: null,
   }]);
+});
+
+test("lifecycle bridge rejects non-403 failures without reading their body", async () => {
+  const events = [];
+  let bodyRead = false;
+  let bodyCancelled = false;
+  await assert.rejects(
+    invokeMomoContentAiLifecycleBridge(
+      client(),
+      bridgeConfig(),
+      { operation: "finalize_upload" },
+      {
+        correlationId: CORRELATION_ID,
+        telemetry: (event) => events.push(event),
+        fetchImplementation: async () => ({
+          status: 500,
+          ok: false,
+          headers: new Headers({ "content-type": "application/json" }),
+          body: {
+            async cancel() {
+              bodyCancelled = true;
+            },
+          },
+          async text() {
+            bodyRead = true;
+            throw new Error("non_403_body_must_not_be_read");
+          },
+        }),
+      },
+    ),
+    (error) => error instanceof MomoContentAiLifecycleBridgeError &&
+      error.stage === "response_status" && error.retryable === true &&
+      error.httpStatus === 500 && error.upstreamAuthError === null,
+  );
+  assert.equal(bodyRead, false);
+  assert.equal(bodyCancelled, true);
+  assert.equal(events.length, 1);
+  assert.equal(events[0].upstreamAuthError, null);
 });
 
 test("lifecycle bridge emits a sanitized stage-specific failure", async () => {
@@ -310,8 +349,122 @@ test("lifecycle bridge emits a sanitized stage-specific failure", async () => {
     code: "momo_content_ai_lifecycle_bridge_rejected",
     retryable: true,
     httpStatus: 502,
+    upstreamAuthError: null,
   }]);
   assert.doesNotMatch(JSON.stringify(events), /secret|access-token|private/u);
+});
+
+test("lifecycle bridge exposes only allowlisted auth rejection codes", async () => {
+  for (const upstreamAuthError of [
+    "bridge_access_required",
+    "team_access_required",
+  ]) {
+    const events = [];
+    await assert.rejects(
+      invokeMomoContentAiLifecycleBridge(
+        client(),
+        bridgeConfig(),
+        { operation: "finalize_upload", secretPayload: "must-not-leak" },
+        {
+          correlationId: CORRELATION_ID,
+          telemetry: (event) => events.push(event),
+          fetchImplementation: async () => new Response(
+            JSON.stringify({ error: upstreamAuthError }),
+            {
+              status: 403,
+              headers: {
+                "content-type": upstreamAuthError === "team_access_required"
+                  ? 'application/json; charset="utf-8"'
+                  : "application/json",
+              },
+            },
+          ),
+        },
+      ),
+      (error) => error instanceof MomoContentAiLifecycleBridgeError &&
+        error.stage === "response_status" && error.httpStatus === 403 &&
+        error.upstreamAuthError === upstreamAuthError,
+    );
+    assert.deepEqual(events, [{
+      event: "momo_content_ai_lifecycle_bridge_failure",
+      correlationId: CORRELATION_ID,
+      stage: "response_status",
+      code: "momo_content_ai_lifecycle_bridge_rejected",
+      retryable: false,
+      httpStatus: 403,
+      upstreamAuthError,
+    }]);
+    assert.doesNotMatch(JSON.stringify(events), /secret|access-token|private/u);
+  }
+});
+
+test("lifecycle bridge redacts malformed and non-allowlisted error responses", async () => {
+  const responses = [
+    Response.json({ error: "bridge_access_required" }, { status: 401 }),
+    Response.json({ error: "team_access_required" }, { status: 500 }),
+    new Response('{"error":"bridge_access_required","secret":"leak"}', {
+      status: 403,
+      headers: { "content-type": "application/json" },
+    }),
+    Response.json({ error: "credential_rejected_secret" }, { status: 403 }),
+    new Response('{"error":"team_access_required"}', {
+      status: 403,
+      headers: { "content-type": "text/plain" },
+    }),
+    new Response('{"error":"team_access_required"}', {
+      status: 403,
+      headers: { "content-type": "application/jsonp" },
+    }),
+    new Response('{"error":"team_access_required"}', {
+      status: 403,
+      headers: { "content-type": "application/json, text/plain" },
+    }),
+    new Response(
+      '{"error":"credential_rejected_secret","error":"team_access_required"}',
+      {
+        status: 403,
+        headers: { "content-type": "application/json" },
+      },
+    ),
+    new Response('{"\\u0065rror":"team_access_required"}', {
+      status: 403,
+      headers: { "content-type": "application/json" },
+    }),
+    new Response("{not-json", {
+      status: 403,
+      headers: { "content-type": "application/json" },
+    }),
+    new Response(JSON.stringify({
+      error: "bridge_access_required",
+      padding: "x".repeat(1_024),
+    }), {
+      status: 403,
+      headers: { "content-type": "application/json" },
+    }),
+  ];
+  for (const response of responses) {
+    const events = [];
+    await assert.rejects(
+      invokeMomoContentAiLifecycleBridge(
+        client(),
+        bridgeConfig(),
+        { operation: "finalize_upload", secretPayload: "must-not-leak" },
+        {
+          correlationId: CORRELATION_ID,
+          telemetry: (event) => events.push(event),
+          fetchImplementation: async () => response,
+        },
+      ),
+      (error) => error instanceof MomoContentAiLifecycleBridgeError &&
+        error.upstreamAuthError === null,
+    );
+    assert.equal(events.length, 1);
+    assert.equal(events[0].upstreamAuthError, null);
+    assert.doesNotMatch(
+      JSON.stringify(events),
+      /credential_rejected_secret|must-not-leak|padding/u,
+    );
+  }
 });
 
 test("key mismatch fails before transport and identifies preflight", async () => {
