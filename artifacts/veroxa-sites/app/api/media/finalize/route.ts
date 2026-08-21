@@ -8,7 +8,14 @@ import {
 import {
   createVeroxaPrivateMediaStorageImageDecoder,
 } from "../../../veroxa-private-media-supabase-image-decode";
-import { getServerVeroxaContext } from "../../../veroxa-supabase-server";
+import {
+  getServerSupabasePublicConfig,
+  getServerVeroxaContext,
+} from "../../../veroxa-supabase-server";
+import {
+  hasMomoMediaFinalizeProjectAuthCookie,
+  resolveMomoMediaFinalizeContext,
+} from "./bearer-auth";
 import { createMomoMediaFinalizeHandler } from "./core";
 
 export const runtime = "edge";
@@ -20,8 +27,13 @@ function dependencies(
     restaurantId: string | null;
     userId: string;
   },
+  serverVerifiedAccessToken?: string,
 ) {
   const bridge = () => getMomoContentAiLifecycleBridgeConfig();
+  const bridgeOptions = (correlationId: string) =>
+    serverVerifiedAccessToken
+      ? { correlationId, serverVerifiedAccessToken }
+      : { correlationId };
   return {
     decodeHighResolutionImage: createVeroxaPrivateMediaStorageImageDecoder({
       client,
@@ -63,7 +75,7 @@ function dependencies(
         client,
         bridgeConfig,
         { operation: "commit_upload", ...input },
-        { correlationId: context.correlationId },
+        bridgeOptions(context.correlationId),
       );
     },
     async finalize(
@@ -82,7 +94,7 @@ function dependencies(
         client,
         bridgeConfig,
         { operation: "finalize_upload", ...input },
-        { correlationId: context.correlationId },
+        bridgeOptions(context.correlationId),
       );
     },
     async recordFailure(
@@ -130,8 +142,18 @@ function dependencies(
 }
 
 export async function POST(request: Request): Promise<Response> {
-  const context = await getServerVeroxaContext();
-  if (!context) {
+  const config = getServerSupabasePublicConfig();
+  const hadProjectAuthCookie = config
+    ? hasMomoMediaFinalizeProjectAuthCookie(request, config)
+    : false;
+  const cookieContext = await getServerVeroxaContext();
+  const resolved = await resolveMomoMediaFinalizeContext({
+    request,
+    config,
+    cookieContext,
+    hadProjectAuthCookie,
+  });
+  if (!resolved) {
     return createMomoMediaFinalizeHandler({
       ...dependencies({} as SupabaseClient, {
         role: "client",
@@ -141,9 +163,10 @@ export async function POST(request: Request): Promise<Response> {
       authenticate: async () => null,
     })(request);
   }
+  const context = resolved.context;
   return createMomoMediaFinalizeHandler(dependencies(context.client, {
     role: context.access.role,
     restaurantId: context.access.restaurantId,
     userId: context.userId,
-  }))(request);
+  }, resolved.serverVerifiedAccessToken))(request);
 }
