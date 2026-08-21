@@ -87,7 +87,6 @@ const PREINTERVENTION_ACCEPTANCE_PGTAP =
 const ACTIVE_PREINTERVENTION_ACCEPTANCE_CANDIDATE_ALLOWED_PATHS = new Set([
   "artifacts/veroxa-sites/supabase/config.toml",
   "artifacts/veroxa-sites/tests/momo-content-ai-lifecycle-auth-config.test.mjs",
-  "artifacts/veroxa-sites/tests/momo-content-ai-lifecycle-bridge.test.mjs",
   "artifacts/veroxa-sites/tests/momo-upload-ready-contract.test.mjs",
   "supabase/config.toml",
   ".github/workflows/supabase-verify.yml",
@@ -101,7 +100,6 @@ const ACTIVE_PREINTERVENTION_ACCEPTANCE_CANDIDATE_ALLOWED_PATHS = new Set([
   "artifacts/veroxa-sites/app/api/media/finalize/route.ts",
   "artifacts/veroxa-sites/app/client/[[...slug]]/page.tsx",
   "artifacts/veroxa-sites/app/momo-client-data.ts",
-  "artifacts/veroxa-sites/app/momo-content-ai-lifecycle-bridge.ts",
   "artifacts/veroxa-sites/app/momo-client-portal.tsx",
   "artifacts/veroxa-sites/app/momo-media-finalize-client.ts",
   "artifacts/veroxa-sites/app/momo-operating-center.tsx",
@@ -144,6 +142,15 @@ const ACTIVE_PREINTERVENTION_ACCEPTANCE_CANDIDATE_ALLOWED_PATHS = new Set([
   "supabase/functions/momo-content-ai-lifecycle/index.ts",
   `supabase/migrations/${PREINTERVENTION_ACCEPTANCE_MIGRATION}`,
   `supabase/tests/${PREINTERVENTION_ACCEPTANCE_PGTAP}`,
+]);
+const ACTIVE_PREINTERVENTION_ACCEPTANCE_CANDIDATE_FIXED_HEAD_COMMIT =
+  "bb017e7aa4a11da0613be67fe46731e0b00ed30e";
+const ACTIVE_VER39_WORKER_LIFECYCLE_BRIDGE_REPAIR_BASE_COMMIT =
+  ACTIVE_PREINTERVENTION_ACCEPTANCE_CANDIDATE_FIXED_HEAD_COMMIT;
+const ACTIVE_VER39_WORKER_LIFECYCLE_BRIDGE_REPAIR_ALLOWED_PATHS = new Set([
+  "artifacts/veroxa-sites/app/momo-content-ai-lifecycle-bridge.ts",
+  "artifacts/veroxa-sites/tests/momo-content-ai-lifecycle-bridge.test.mjs",
+  "scripts/src/release-manifest.ts",
 ]);
 
 export const TREE_HASH_ALGORITHM = "veroxa-path-null-content-null-sha256-v1";
@@ -1324,63 +1331,41 @@ function assertActivePrivateMediaVerifierContractCandidateDiffScope(): void {
 }
 
 /**
- * Bind the pre-intervention acceptance candidate to PR #191's exact merged
- * tree and to one complete, auditable path set. Include committed, staged,
- * unstaged, and untracked paths so a local staging operation cannot weaken the
- * scope check. Deletions, renames, type changes, and unmerged entries fail.
+ * Bind the historical pre-intervention acceptance candidate to the immutable
+ * PR #193-through-#196 slice. Current HEAD and working-tree changes belong to
+ * a separate forward guard and must never broaden this historical allowlist.
  */
 function assertActivePreinterventionAcceptanceCandidateDiffScope(): void {
-  let comparisonRange: string | null = null;
+  const comparisonRange =
+    `${ACTIVE_PREINTERVENTION_ACCEPTANCE_CANDIDATE_BASE_COMMIT}...${ACTIVE_PREINTERVENTION_ACCEPTANCE_CANDIDATE_FIXED_HEAD_COMMIT}`;
+  if (
+    gitTreeSha(ACTIVE_PREINTERVENTION_ACCEPTANCE_CANDIDATE_BASE_COMMIT) !==
+      ACTIVE_PREINTERVENTION_ACCEPTANCE_CANDIDATE_BASE_TREE
+  ) {
+    throw new Error(
+      "pre-intervention candidate immutable base tree drifted",
+    );
+  }
   try {
     execFileSync("git", [
       "merge-base",
       "--is-ancestor",
       ACTIVE_PREINTERVENTION_ACCEPTANCE_CANDIDATE_BASE_COMMIT,
-      "HEAD",
+      ACTIVE_PREINTERVENTION_ACCEPTANCE_CANDIDATE_FIXED_HEAD_COMMIT,
     ], { cwd: repoRoot, stdio: "ignore" });
-    comparisonRange =
-      `${ACTIVE_PREINTERVENTION_ACCEPTANCE_CANDIDATE_BASE_COMMIT}...HEAD`;
   } catch {
-    const equivalentBase = ["HEAD", "HEAD^"].find((ref) =>
-      gitTreeSha(ref) === ACTIVE_PREINTERVENTION_ACCEPTANCE_CANDIDATE_BASE_TREE
+    throw new Error(
+      "pre-intervention candidate lacks its immutable PR #193-through-#196 ancestry",
     );
-    if (!equivalentBase) {
-      throw new Error(
-        "pre-intervention candidate lacks PR #191 merge ancestry or its exact equivalent tree",
-      );
-    }
-    if (equivalentBase === "HEAD^") comparisonRange = "HEAD^...HEAD";
   }
 
   try {
-    const committed = comparisonRange
-      ? gitPathList([
-        "diff", "--name-only", "--diff-filter=ACM", comparisonRange, "--",
-      ])
-      : [];
-    const forbiddenCommitted = comparisonRange
-      ? gitPathList([
-        "diff", "--name-only", "--diff-filter=DRTUXB", comparisonRange, "--",
-      ])
-      : [];
-    const paths = Array.from(new Set([
-      ...committed,
-      ...gitPathList(["diff", "--name-only", "--diff-filter=ACM", "--"]),
-      ...gitPathList([
-        "diff", "--cached", "--name-only", "--diff-filter=ACM", "--",
-      ]),
-      ...gitPathList(["ls-files", "--others", "--exclude-standard"]),
-    ])).sort();
-    const forbidden = Array.from(new Set([
-      ...forbiddenCommitted,
-      ...gitPathList([
-        "diff", "--name-only", "--diff-filter=DRTUXB", "--",
-      ]),
-      ...gitPathList([
-        "diff", "--cached", "--name-only", "--diff-filter=DRTUXB", "--",
-      ]),
-      ...gitPathList(["ls-files", "--unmerged"]),
-    ])).sort();
+    const paths = gitPathList([
+      "diff", "--name-only", "--diff-filter=ACM", comparisonRange, "--",
+    ]).sort();
+    const forbidden = gitPathList([
+      "diff", "--name-only", "--diff-filter=DRTUXB", comparisonRange, "--",
+    ]).sort();
     const unexpected = paths.filter((path) =>
       !ACTIVE_PREINTERVENTION_ACCEPTANCE_CANDIDATE_ALLOWED_PATHS.has(path)
     );
@@ -1401,7 +1386,86 @@ function assertActivePreinterventionAcceptanceCandidateDiffScope(): void {
       "pre-intervention candidate Git scope drifted:",
     )) throw error;
     throw new Error(
-      "pre-intervention candidate cannot verify its exact Git diff scope: " +
+      "pre-intervention candidate cannot verify its immutable Git diff scope: " +
+        (error instanceof Error ? error.message : String(error)),
+    );
+  }
+}
+
+/**
+ * Bind VER-39 to exactly its Worker bridge source, focused regression test,
+ * and this release guard. Include committed, staged, unstaged, and untracked
+ * paths. Deletions, renames, type changes, unmerged entries, and whitespace
+ * lookalikes all fail closed.
+ */
+function assertActiveVer39WorkerLifecycleBridgeRepairDiffScope(): void {
+  const comparisonRange =
+    `${ACTIVE_VER39_WORKER_LIFECYCLE_BRIDGE_REPAIR_BASE_COMMIT}...HEAD`;
+  try {
+    execFileSync("git", [
+      "merge-base",
+      "--is-ancestor",
+      ACTIVE_VER39_WORKER_LIFECYCLE_BRIDGE_REPAIR_BASE_COMMIT,
+      "HEAD",
+    ], { cwd: repoRoot, stdio: "ignore" });
+  } catch {
+    throw new Error(
+      "VER-39 Worker bridge repair lacks its exact bb017e7 release base",
+    );
+  }
+
+  try {
+    const committed = gitPathList([
+      "diff", "--find-renames", "--name-only", "--diff-filter=ACM",
+      comparisonRange, "--",
+    ]);
+    const forbiddenCommitted = gitPathList([
+      "diff", "--find-renames", "--name-only", "--diff-filter=DRTUXB",
+      comparisonRange, "--",
+    ]);
+    const paths = Array.from(new Set([
+      ...committed,
+      ...gitPathList([
+        "diff", "--find-renames", "--name-only", "--diff-filter=ACM", "--",
+      ]),
+      ...gitPathList([
+        "diff", "--cached", "--find-renames", "--name-only",
+        "--diff-filter=ACM", "--",
+      ]),
+      ...gitPathList(["ls-files", "--others", "--exclude-standard"]),
+    ])).sort();
+    const forbidden = Array.from(new Set([
+      ...forbiddenCommitted,
+      ...gitPathList([
+        "diff", "--find-renames", "--name-only", "--diff-filter=DRTUXB", "--",
+      ]),
+      ...gitPathList([
+        "diff", "--cached", "--find-renames", "--name-only",
+        "--diff-filter=DRTUXB", "--",
+      ]),
+      ...gitPathList(["ls-files", "--unmerged"]),
+    ])).sort();
+    const unexpected = paths.filter((path) =>
+      !ACTIVE_VER39_WORKER_LIFECYCLE_BRIDGE_REPAIR_ALLOWED_PATHS.has(path)
+    );
+    const missing = Array.from(
+      ACTIVE_VER39_WORKER_LIFECYCLE_BRIDGE_REPAIR_ALLOWED_PATHS,
+    ).filter((path) => !paths.includes(path)).sort();
+    if (unexpected.length > 0 || missing.length > 0 || forbidden.length > 0) {
+      throw new Error(
+        "VER-39 Worker bridge repair Git scope drifted: " + [
+          unexpected.length > 0 ? `unexpected=${unexpected.join(",")}` : null,
+          missing.length > 0 ? `missing=${missing.join(",")}` : null,
+          forbidden.length > 0 ? `forbidden=${forbidden.join(",")}` : null,
+        ].filter(Boolean).join("; "),
+      );
+    }
+  } catch (error) {
+    if (error instanceof Error && error.message.startsWith(
+      "VER-39 Worker bridge repair Git scope drifted:",
+    )) throw error;
+    throw new Error(
+      "VER-39 Worker bridge repair cannot verify its exact Git diff scope: " +
         (error instanceof Error ? error.message : String(error)),
     );
   }
@@ -1744,6 +1808,11 @@ function assertActivePreinterventionAcceptanceCandidate(
 
   try {
     assertActivePreinterventionAcceptanceCandidateDiffScope();
+  } catch (error) {
+    failures.push(error instanceof Error ? error.message : String(error));
+  }
+  try {
+    assertActiveVer39WorkerLifecycleBridgeRepairDiffScope();
   } catch (error) {
     failures.push(error instanceof Error ? error.message : String(error));
   }
