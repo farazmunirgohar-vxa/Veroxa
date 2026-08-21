@@ -9,6 +9,8 @@ const UPSTREAM_AUTH_ERROR_CODES = new Set([
   "bridge_access_required",
   "team_access_required",
 ] as const);
+const UPSTREAM_AUTH_ERROR_CONTENT_TYPE =
+  /^application\/json(?:\s*;\s*charset\s*=\s*(?:"utf-8"|utf-8))?$/iu;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
 const PREFLIGHT_MESSAGE = new TextEncoder().encode(
   "veroxa:momo-content-ai-lifecycle:key-pair-preflight:v1",
@@ -114,6 +116,46 @@ function defaultTelemetry(event: MomoContentAiLifecycleBridgeTelemetry): void {
   console.warn("veroxa_bridge_failure", JSON.stringify(event));
 }
 
+async function boundedUpstreamAuthErrorText(
+  response: Response,
+): Promise<string | null> {
+  const contentType = response.headers.get("content-type")?.trim() || "";
+  if (response.status !== 403 ||
+    !UPSTREAM_AUTH_ERROR_CONTENT_TYPE.test(contentType)) return null;
+  const reader = response.body?.getReader();
+  if (!reader) return null;
+  const chunks: Uint8Array[] = [];
+  let length = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      if (!value) continue;
+      length += value.byteLength;
+      if (length > 1_024) {
+        await reader.cancel().catch(() => undefined);
+        return null;
+      }
+      chunks.push(value);
+    }
+  } catch {
+    return null;
+  } finally {
+    reader.releaseLock();
+  }
+  const bytes = new Uint8Array(length);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  try {
+    return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+  } catch {
+    return null;
+  }
+}
+
 function allowlistedUpstreamAuthError(
   response: Response,
   text: string,
@@ -122,8 +164,7 @@ function allowlistedUpstreamAuthError(
     return null;
   }
   const contentType = response.headers.get("content-type")?.trim() || "";
-  if (!/^application\/json(?:\s*;\s*charset\s*=\s*(?:"utf-8"|utf-8))?$/iu
-    .test(contentType)) return null;
+  if (!UPSTREAM_AUTH_ERROR_CONTENT_TYPE.test(contentType)) return null;
   const match = text.match(
     /^\s*\{\s*"error"\s*:\s*"(bridge_access_required|team_access_required)"\s*\}\s*$/u,
   );
@@ -359,6 +400,21 @@ export async function invokeMomoContentAiLifecycleBridge<T>(
       telemetry,
     });
   }
+  if (!response.ok) {
+    const boundedAuthErrorText = await boundedUpstreamAuthErrorText(response);
+    throw momoContentAiLifecycleBridgeFailure({
+      stage: "response_status",
+      code: "momo_content_ai_lifecycle_bridge_rejected",
+      correlationId,
+      retryable: response.status === 408 || response.status === 429 ||
+        response.status >= 500,
+      httpStatus: response.status,
+      upstreamAuthError: boundedAuthErrorText === null
+        ? null
+        : allowlistedUpstreamAuthError(response, boundedAuthErrorText),
+      telemetry,
+    });
+  }
   let text: string;
   try {
     text = await response.text();
@@ -368,18 +424,6 @@ export async function invokeMomoContentAiLifecycleBridge<T>(
       code: "momo_content_ai_lifecycle_response_unavailable",
       correlationId,
       retryable: true,
-      telemetry,
-    });
-  }
-  if (!response.ok) {
-    throw momoContentAiLifecycleBridgeFailure({
-      stage: "response_status",
-      code: "momo_content_ai_lifecycle_bridge_rejected",
-      correlationId,
-      retryable: response.status === 408 || response.status === 429 ||
-        response.status >= 500,
-      httpStatus: response.status,
-      upstreamAuthError: allowlistedUpstreamAuthError(response, text),
       telemetry,
     });
   }
