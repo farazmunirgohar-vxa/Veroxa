@@ -193,6 +193,17 @@ const ACTIVE_WORKER_TRANSPORT_PACKET_ALLOWED_PATHS = new Set([
   "artifacts/veroxa-sites/tests/veroxa-private-media-assessment-route.test.mjs",
   "scripts/src/release-manifest.ts",
 ]);
+const ACTIVE_WORKER_TRANSPORT_PACKET_FIXED_HEAD_COMMIT =
+  "1ed99bad1ac749b70dce7e2f6a73feab3575140a";
+const ACTIVE_GITHUB_COPILOT_GOVERNANCE_PACKET_BASE_COMMIT =
+  ACTIVE_WORKER_TRANSPORT_PACKET_FIXED_HEAD_COMMIT;
+const ACTIVE_GITHUB_COPILOT_GOVERNANCE_PACKET_ALLOWED_PATHS = new Set([
+  ".github/copilot-instructions.md",
+  "AGENTS.md",
+  "artifacts/veroxa/docs/CHATGPT_MANAGED_BUILD_OPERATING_PROTOCOL.md",
+  "artifacts/veroxa/docs/VEROXA_LOCKED_OPERATING_MEMORY.md",
+  "scripts/src/release-manifest.ts",
+]);
 
 export const TREE_HASH_ALGORITHM = "veroxa-path-null-content-null-sha256-v1";
 export const REVIEWED_LOCAL_CANDIDATE_RELEASE_STATE =
@@ -1601,23 +1612,80 @@ function assertActiveVer43LifecycleAuthDiagnosticDiffScope(): void {
 }
 
 /**
- * Bind the VER-44 Worker transport packet to the exact merged VER-43 release
- * base and its committed, staged, unstaged, and untracked paths. Destructive
- * or unmerged changes fail closed.
+ * Bind the historical VER-44 Worker transport packet to its exact immutable
+ * PR #201 merge slice. Later candidates own their own forward and working-tree
+ * scopes and must never broaden this allowlist.
  */
 function assertActiveWorkerTransportPacketDiffScope(): void {
   const comparisonRange =
-    `${ACTIVE_WORKER_TRANSPORT_PACKET_BASE_COMMIT}...HEAD`;
+    `${ACTIVE_WORKER_TRANSPORT_PACKET_BASE_COMMIT}...${ACTIVE_WORKER_TRANSPORT_PACKET_FIXED_HEAD_COMMIT}`;
   try {
     execFileSync("git", [
       "merge-base",
       "--is-ancestor",
       ACTIVE_WORKER_TRANSPORT_PACKET_BASE_COMMIT,
+      ACTIVE_WORKER_TRANSPORT_PACKET_FIXED_HEAD_COMMIT,
+    ], { cwd: repoRoot, stdio: "ignore" });
+  } catch {
+    throw new Error(
+      "VER-44 Worker transport packet lacks its immutable 76bef85...1ed99ba range",
+    );
+  }
+
+  try {
+    const paths = gitPathList([
+      "diff", "--find-renames", "--name-only", "--diff-filter=ACM",
+      comparisonRange, "--",
+    ]).sort();
+    const forbidden = gitPathList([
+      "diff", "--find-renames", "--name-only", "--diff-filter=DRTUXB",
+      comparisonRange, "--",
+    ]).sort();
+    const unexpected = paths.filter((path) =>
+      !ACTIVE_WORKER_TRANSPORT_PACKET_ALLOWED_PATHS.has(path)
+    );
+    const missing = Array.from(
+      ACTIVE_WORKER_TRANSPORT_PACKET_ALLOWED_PATHS,
+    ).filter((path) => !paths.includes(path)).sort();
+    if (unexpected.length > 0 || missing.length > 0 || forbidden.length > 0) {
+      throw new Error(
+        "VER-44 Worker transport packet Git scope drifted: " + [
+          unexpected.length > 0 ? `unexpected=${unexpected.join(",")}` : null,
+          missing.length > 0 ? `missing=${missing.join(",")}` : null,
+          forbidden.length > 0 ? `forbidden=${forbidden.join(",")}` : null,
+        ].filter(Boolean).join("; "),
+      );
+    }
+  } catch (error) {
+    if (error instanceof Error && error.message.startsWith(
+      "VER-44 Worker transport packet Git scope drifted:",
+    )) throw error;
+    throw new Error(
+      "VER-44 Worker transport packet cannot verify its exact Git diff scope: " +
+        (error instanceof Error ? error.message : String(error)),
+    );
+  }
+}
+
+/**
+ * Bind the forward GitHub/Copilot governance packet to the exact merged
+ * VER-44 base and its committed, staged, unstaged, and untracked paths.
+ * Destructive changes and unrelated product, runtime, or production scope
+ * fail closed.
+ */
+function assertActiveGitHubCopilotGovernancePacketDiffScope(): void {
+  const comparisonRange =
+    `${ACTIVE_GITHUB_COPILOT_GOVERNANCE_PACKET_BASE_COMMIT}...HEAD`;
+  try {
+    execFileSync("git", [
+      "merge-base",
+      "--is-ancestor",
+      ACTIVE_GITHUB_COPILOT_GOVERNANCE_PACKET_BASE_COMMIT,
       "HEAD",
     ], { cwd: repoRoot, stdio: "ignore" });
   } catch {
     throw new Error(
-      "VER-44 Worker transport packet lacks its exact 76bef85 release base",
+      "GitHub/Copilot governance packet lacks its exact merged PR #201 base",
     );
   }
 
@@ -1653,14 +1721,14 @@ function assertActiveWorkerTransportPacketDiffScope(): void {
       ...gitPathList(["ls-files", "--unmerged"]),
     ])).sort();
     const unexpected = paths.filter((path) =>
-      !ACTIVE_WORKER_TRANSPORT_PACKET_ALLOWED_PATHS.has(path)
+      !ACTIVE_GITHUB_COPILOT_GOVERNANCE_PACKET_ALLOWED_PATHS.has(path)
     );
     const missing = Array.from(
-      ACTIVE_WORKER_TRANSPORT_PACKET_ALLOWED_PATHS,
+      ACTIVE_GITHUB_COPILOT_GOVERNANCE_PACKET_ALLOWED_PATHS,
     ).filter((path) => !paths.includes(path)).sort();
     if (unexpected.length > 0 || missing.length > 0 || forbidden.length > 0) {
       throw new Error(
-        "VER-44 Worker transport packet Git scope drifted: " + [
+        "GitHub/Copilot governance packet Git scope drifted: " + [
           unexpected.length > 0 ? `unexpected=${unexpected.join(",")}` : null,
           missing.length > 0 ? `missing=${missing.join(",")}` : null,
           forbidden.length > 0 ? `forbidden=${forbidden.join(",")}` : null,
@@ -1669,10 +1737,10 @@ function assertActiveWorkerTransportPacketDiffScope(): void {
     }
   } catch (error) {
     if (error instanceof Error && error.message.startsWith(
-      "VER-44 Worker transport packet Git scope drifted:",
+      "GitHub/Copilot governance packet Git scope drifted:",
     )) throw error;
     throw new Error(
-      "VER-44 Worker transport packet cannot verify its exact Git diff scope: " +
+      "GitHub/Copilot governance packet cannot verify its exact Git diff scope: " +
         (error instanceof Error ? error.message : String(error)),
     );
   }
@@ -2035,6 +2103,11 @@ function assertActivePreinterventionAcceptanceCandidate(
   }
   try {
     assertActiveWorkerTransportPacketDiffScope();
+  } catch (error) {
+    failures.push(error instanceof Error ? error.message : String(error));
+  }
+  try {
+    assertActiveGitHubCopilotGovernancePacketDiffScope();
   } catch (error) {
     failures.push(error instanceof Error ? error.message : String(error));
   }

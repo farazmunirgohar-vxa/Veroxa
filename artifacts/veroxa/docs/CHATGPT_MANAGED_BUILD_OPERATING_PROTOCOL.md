@@ -1,6 +1,6 @@
 # ChatGPT-Managed Veroxa Build Operating Protocol
 
-Status: active operating authority as of 2026-07-14.
+Status: active operating authority; agent ownership updated 2026-08-21.
 
 ## Purpose
 
@@ -19,6 +19,33 @@ The platform responsibilities remain distinct:
 - **ChatGPT Sites** is Veroxa's primary application and deployment surface.
 - **Vercel is retired.** Do not create, maintain, verify, or depend on a Vercel deployment or rollback path.
 
+## Agent ownership and review handoff
+
+- This ownership split applies immediately to every current and future Veroxa
+  task, automation, branch, and pull request.
+- Codex is the single implementation owner by default: it writes code and
+  documentation, runs tests, fixes defects, operates connected platforms within
+  authority, and assembles release evidence.
+- GitHub Copilot is the exclusive code-review owner for every pull request
+  assigned to it. Codex must not run a second generic review of the same diff.
+- Copilot reviews an exact head and leaves findings. Codex may then inspect only
+  those findings, implement fixes, run objective verification, and return the
+  changed exact head to Copilot for re-review when required.
+- Request Copilot only after the candidate head is stable. Do not automatically
+  review every draft push. After a material fix, request one re-review on the
+  next stable head.
+- Copilot must not autofix, commit to, or create competing work for a
+  Codex-owned task. Cloud-agent implementation is off by default.
+- One task, branch, pull request, and review domain has one active owner. If
+  Copilot is unavailable or out of included credits, hold and report the review
+  instead of silently transferring or duplicating it. A different specialty
+  review requires a named, non-overlapping scope before it begins.
+- Copilot Memory is supplementary. Canonical repository instructions, current
+  milestone, exact GitHub state, and verified live evidence always outrank it.
+- Use included Copilot capacity only. Paid AI-credit overage, larger runners,
+  plan upgrades, automatic merge, and external/production MCP access remain
+  disabled unless Faraz separately authorizes them.
+
 ## Command contract
 
 ### `Build it`
@@ -27,9 +54,13 @@ This authorizes ChatGPT to complete the agreed scope end to end:
 
 1. Refresh and inspect the current GitHub `main` state and active Veroxa memory.
 2. Create or use a controlled task branch.
-3. Invoke Codex to implement, review, harden, and test the work.
-4. Create or update the GitHub pull request.
-5. Run RR, repair reasonable in-scope defects, and fix CI failures.
+3. Invoke Codex to implement, harden, and test the work.
+4. Create or update the draft GitHub pull request and stabilize its exact
+   candidate head with applicable objective checks.
+5. Assign that stable-head code review to Copilot once; let Codex address only
+   its findings and objective CI failures, without repeating the generic
+   review. After a material fix, request one Copilot re-review on the next
+   stable head.
 6. Re-check the exact reviewed head commit, mergeability, required checks, review state, and safety boundaries.
 7. Merge the exact reviewed commit into `main` only when the green gate passes.
 8. Update Veroxa operating memory and build status when the change materially affects them.
@@ -38,7 +69,10 @@ This authorizes ChatGPT to complete the agreed scope end to end:
 
 ### `Build it, but hold for review`
 
-This authorizes the same branch, implementation, verification, RR, CI-repair, and pull-request work, but ChatGPT must stop at a verified green pull request. It must not merge or deploy until Faraz later authorizes that action.
+This authorizes the same branch, Codex implementation and verification,
+Copilot review, Codex finding/CI repair, and pull-request work, but ChatGPT must
+stop at a verified green pull request. It must not merge or deploy until Faraz
+later authorizes that action.
 
 ### `Build and deploy it`
 
@@ -55,7 +89,7 @@ GitHub merge and Sites deployment are separate actions. The current Sites setup 
 
 ### `RR`
 
-`RR` means a deep review of GitHub code, docs, tests, CI, security boundaries, Veroxa product truth, Sites parity, deployment, access, and domain state. ChatGPT should fix reasonable in-scope defects during RR. `RR` by itself does not authorize merge, deployment, real-world activation, or a material scope expansion.
+`RR` is partitioned by named ownership. Copilot performs the PR code-diff review when assigned. Codex does not repeat that review; it fixes Copilot findings and performs the non-overlapping objective checks for CI, exact source/release identity, product truth, Sites parity, deployment, access, and domain state. A specialty security review must have one separately named owner and scope. `RR` by itself does not authorize merge, deployment, real-world activation, or a material scope expansion.
 
 Before a new broad RR, read `RR_CHECKPOINT.md`, validate `RR_RELEASE_CHECKPOINT.json`, and compare the exact diff with its boundary fingerprints. Reuse unchanged evidence. A changed `full-on-change` boundary gets a focused boundary review plus direct consumers; a presentation-only change gets a delta review unless its exact diff crosses a full-review trigger. Do not reopen unchanged review domains merely because a new build occurred.
 
@@ -68,13 +102,14 @@ A pull request is green only when all applicable conditions are true:
 - when the Sites delivery layer changes, its isolated build, rendered-route tests, lint, and artifact validation pass;
 - required GitHub checks are successful;
 - the four required workflows—`CI`, `Sites`, `Supabase`, and `Veroxa Verify`—are successful for the exact candidate head;
+- when Copilot is assigned, its code review completed on the exact candidate head;
 - the deployment manifest and deterministic source/migration trees verify, and CI preserves an attestation bound to the exact `GITHUB_SHA`;
 - the pull request is mergeable and its exact head commit has not changed since the final review;
 - no unresolved actionable review thread or known critical/high-severity defect remains;
 - RR finds no fixable merge blocker;
 - source-of-truth, access, product-safety, business-truth, and no-fake-data guardrails remain intact.
 
-If the branch head changes after the final review, ChatGPT must re-run the applicable checks and repeat the pre-merge review before merging.
+If the branch head changes after Copilot's review, ChatGPT must re-run the applicable checks and request Copilot re-review when the change is material before merging. Codex must not substitute a duplicate generic review.
 
 ## Mandatory post-build continuity update
 

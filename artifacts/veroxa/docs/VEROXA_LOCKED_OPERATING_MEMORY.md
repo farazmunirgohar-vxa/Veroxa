@@ -1,5 +1,14 @@
 <!-- GUARDED_INTERNAL_AI_ROLLOUT_AUTHORITY -->
 
+## 2026-08-21 — GitHub/Copilot capacity and agent ownership (current workflow authority)
+
+This section governs account capacity and task ownership only. Read
+`CURRENT_MILESTONE.md` and exact connected-platform evidence for current release
+and production state.
+
+- **GitHub and Copilot account capacity (owner-reported):** Faraz reports that the personal account owning `farazmunirgohar-vxa/Veroxa` now has GitHub Pro and Copilot Pro. Treat the subscriptions as available capacity, not release evidence or blanket spend authority. Use included capacity only; paid AI-credit overage, larger runners, plan upgrades, Copilot autofix/merge, and other paid add-ons remain unauthorized.
+- **Durable agent ownership:** Apply this split immediately to every current and future Veroxa task and automation. Codex owns implementation, tests, fixes, connected-platform operations, release evidence, and authorized release execution. Copilot exclusively owns every pull-request code review assigned to it; Codex must not duplicate that review. Copilot must not edit or create competing work for a Codex-owned task. Request Copilot only on a stable candidate head, never automatically on every draft push; after a material fix, request one re-review on the next stable head. If the reviewer is unavailable or out of included credits, hold and report rather than silently reassigning. Copilot Memory is supplementary and never outranks `AGENTS.md`, the current milestone, exact GitHub state, or verified live evidence.
+
 ## 2026-08-20 — R3 pre-intervention readiness (current authority)
 
 Read `artifacts/veroxa/docs/CURRENT_MILESTONE.md` first. Live verified state outranks the ordered R3 Linear program; the program outranks exact reviewed code and evidence; older date-stamped claims are historical.

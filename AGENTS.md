@@ -1,5 +1,14 @@
 <!-- GUARDED_INTERNAL_AI_ROLLOUT_AUTHORITY -->
 
+## 2026-08-21 — GitHub/Copilot capacity and agent ownership (current workflow authority)
+
+This section governs account capacity and task ownership only. Read
+`artifacts/veroxa/docs/CURRENT_MILESTONE.md` and exact connected-platform
+evidence for current release and production state.
+
+- **GitHub and Copilot Pro capacity (owner-reported):** Faraz reports that both plans are active for the personal account that owns `farazmunirgohar-vxa/Veroxa`. Use standard public-repository Actions and included Copilot capacity only. Paid AI-credit overage, larger runners, plan upgrades, Copilot autofix/merge, and other paid add-ons remain unauthorized.
+- **Single-owner agent workflow:** This rule applies immediately to every current and future Veroxa task. Codex owns implementation, tests, fixes, connected-platform operations, release evidence, and authorized release execution. GitHub Copilot exclusively owns every pull-request code review assigned to it. Codex must not repeat that review; it may act on Copilot findings and verify objective release evidence. Copilot must not edit or open competing work for a Codex-owned task. Request Copilot only after the candidate head is stable; never auto-review every draft push. If a material fix changes the head, request one Copilot re-review on the next stable head. If Copilot is unavailable or its included credits are exhausted, hold and report the review instead of silently duplicating or transferring it.
+
 ## 2026-08-20 — R3 pre-intervention readiness (current authority)
 
 Read `artifacts/veroxa/docs/CURRENT_MILESTONE.md` first. Live verified state outranks the ordered R3 Linear program; the program outranks exact reviewed code and evidence; older date-stamped claims are historical.
@@ -211,10 +220,10 @@ _Historical record only: this was the then-current v37/live43/v38 checkpoint. Th
 
 - Faraz uses ChatGPT as the primary Veroxa command center. Faraz and ChatGPT decide the next outcome together; ChatGPT invokes Codex and connected GitHub/Sites tools internally. Do not require Faraz to copy prompts into a separate Codex, GitHub, Sites, terminal, or IDE window for routine work.
 - Read `artifacts/veroxa/docs/CHATGPT_MANAGED_BUILD_OPERATING_PROTOCOL.md` before planning, building, reviewing, merging, or deploying Veroxa.
-- `Build it` authorizes the agreed branch, Codex implementation, tests, pull request, CI/RR fixes, and merge of the exact reviewed commit only after the green gate passes. It does not authorize a Sites deployment unless deployment was explicitly included.
+- `Build it` authorizes the agreed branch, Codex implementation and tests, a draft pull request, Copilot review, Codex fixes for Copilot findings or objective CI failures, and merge of the exact reviewed commit only after the green gate passes. Codex does not duplicate an assigned Copilot review. It does not authorize a Sites deployment unless deployment was explicitly included.
 - `Build it, but hold for review` stops at a verified green pull request and does not merge or deploy.
 - `Build and deploy it` authorizes the green merge plus synchronization of the exact merged GitHub state to Sites, checkpoint deployment, and live/custom-domain verification.
-- `RR` means deep review and reasonable safe fixes; `RR` alone does not authorize merge, deploy, activation, or scope expansion.
+- `RR` uses named, non-overlapping owners: Copilot reviews an assigned PR code diff; Codex fixes its findings and verifies objective release evidence. `RR` alone does not authorize merge, deploy, activation, or scope expansion.
 - GitHub `main` remains canonical. A GitHub merge and a Sites deployment are separate actions; do not leave live Sites behavior ahead of GitHub source of truth.
 - Pause for specific Faraz direction when scope materially expands into production auth or credentials, real customer data/privacy, destructive data or production migrations, billing/payments, external integrations or publishing, owner/client contact, business-truth or public-promise changes, DNS/domain-record changes, Momo activation/walkthrough, or a material product-direction change.
 
@@ -228,7 +237,7 @@ _Historical record only: this was the then-current v37/live43/v38 checkpoint. Th
 - Vercel is retired. ChatGPT Sites is Veroxa's sole deployment and hosting surface.
 - Read `artifacts/veroxa/docs/CHATGPT_SITES_MIGRATION_AND_SOURCE_OF_TRUTH.md` before changing hosting, routes, access, authentication, or the custom domain.
 - `veroxasystems.com` and `www.veroxasystems.com` are attached with active SSL. Preserve GitHub/Sites parity, mobile/build validation, honest public-shell labeling, domain verification, and rollback after each authorized deployment.
-- When Faraz asks for `RR`, perform a deep GitHub review plus ChatGPT Sites integration review. Fix reasonable code, docs, guardrail, CI, security, and direction drift without silently activating real-world systems.
+- When Faraz asks for `RR`, assign the PR code-diff review to Copilot and keep Codex on findings, CI, release evidence, and ChatGPT Sites integration verification. Do not duplicate the review or silently activate real-world systems.
 - The Sites migration did not by itself authorize identities, credentials, customer data, external integrations, AI provider calls, publishing, or the Momo owner walkthrough. The later scoped Supabase release now provides production Team authentication and Momo/Audit persistence; no Momo client identity, owner-confirmed data, provider connection, publishing, or owner walkthrough is active.
 
 ## 2026-06-21 — Historical post-PR120 source-of-truth operating lock
@@ -314,11 +323,12 @@ Owner and Operator are parked unless explicitly requested by the user. Do not bu
 
 ## 3. Current active build stack
 
-The current active Veroxa build stack is ChatGPT-managed GitHub + Codex + ChatGPT Sites:
+The current active Veroxa build stack is ChatGPT-managed GitHub + Codex + GitHub Copilot review + ChatGPT Sites:
 
 - ChatGPT is Faraz's primary operating and orchestration interface.
 - GitHub `main` is the canonical source of truth.
 - Codex is the engineering/build capability ChatGPT invokes internally.
+- GitHub Copilot is the exclusive pull-request code reviewer when assigned. It is not a second builder and must not edit a Codex-owned branch or task.
 - ChatGPT Sites is the primary application/deployment surface.
 - Vercel is retired and must not be restored as a deployment or rollback path.
 - Until the legacy Vercel Git integration is disconnected in its dashboard, the exact root shutdown sentinel may set only `git.deploymentEnabled: false`. It is not a runtime or rollback path; do not add any other Vercel configuration, and remove the sentinel after disconnection.
@@ -334,12 +344,12 @@ Before any large build, also run through `artifacts/veroxa/docs/PRE_BUILD_STABIL
 
 Command meanings and the complete green gate live in `artifacts/veroxa/docs/CHATGPT_MANAGED_BUILD_OPERATING_PROTOCOL.md`:
 
-- `Build it`: refresh current `main`, create a task branch, implement with Codex, test, open/update the PR, run RR, repair CI, re-check the exact reviewed head and mergeability, and merge only when green. After every build, update the milestone, build status, relevant runtime truth, and Faraz's plain-language handoff; update locked memory when a durable decision changes. Do not deploy Sites unless requested.
+- `Build it`: refresh current `main`, create a task branch, implement and test with Codex, open/update the draft PR, stabilize its exact candidate head, assign that code review to Copilot once, let Codex address only Copilot findings and objective CI failures, re-run required evidence and request one Copilot re-review on the next stable head after a material fix, and merge only when green. Codex must not perform an overlapping generic PR review. After every build, update the milestone, build status, relevant runtime truth, and Faraz's plain-language handoff; update locked memory when a durable decision changes. Do not deploy Sites unless requested.
 - `Build it, but hold for review`: complete the same engineering and verification work, then stop at the green PR without merge or deployment.
 - `Build and deploy it`: complete the green merge, synchronize the exact merged GitHub source to Sites, run Sites verification, checkpoint/deploy, and verify access plus custom-domain health.
-- `RR`: review and safely fix; do not infer merge or deployment authority from RR alone.
+- `RR`: keep one owner per review domain. Copilot owns an assigned PR code review; Codex fixes its findings and performs non-overlapping release-evidence verification. Do not infer merge or deployment authority from RR alone.
 
-Green requires correct scope, applicable local tests/typecheck/lint/build and guardrails, successful required GitHub checks, Sites verification when Sites changes, a mergeable PR whose exact head is unchanged since final review, and no unresolved actionable review thread or known critical/high-severity defect. Never push directly to `main`.
+Green requires correct scope, applicable local tests/typecheck/lint/build and guardrails, successful required GitHub checks, completed Copilot code review on the exact head when assigned, Sites verification when Sites changes, a mergeable PR whose exact head is unchanged since final review, and no unresolved actionable review thread or known critical/high-severity defect. Never push directly to `main`.
 
 ## 5. Locked pricing
 
@@ -591,7 +601,7 @@ Phase 1 SaaS foundation scaffolding is present as TypeScript-only contracts and 
 
 - Veroxa should be theoretically complete in preview/manual/pre-live mode before paid infrastructure is activated.
 - Paid systems should be connected into existing prepared interfaces, not used while the product is still being designed.
-- Active stack is ChatGPT-managed GitHub + Codex + ChatGPT Sites; Vercel and Replit deployment paths are retired/historical.
+- At this historical checkpoint, the active stack was ChatGPT-managed GitHub + Codex + ChatGPT Sites. The current stack adds GitHub Copilot as the exclusive assigned PR reviewer; Vercel and Replit deployment paths remain retired/historical.
 - Active roles remain Client and Team. Owner/Operator are inactive and parked, including Super Admin, generic Admin, and Execution roles.
 - Veroxa is AI-ready but not connected: deterministic drafts and approval gates can be built now; live AI stays blocked until a future approved activation.
 - Veroxa is integration-ready but not connected: adapter contracts and UI states can be planned now; production auth, storage, Google/Meta/TikTok APIs, payments, webhooks, cron jobs, and automated publishing stay blocked.
