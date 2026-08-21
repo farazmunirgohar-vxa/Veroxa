@@ -217,14 +217,14 @@ async function harness(overrides = {}) {
 }
 
 test("route uses Worker-compatible private Storage and provider transports", () => {
-  const storageBlock = assessmentRouteSource.slice(
-    assessmentRouteSource.indexOf("async downloadSource"),
-    assessmentRouteSource.indexOf("async sourceInfo"),
-  );
-  const providerBlock = assessmentRouteSource.slice(
-    assessmentRouteSource.indexOf("async callOpenAI"),
-    assessmentRouteSource.indexOf("async complete"),
-  );
+  const storageStart = assessmentRouteSource.indexOf("async downloadSource");
+  const storageEnd = assessmentRouteSource.indexOf("async sourceInfo");
+  const providerStart = assessmentRouteSource.indexOf("async callOpenAI");
+  const providerEnd = assessmentRouteSource.indexOf("async complete");
+  assert.ok(storageStart >= 0 && storageEnd > storageStart);
+  assert.ok(providerStart >= 0 && providerEnd > providerStart);
+  const storageBlock = assessmentRouteSource.slice(storageStart, storageEnd);
+  const providerBlock = assessmentRouteSource.slice(providerStart, providerEnd);
   assert.match(storageBlock, /\.download\(storagePath\)/u);
   assert.doesNotMatch(storageBlock, /\.download\(\s*storagePath\s*,/u);
   assert.doesNotMatch(storageBlock, /\b(?:cache|credentials)\s*:/u);
@@ -235,10 +235,10 @@ test("route uses Worker-compatible private Storage and provider transports", () 
     providerBlock.indexOf("response.status >= 300") <
       providerBlock.indexOf("return response"),
   );
-  const redirectBranch = providerBlock.slice(
-    providerBlock.indexOf("if (response.status >= 300"),
-    providerBlock.indexOf("return response"),
-  );
+  const redirectStart = providerBlock.indexOf("if (response.status >= 300");
+  const redirectEnd = providerBlock.indexOf("return response");
+  assert.ok(redirectStart >= 0 && redirectEnd > redirectStart);
+  const redirectBranch = providerBlock.slice(redirectStart, redirectEnd);
   assert.doesNotMatch(
     redirectBranch,
     /response\.(?:body|text|json|blob|arrayBuffer)/u,
