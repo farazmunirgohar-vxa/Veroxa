@@ -118,25 +118,19 @@ function allowlistedUpstreamAuthError(
   response: Response,
   text: string,
 ): MomoContentAiLifecycleUpstreamAuthErrorCode | null {
-  if (text.length < 2 || text.length > 1_024 ||
-    !response.headers.get("content-type")?.toLowerCase().startsWith(
-      "application/json",
-    )) return null;
-  try {
-    const payload: unknown = JSON.parse(text);
-    if (typeof payload !== "object" || payload === null ||
-      Array.isArray(payload) || Object.keys(payload).length !== 1 ||
-      !Object.hasOwn(payload, "error")) return null;
-    const error = (payload as { error?: unknown }).error;
-    return typeof error === "string" &&
-        UPSTREAM_AUTH_ERROR_CODES.has(
-          error as MomoContentAiLifecycleUpstreamAuthErrorCode,
-        )
-      ? error as MomoContentAiLifecycleUpstreamAuthErrorCode
-      : null;
-  } catch {
-    return null;
-  }
+  if (text.length < 2 || text.length > 1_024) return null;
+  const contentType = response.headers.get("content-type")?.trim() || "";
+  if (!/^application\/json(?:\s*;\s*charset\s*=\s*(?:"utf-8"|utf-8))?$/iu
+    .test(contentType)) return null;
+  const match = text.match(
+    /^\s*\{\s*"error"\s*:\s*"(bridge_access_required|team_access_required)"\s*\}\s*$/u,
+  );
+  const error = match?.[1];
+  return error && UPSTREAM_AUTH_ERROR_CODES.has(
+      error as MomoContentAiLifecycleUpstreamAuthErrorCode,
+    )
+    ? error as MomoContentAiLifecycleUpstreamAuthErrorCode
+    : null;
 }
 
 export function momoContentAiLifecycleBridgeFailure(input: {
