@@ -116,6 +116,11 @@ test("lifecycle bridge carries one correlation ID on a verified signed request",
         assert.equal(url, bridgeConfig().endpoint);
         assert.equal(init.headers["x-veroxa-correlation-id"], CORRELATION_ID);
         assert.equal(init.headers.authorization, `Bearer ${ACCESS_TOKEN}`);
+        assert.equal(Object.hasOwn(init, "credentials"), false,
+          "the server bridge must not pass browser-only credential mode to the Sites runtime fetch");
+        assert.equal(init.cache, "no-store");
+        assert.equal(init.redirect, "error");
+        assert.ok(init.signal instanceof AbortSignal);
         assert.equal(await verifyMomoContentAiBridgeSignature({
           publicKeyBase64: publicKey,
           timestampMs: init.headers["x-veroxa-content-ai-timestamp-ms"],
