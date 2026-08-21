@@ -2252,8 +2252,19 @@ function assertCurrentLiveStatusReconciliation(
     "VER-40/VER-41, expired-session blocker, or incomplete R3 gates drifted",
   );
   must(
-    locks !== undefined &&
-      Object.values(locks).every((value) => value === false) &&
+    sameJson(locks, {
+      publishing: false,
+      externalScheduling: false,
+      accountConnection: false,
+      customerMessaging: false,
+      outreach: false,
+      reviewReplies: false,
+      websiteProviderWritesAllowed: false,
+      orderingProviderWritesAllowed: false,
+      advertisingProviderWritesAllowed: false,
+      pricingChange: false,
+      repositoryVisibilityChange: false,
+    }) &&
       capacity?.planVerified === true &&
       capacity.blanketOperationalAuthority === false &&
       capacity.optionalFeatureConfigurationVerified === false &&
