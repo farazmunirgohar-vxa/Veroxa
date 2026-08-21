@@ -362,6 +362,8 @@ test("lifecycle bridge exposes only allowlisted auth rejection codes", async () 
 
 test("lifecycle bridge redacts malformed and non-allowlisted error responses", async () => {
   const responses = [
+    Response.json({ error: "bridge_access_required" }, { status: 401 }),
+    Response.json({ error: "team_access_required" }, { status: 500 }),
     new Response('{"error":"bridge_access_required","secret":"leak"}', {
       status: 403,
       headers: { "content-type": "application/json" },
