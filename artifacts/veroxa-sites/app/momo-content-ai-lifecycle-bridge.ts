@@ -118,7 +118,9 @@ function allowlistedUpstreamAuthError(
   response: Response,
   text: string,
 ): MomoContentAiLifecycleUpstreamAuthErrorCode | null {
-  if (text.length < 2 || text.length > 1_024) return null;
+  if (response.status !== 403 || text.length < 2 || text.length > 1_024) {
+    return null;
+  }
   const contentType = response.headers.get("content-type")?.trim() || "";
   if (!/^application\/json(?:\s*;\s*charset\s*=\s*(?:"utf-8"|utf-8))?$/iu
     .test(contentType)) return null;
