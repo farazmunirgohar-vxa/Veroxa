@@ -1,0 +1,205 @@
+{
+  "schemaVersion": 1,
+  "recordKind": "veroxa_live_status_closeout",
+  "status": "live_stack_reconciled_acceptance_incomplete",
+  "observedAt": "2026-08-21T06:37:49Z",
+  "evidenceBoundary": "read_only_connected_platform_observation_plus_exact_local_source_hashing",
+  "github": {
+    "repository": "farazmunirgohar-vxa/Veroxa",
+    "defaultBranch": "main",
+    "observedMainCommit": "ccbe2ecffd3df8aa24c9b2994efbab35d01e8f56",
+    "observedMainTree": "0904bd1ddaeb8fc8d981f064a31b20133dae64eb",
+    "latestMergedPullRequest": 202,
+    "pullRequest202": {
+      "head": "f8e78c3b8f7863151e68867062c387973689ac4f",
+      "mergeCommit": "ccbe2ecffd3df8aa24c9b2994efbab35d01e8f56",
+      "scope": "GitHub/Copilot workflow ownership governance",
+      "runtimeChanged": false
+    }
+  },
+  "sites": {
+    "projectId": "appgprj_6a53d07c7c28819182801cf35dfd30de",
+    "slug": "veroxa-client-experience",
+    "productionUrl": "https://veroxasystems.com",
+    "version": 66,
+    "versionId": "appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_8b15a03fe30c8191869f407d796ce5a8",
+    "internalSourceCommit": "85e2bc4f7eb3a6b23a5bd1d2f3934d0d1c44364f",
+    "deploymentId": "appgdep_6a87ee29daf88191bd2813485deefb88",
+    "deploymentStatus": "succeeded",
+    "deploymentKind": "publish",
+    "environmentRevision": 22,
+    "archive": {
+      "fileCount": 52,
+      "byteLength": 6144000,
+      "sha256": "9ed2a904c657178f52e5c1e83b5d7e6f1e13fc813ad8d4b7c3a3145da8f3bf89"
+    },
+    "runtimeSubtree": {
+      "root": "artifacts/veroxa-sites",
+      "fileCount": 245,
+      "hashAlgorithm": "veroxa-path-null-content-null-sha256-v1",
+      "sha256": "85f50c41751f38a49bd6ce3eadfb9bf1f90065615b84b2d6c8707ca7e23d89a7",
+      "matchesObservedGitHubMain": true,
+      "extraFiles": 0,
+      "missingFiles": 0
+    },
+    "domains": [
+      {
+        "hostname": "veroxasystems.com",
+        "status": "active",
+        "providerStatus": "active",
+        "sslStatus": "active"
+      },
+      {
+        "hostname": "www.veroxasystems.com",
+        "status": "active",
+        "providerStatus": "active",
+        "sslStatus": "active"
+      }
+    ]
+  },
+  "supabase": {
+    "organizationId": "vxenhhycymlsccamhayg",
+    "organizationName": "Veroxa Dev",
+    "plan": "pro",
+    "projectRef": "mwqkhsvdezeykdpqhqec",
+    "projectName": "Veroxa Dev",
+    "region": "us-east-2",
+    "health": "ACTIVE_HEALTHY",
+    "postgresVersion": "17.6.1.121",
+    "migrations": {
+      "count": 60,
+      "latestPlatformVersion": "20260820163500",
+      "latestPlatformName": "veroxa_preintervention_acceptance_v1",
+      "canonicalSource": "supabase/migrations/20260815191500_veroxa_preintervention_acceptance_v1.sql",
+      "canonicalByteLength": 76641,
+      "canonicalSha256": "fe047343b1bab6a5da5222ab78acbd2c87fa7cd0713cd317dbf51dc64404950e",
+      "treeFileCount": 60,
+      "treeHashAlgorithm": "veroxa-path-null-content-null-sha256-v1",
+      "treeSha256": "4c91224d731322539bdea70c3c4e802960b0fa4bc154faef19896a5a23794875"
+    },
+    "externalActionLocks": {
+      "runtimeControlRows": 2,
+      "providerWritesEnabled": 0,
+      "reviewRepliesEnabled": 0,
+      "websiteWritesEnabled": 0,
+      "externalSchedulingEnabled": 0,
+      "rowsWithAnyExternalActionEnabled": 0,
+      "acceptanceScopeRows": 1,
+      "acceptanceExternalWriteAllowedRows": 0,
+      "status": "closed"
+    },
+    "acceptanceSessionBlocker": {
+      "sessionId": "45ad07a3-0192-452b-8a01-5d5bf8528ced",
+      "state": "expired",
+      "initiationExpired": true,
+      "registered": false,
+      "requiredRecovery": "fresh_client_authenticated_database_authorized_begin_upload_session_using_the_same_synthetic_bytes",
+      "oldSessionEvidenceMustRemainImmutable": true
+    },
+    "proCapacity": {
+      "verifiedPlan": "pro",
+      "governance": "governed_capacity_not_blanket_operational_authority",
+      "spendCapConfiguration": "unverified",
+      "backupConfiguration": "unverified",
+      "optionalFeatureConfiguration": "unverified",
+      "usageAndCost": "unverified"
+    }
+  },
+  "edge": {
+    "allActiveFunctionBundleSourcesMatchObservedGitHubMain": true,
+    "functions": [
+      {
+        "slug": "momo-media-ai-lifecycle",
+        "version": 4,
+        "status": "ACTIVE",
+        "verifyJwt": true,
+        "bundleSourceParity": true
+      },
+      {
+        "slug": "momo-content-ai-lifecycle",
+        "version": 14,
+        "status": "ACTIVE",
+        "verifyJwt": false,
+        "bundleSourceParity": true
+      },
+      {
+        "slug": "momo-content-ai-webhook-lifecycle",
+        "version": 6,
+        "status": "ACTIVE",
+        "verifyJwt": false,
+        "bundleSourceParity": true
+      },
+      {
+        "slug": "momo-content-ai-dispatch-lifecycle",
+        "version": 4,
+        "status": "ACTIVE",
+        "verifyJwt": false,
+        "bundleSourceParity": true
+      },
+      {
+        "slug": "veroxa-legacy-media-purge-20260812",
+        "version": 11,
+        "status": "ACTIVE",
+        "verifyJwt": true,
+        "bundleSourceParity": true
+      }
+    ],
+    "verifiedSourceFiles": {
+      "supabase/functions/momo-media-ai-lifecycle/index.ts": "bcda431f2199acc558689fd0a3c0fa5db42e4e69f6ab67a6b88ed2b5abfa087d",
+      "supabase/functions/_shared/momo-media-ai-lifecycle-contract.ts": "bdc9138f56d670155cab8cf65b18f0cb806a8331573976a3921cc026efb558cb",
+      "supabase/functions/_shared/bridge-public-key-transition.ts": "f230a29a94266a0c234304c319bfd223138f41ea1a36a2a841d9b280adfa4f3b",
+      "supabase/functions/momo-content-ai-lifecycle/index.ts": "13828d3a77eaa22e5d29967d14f542fcec6d3259e71b874c65fa9a9f53b702bd",
+      "supabase/functions/_shared/momo-content-ai-lifecycle-contract.ts": "9b6eca7567011e22c4bab11a2b6d6bfdc44cf469ca6d38d84d32aabf6548cc06",
+      "supabase/functions/momo-content-ai-webhook-lifecycle/index.ts": "7ffb35269322113e01fbd485effc2b88d6a8b95b5820047ca00db91eb36395ca",
+      "supabase/functions/_shared/momo-content-ai-webhook-lifecycle-contract.ts": "5390616096e5cc62ecdbe10f1de30bd919de54d9caada86a25ced038f0c850a4",
+      "supabase/functions/momo-content-ai-dispatch-lifecycle/index.ts": "36a0ffed25cea0d5d51e247d3b31e856f4b07a83fcb6ac89babd620c6c087d4e",
+      "supabase/functions/_shared/momo-content-ai-dispatch-lifecycle-contract.ts": "c3f49df8423dc39c57e6cd182d560659800643339aa74926d7da7c413997ce97",
+      "supabase/functions/veroxa-legacy-media-purge-20260812/index.ts": "6d928ef8c06d1c97441080637467837ed309ac37f4f1285c1630c987a957bab5"
+    }
+  },
+  "r3Program": {
+    "ver40": {
+      "status": "Done",
+      "completed": true
+    },
+    "ver41": {
+      "status": "Todo",
+      "blocker": "expired_authenticated_upload_session"
+    },
+    "syntheticGate": {
+      "issue": "VER-26",
+      "status": "In Progress",
+      "complete": false,
+      "fixture": {
+        "width": 640,
+        "height": 480,
+        "byteLength": 40266,
+        "sha256": "251703648bda54c7e5f5ee79939f66b1de304882a54bae814986adc4ecc8cbc2"
+      }
+    },
+    "authenticatedPortalGate": {
+      "issue": "VER-27",
+      "status": "Todo",
+      "complete": false
+    },
+    "founderGate": {
+      "issue": "VER-28",
+      "status": "Todo",
+      "complete": false,
+      "founderGoIssued": false,
+      "momoGo": false
+    }
+  },
+  "productBoundary": {
+    "readyForTeamReviewIsExternalApproval": false,
+    "readyForTeamReviewIsPublication": false,
+    "momoGoClaimed": false,
+    "customerMediaUsedForThisObservation": false,
+    "runtimeOrPlatformMutationPerformed": false
+  },
+  "immutableHistoricalManifest": {
+    "path": "artifacts/veroxa/docs/VEROXA_DEPLOYMENT_MANIFEST.json",
+    "schemaVersion": 13,
+    "status": "preserved_historical_pr185_sites_v56_closeout_not_current_live_status_authority"
+  }
+}

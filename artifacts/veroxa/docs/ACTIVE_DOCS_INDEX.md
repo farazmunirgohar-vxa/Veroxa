@@ -4,7 +4,47 @@ Status: highest-level current source-of-truth index. Read this file before relyi
 
 <!-- GUARDED_INTERNAL_AI_ROLLOUT_AUTHORITY -->
 
-## 2026-08-20 — R3 pre-intervention readiness (current authority)
+## 2026-08-21 — reconciled R3 live status (current authority)
+
+Read in this order:
+
+1. `CURRENT_STATE.json` — compact current state and incomplete gates.
+2. `CURRENT_MILESTONE.md` — controlling outcome, blocker, and safe sequence.
+3. `VEROXA_LIVE_STATUS_CLOSEOUT_20260821.json` — exact read-only GitHub,
+   Sites, Supabase, Edge, lock, and Linear observation.
+4. `SUPABASE_PRO_CAPACITY_AND_WORKFLOW_DIRECTION.md` — current Pro-capacity,
+   spend, and proportional-use governance.
+
+Current checkpoint:
+
+- GitHub `main` was observed at PR #202 merge
+  `ccbe2ecffd3df8aa24c9b2994efbab35d01e8f56`. PR #202 changed governance,
+  not runtime source.
+- Sites v66 deployment `appgdep_6a87ee29daf88191bd2813485deefb88`
+  succeeded. Its exact 245-file runtime subtree at
+  `85f50c41751f38a49bd6ce3eadfb9bf1f90065615b84b2d6c8707ca7e23d89a7`
+  matches observed main; both production domains and SSL are active.
+- Supabase is `ACTIVE_HEALTHY`, plan `pro`, at 60 migrations. All five active
+  Edge bundles match current-main source bytes, including webhook lifecycle
+  v6. External-action locks are closed.
+- VER-40 is Done; VER-41 is Todo. VER-26 synthetic proof is In Progress;
+  VER-27 portals and VER-28 founder gate are Todo. The former synthetic upload
+  session is expired and unregistered, so the next proof requires a fresh
+  authenticated, database-authorized session for the same exact synthetic
+  bytes.
+- Synthetic success, replay/failure, portal, separate Team-decision, and
+  founder gates remain incomplete. No Momo or founder GO is claimed.
+- Supabase Pro is capacity, not proof that Spend Cap, backups, branches,
+  queues, schedules, Realtime, Vault, PITR, replicas, drains, or other optional
+  features are configured. No paid expansion is implied.
+- IMG_4257 remains terminal, immutable, read-only, non-Ready, and has zero
+  retries. It is never an acceptance fixture.
+
+`VEROXA_DEPLOYMENT_MANIFEST.json` remains immutable schema-13 PR #185 / Sites
+v56 incident evidence. Preserve it as history; do not use it as the current
+live-status authority.
+
+## 2026-08-20 — R3 pre-intervention readiness (historical, superseded)
 
 Read `artifacts/veroxa/docs/CURRENT_MILESTONE.md` first. Live verified state outranks the ordered R3 Linear program; the program outranks exact reviewed code and evidence; older date-stamped claims are historical.
 

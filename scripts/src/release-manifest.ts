@@ -197,6 +197,8 @@ const ACTIVE_WORKER_TRANSPORT_PACKET_FIXED_HEAD_COMMIT =
   "1ed99bad1ac749b70dce7e2f6a73feab3575140a";
 const ACTIVE_GITHUB_COPILOT_GOVERNANCE_PACKET_BASE_COMMIT =
   ACTIVE_WORKER_TRANSPORT_PACKET_FIXED_HEAD_COMMIT;
+const ACTIVE_GITHUB_COPILOT_GOVERNANCE_PACKET_FIXED_HEAD_COMMIT =
+  "ccbe2ecffd3df8aa24c9b2994efbab35d01e8f56";
 const ACTIVE_GITHUB_COPILOT_GOVERNANCE_PACKET_ALLOWED_PATHS = new Set([
   ".github/copilot-instructions.md",
   "AGENTS.md",
@@ -204,6 +206,21 @@ const ACTIVE_GITHUB_COPILOT_GOVERNANCE_PACKET_ALLOWED_PATHS = new Set([
   "artifacts/veroxa/docs/VEROXA_LOCKED_OPERATING_MEMORY.md",
   "scripts/src/release-manifest.ts",
 ]);
+const ACTIVE_LIVE_STATUS_SUPABASE_PRO_PACKET_BASE_COMMIT =
+  ACTIVE_GITHUB_COPILOT_GOVERNANCE_PACKET_FIXED_HEAD_COMMIT;
+const ACTIVE_LIVE_STATUS_SUPABASE_PRO_PACKET_ALLOWED_PATHS = new Set([
+  "AGENTS.md",
+  "artifacts/veroxa/docs/ACTIVE_DOCS_INDEX.md",
+  "artifacts/veroxa/docs/CURRENT_MILESTONE.md",
+  "artifacts/veroxa/docs/CURRENT_STATE.json",
+  "artifacts/veroxa/docs/SUPABASE_PRO_CAPACITY_AND_WORKFLOW_DIRECTION.md",
+  "artifacts/veroxa/docs/VEROXA_LIVE_STATUS_CLOSEOUT_20260821.json",
+  "artifacts/veroxa/docs/VEROXA_LOCKED_OPERATING_MEMORY.md",
+  "scripts/src/check-chatgpt-sites-migration-source-truth.ts",
+  "scripts/src/release-manifest.ts",
+]);
+const CURRENT_LIVE_STATUS_CLOSEOUT_PATH =
+  "artifacts/veroxa/docs/VEROXA_LIVE_STATUS_CLOSEOUT_20260821.json";
 
 export const TREE_HASH_ALGORITHM = "veroxa-path-null-content-null-sha256-v1";
 export const REVIEWED_LOCAL_CANDIDATE_RELEASE_STATE =
@@ -1194,11 +1211,15 @@ function readActiveMediaInspectionCandidateState():
       candidate.kind === "private_media_verifier_contract_repair" &&
       candidate.state ===
         "local_focused_test_passed_pending_pr_review_and_synthetic_production_proof";
-    const isPreinterventionCandidate = value.phase ===
-        "preintervention_acceptance_candidate_pending_exact_head_gates_and_live_proof" &&
-      candidate.kind === "veroxa_preintervention_acceptance" &&
-      candidate.state ===
-        "local_candidate_pending_exact_head_ci_review_merge_migration_apply_deploy_and_production_proof";
+    const isPreinterventionCandidate = candidate.kind ===
+        "veroxa_preintervention_acceptance" && ((value.phase ===
+          "preintervention_acceptance_candidate_pending_exact_head_gates_and_live_proof" &&
+        candidate.state ===
+          "local_candidate_pending_exact_head_ci_review_merge_migration_apply_deploy_and_production_proof") ||
+      (value.phase ===
+          "r3_acceptance_live_stack_reconciled_auth_session_blocked" &&
+        candidate.state ===
+          "live_platform_reconciled_acceptance_proof_blocked"));
     if (!isPreflightCandidate && !isVerifierContractCandidate &&
       !isPreinterventionCandidate) {
       return null;
@@ -1667,39 +1688,85 @@ function assertActiveWorkerTransportPacketDiffScope(): void {
   }
 }
 
-/**
- * Bind the forward GitHub/Copilot governance packet to the exact merged
- * VER-44 base and its committed, staged, unstaged, and untracked paths.
- * Destructive changes and unrelated product, runtime, or production scope
- * fail closed.
- */
+/** Bind merged PR #202 to its immutable exact committed slice. */
 function assertActiveGitHubCopilotGovernancePacketDiffScope(): void {
   const comparisonRange =
-    `${ACTIVE_GITHUB_COPILOT_GOVERNANCE_PACKET_BASE_COMMIT}...HEAD`;
+    `${ACTIVE_GITHUB_COPILOT_GOVERNANCE_PACKET_BASE_COMMIT}...${ACTIVE_GITHUB_COPILOT_GOVERNANCE_PACKET_FIXED_HEAD_COMMIT}`;
   try {
     execFileSync("git", [
       "merge-base",
       "--is-ancestor",
       ACTIVE_GITHUB_COPILOT_GOVERNANCE_PACKET_BASE_COMMIT,
-      "HEAD",
+      ACTIVE_GITHUB_COPILOT_GOVERNANCE_PACKET_FIXED_HEAD_COMMIT,
     ], { cwd: repoRoot, stdio: "ignore" });
   } catch {
     throw new Error(
-      "GitHub/Copilot governance packet lacks its exact merged PR #201 base",
+      "GitHub/Copilot governance packet lacks its immutable PR #202 ancestry",
     );
   }
 
   try {
-    const committed = gitPathList([
+    const paths = gitPathList([
       "diff", "--find-renames", "--name-only", "--diff-filter=ACM",
       comparisonRange, "--",
-    ]);
-    const forbiddenCommitted = gitPathList([
+    ]).sort();
+    const forbidden = gitPathList([
       "diff", "--find-renames", "--name-only", "--diff-filter=DRTUXB",
       comparisonRange, "--",
-    ]);
+    ]).sort();
+    const unexpected = paths.filter((path) =>
+      !ACTIVE_GITHUB_COPILOT_GOVERNANCE_PACKET_ALLOWED_PATHS.has(path)
+    );
+    const missing = Array.from(
+      ACTIVE_GITHUB_COPILOT_GOVERNANCE_PACKET_ALLOWED_PATHS,
+    ).filter((path) => !paths.includes(path)).sort();
+    if (unexpected.length > 0 || missing.length > 0 || forbidden.length > 0) {
+      throw new Error(
+        "GitHub/Copilot governance packet immutable Git scope drifted: " + [
+          unexpected.length > 0 ? `unexpected=${unexpected.join(",")}` : null,
+          missing.length > 0 ? `missing=${missing.join(",")}` : null,
+          forbidden.length > 0 ? `forbidden=${forbidden.join(",")}` : null,
+        ].filter(Boolean).join("; "),
+      );
+    }
+  } catch (error) {
+    if (error instanceof Error && error.message.startsWith(
+      "GitHub/Copilot governance packet immutable Git scope drifted:",
+    )) throw error;
+    throw new Error(
+      "GitHub/Copilot governance packet cannot verify its immutable Git diff scope: " +
+        (error instanceof Error ? error.message : String(error)),
+    );
+  }
+}
+
+/**
+ * Bind the live-status/Supabase-Pro packet to the exact merged PR #202 base
+ * plus its committed, staged, unstaged, and untracked paths. Renames,
+ * deletions, unmerged entries, and every unrelated surface fail closed.
+ */
+function assertActiveLiveStatusSupabaseProPacketDiffScope(): void {
+  const comparisonRange =
+    `${ACTIVE_LIVE_STATUS_SUPABASE_PRO_PACKET_BASE_COMMIT}...HEAD`;
+  try {
+    execFileSync("git", [
+      "merge-base",
+      "--is-ancestor",
+      ACTIVE_LIVE_STATUS_SUPABASE_PRO_PACKET_BASE_COMMIT,
+      "HEAD",
+    ], { cwd: repoRoot, stdio: "ignore" });
+  } catch {
+    throw new Error(
+      "live-status/Supabase-Pro packet lacks its exact merged PR #202 base",
+    );
+  }
+
+  try {
     const paths = Array.from(new Set([
-      ...committed,
+      ...gitPathList([
+        "diff", "--find-renames", "--name-only", "--diff-filter=ACM",
+        comparisonRange, "--",
+      ]),
       ...gitPathList([
         "diff", "--find-renames", "--name-only", "--diff-filter=ACM", "--",
       ]),
@@ -1710,7 +1777,10 @@ function assertActiveGitHubCopilotGovernancePacketDiffScope(): void {
       ...gitPathList(["ls-files", "--others", "--exclude-standard"]),
     ])).sort();
     const forbidden = Array.from(new Set([
-      ...forbiddenCommitted,
+      ...gitPathList([
+        "diff", "--find-renames", "--name-only", "--diff-filter=DRTUXB",
+        comparisonRange, "--",
+      ]),
       ...gitPathList([
         "diff", "--find-renames", "--name-only", "--diff-filter=DRTUXB", "--",
       ]),
@@ -1721,14 +1791,14 @@ function assertActiveGitHubCopilotGovernancePacketDiffScope(): void {
       ...gitPathList(["ls-files", "--unmerged"]),
     ])).sort();
     const unexpected = paths.filter((path) =>
-      !ACTIVE_GITHUB_COPILOT_GOVERNANCE_PACKET_ALLOWED_PATHS.has(path)
+      !ACTIVE_LIVE_STATUS_SUPABASE_PRO_PACKET_ALLOWED_PATHS.has(path)
     );
     const missing = Array.from(
-      ACTIVE_GITHUB_COPILOT_GOVERNANCE_PACKET_ALLOWED_PATHS,
+      ACTIVE_LIVE_STATUS_SUPABASE_PRO_PACKET_ALLOWED_PATHS,
     ).filter((path) => !paths.includes(path)).sort();
     if (unexpected.length > 0 || missing.length > 0 || forbidden.length > 0) {
       throw new Error(
-        "GitHub/Copilot governance packet Git scope drifted: " + [
+        "live-status/Supabase-Pro packet Git scope drifted: " + [
           unexpected.length > 0 ? `unexpected=${unexpected.join(",")}` : null,
           missing.length > 0 ? `missing=${missing.join(",")}` : null,
           forbidden.length > 0 ? `forbidden=${forbidden.join(",")}` : null,
@@ -1737,10 +1807,10 @@ function assertActiveGitHubCopilotGovernancePacketDiffScope(): void {
     }
   } catch (error) {
     if (error instanceof Error && error.message.startsWith(
-      "GitHub/Copilot governance packet Git scope drifted:",
+      "live-status/Supabase-Pro packet Git scope drifted:",
     )) throw error;
     throw new Error(
-      "GitHub/Copilot governance packet cannot verify its exact Git diff scope: " +
+      "live-status/Supabase-Pro packet cannot verify its exact Git diff scope: " +
         (error instanceof Error ? error.message : String(error)),
     );
   }
@@ -2003,10 +2073,292 @@ function assertActivePrivateMediaVerifierContractCandidate(
   }
 }
 
+function assertCurrentLiveStatusReconciliation(
+  manifest: DeploymentManifest,
+  state: ActiveMediaInspectionCandidateState,
+): void {
+  const failures: string[] = [];
+  const must = (condition: boolean, message: string): void => {
+    if (!condition) failures.push(message);
+  };
+
+  for (const guard of [
+    assertActivePreinterventionAcceptanceCandidateDiffScope,
+    assertActiveVer39WorkerLifecycleBridgeRepairDiffScope,
+    assertActiveVer42FinalizeBearerAuthDiffScope,
+    assertActiveVer43LifecycleAuthDiagnosticDiffScope,
+    assertActiveWorkerTransportPacketDiffScope,
+    assertActiveGitHubCopilotGovernancePacketDiffScope,
+    assertActiveLiveStatusSupabaseProPacketDiffScope,
+  ]) {
+    try {
+      guard();
+    } catch (error) {
+      failures.push(error instanceof Error ? error.message : String(error));
+    }
+  }
+
+  const record = state as unknown as Record<string, any>;
+  const github = record.production?.github as Record<string, any> | undefined;
+  const sites = record.production?.sites as Record<string, any> | undefined;
+  const supabase = record.production?.supabase as
+    | Record<string, any>
+    | undefined;
+  const edge = record.production?.edge as Record<string, any> | undefined;
+  const candidate = record.activeCandidate as Record<string, any> | undefined;
+  const gates = candidate?.requiredGates as Record<string, any> | undefined;
+  const blocker = record.acceptanceBlocker as Record<string, any> | undefined;
+  const program = record.r3Program as Record<string, any> | undefined;
+  const locks = record.externalActionLock as Record<string, unknown> | undefined;
+  const capacity = record.supabaseProGovernance as
+    | Record<string, any>
+    | undefined;
+  const closeout = JSON.parse(readFileSync(
+    resolve(repoRoot, CURRENT_LIVE_STATUS_CLOSEOUT_PATH),
+    "utf8",
+  )) as Record<string, any>;
+  const sourceTree = hashTree(resolve(repoRoot, DEPLOYABLE_SITES_SOURCE_ROOT), {
+    exclusions: [...GENERATED_PATH_EXCLUSIONS],
+  });
+  const rootMigrationTree = hashTree(
+    resolve(repoRoot, ROOT_MIGRATION_SOURCE_ROOT),
+    { suffix: ".sql" },
+  );
+  const mirrorMigrationTree = hashTree(
+    resolve(repoRoot, SITES_MIGRATION_MIRROR_ROOT),
+    { suffix: ".sql" },
+  );
+  const latestMigrationPath = resolve(
+    repoRoot,
+    ROOT_MIGRATION_SOURCE_ROOT,
+    PREINTERVENTION_ACCEPTANCE_MIGRATION,
+  );
+
+  must(
+    manifest.schemaVersion === 13 &&
+      manifest.recordKind ===
+        "veroxa_momo_media_recovery_host_inspection_diagnostics_closeout",
+    "current live status must preserve the immutable schema-13 deployment manifest",
+  );
+  must(
+    record.phase === "r3_acceptance_live_stack_reconciled_auth_session_blocked" &&
+      record.currentVerdict === "NOT READY — R3 ACCEPTANCE GATES OPEN" &&
+      record.updatedAt === "2026-08-21T06:37:49Z" &&
+      record.currentStatusCloseout === CURRENT_LIVE_STATUS_CLOSEOUT_PATH,
+    "current live-status identity, timestamp, or not-ready boundary drifted",
+  );
+  must(
+    github?.observedMainCommit ===
+        ACTIVE_LIVE_STATUS_SUPABASE_PRO_PACKET_BASE_COMMIT &&
+      github.observedMainTree === "0904bd1ddaeb8fc8d981f064a31b20133dae64eb" &&
+      github.latestMergedPullRequest === 202 &&
+      github.pullRequest202Head ===
+        "f8e78c3b8f7863151e68867062c387973689ac4f" &&
+      github.runtimeChangedByPullRequest202 === false,
+    "GitHub PR #202 baseline or runtime boundary drifted",
+  );
+  must(
+    sites?.version === 66 &&
+      sites.versionId ===
+        "appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_8b15a03fe30c8191869f407d796ce5a8" &&
+      sites.deploymentId === "appgdep_6a87ee29daf88191bd2813485deefb88" &&
+      sites.deploymentStatus === "succeeded" &&
+      sites.internalSourceCommit ===
+        "85e2bc4f7eb3a6b23a5bd1d2f3934d0d1c44364f" &&
+      sites.runtimeSubtreeFileCount === sourceTree.fileCount &&
+      sites.runtimeSubtreeSha256 === sourceTree.sha256 &&
+      sites.matchesObservedGitHubMainRuntimeSubtree === true &&
+      sites.apexDomainHealthy === true &&
+      sites.wwwDomainHealthy === true &&
+      sourceTree.fileCount === 245 &&
+      sourceTree.sha256 ===
+        "85f50c41751f38a49bd6ce3eadfb9bf1f90065615b84b2d6c8707ca7e23d89a7",
+    "Sites v66 identity, domain health, or exact runtime-subtree parity drifted",
+  );
+  must(
+    supabase?.plan === "pro" &&
+      supabase.health === "ACTIVE_HEALTHY" &&
+      supabase.migrationCount === 60 &&
+      supabase.latestPlatformMigrationVersion === "20260820163500" &&
+      supabase.latestCanonicalMigration === PREINTERVENTION_ACCEPTANCE_MIGRATION &&
+      supabase.latestCanonicalMigrationSha256 === sha256File(latestMigrationPath) &&
+      supabase.migrationTreeSha256 === rootMigrationTree.sha256 &&
+      supabase.externalActionLocksClosed === true &&
+      rootMigrationTree.fileCount === 60 &&
+      rootMigrationTree.sha256 ===
+        "4c91224d731322539bdea70c3c4e802960b0fa4bc154faef19896a5a23794875" &&
+      rootMigrationTree.fileCount === mirrorMigrationTree.fileCount &&
+      rootMigrationTree.sha256 === mirrorMigrationTree.sha256 &&
+      sameJson(rootMigrationTree.files, mirrorMigrationTree.files) &&
+      statSync(latestMigrationPath).size === 76641,
+    "Supabase Pro health, 60-migration ledger, or exact migration source drifted",
+  );
+  must(
+    edge?.allActiveFunctionBundleSourcesMatchObservedGitHubMain === true &&
+      edge.mediaLifecycleVersion === 4 &&
+      edge.contentLifecycleVersion === 14 &&
+      edge.webhookLifecycleVersion === 6 &&
+      edge.dispatchLifecycleVersion === 4 &&
+      edge.legacyPurgeVersion === 11,
+    "active Edge version or all-bundle source-parity record drifted",
+  );
+  must(
+    candidate?.kind === "veroxa_preintervention_acceptance" &&
+      candidate.state === "live_platform_reconciled_acceptance_proof_blocked" &&
+      candidate.pullRequest === 193 &&
+      candidate.mergeCommit ===
+        "1663028de4def6a94565fe095691191205a7192a" &&
+      sameJson(candidate.pendingMigrations, []) &&
+      candidate.migration?.applied === true &&
+      candidate.migration?.candidateMigrationCount === 60 &&
+      candidate.migration?.candidateMigrationTreeSha256 ===
+        rootMigrationTree.sha256 &&
+      candidate.externalActionLockRequired === true &&
+      candidate.img4257RetriesRemaining === 0,
+    "applied acceptance source lineage or immutable media boundary drifted",
+  );
+  must(
+    gates?.releaseSourceMerged === true &&
+      gates.migrationAppliedAndReadBack === true &&
+      gates.exactRuntimeSourceDeployed === true &&
+      gates.edgeBundleParityProven === true &&
+      gates.externalActionLocksClosed === true &&
+      gates.freshAuthenticatedUploadSession === false &&
+      gates.syntheticSuccessPassed === false &&
+      gates.duplicateReplayIdempotent === false &&
+      gates.controlledFailureFailedClosed === false &&
+      gates.restaurantPortalVerified === false &&
+      gates.teamPortalVerified === false &&
+      gates.separateTeamDecisionVerified === false &&
+      gates.founderGoIssued === false,
+    "current state overclaims or omits an R3 acceptance gate",
+  );
+  must(
+    blocker?.linearIssue === "VER-41" &&
+      blocker.linearStatus === "Todo" &&
+      blocker.uploadSessionId === "45ad07a3-0192-452b-8a01-5d5bf8528ced" &&
+      blocker.uploadSessionState === "expired" &&
+      blocker.uploadSessionRegistered === false &&
+      blocker.oldSessionEvidenceMustRemainImmutable === true &&
+      program?.ver40Status === "Done" &&
+      program.ver41Status === "Todo" &&
+      program.syntheticGate?.status === "In Progress" &&
+      program.syntheticGate?.complete === false &&
+      program.portalGate?.status === "Todo" &&
+      program.portalGate?.complete === false &&
+      program.founderGate?.status === "Todo" &&
+      program.founderGate?.complete === false &&
+      program.founderGate?.momoGo === false,
+    "VER-40/VER-41, expired-session blocker, or incomplete R3 gates drifted",
+  );
+  must(
+    sameJson(locks, {
+      publishing: false,
+      externalScheduling: false,
+      accountConnection: false,
+      customerMessaging: false,
+      outreach: false,
+      reviewReplies: false,
+      websiteProviderWritesAllowed: false,
+      orderingProviderWritesAllowed: false,
+      advertisingProviderWritesAllowed: false,
+      pricingChange: false,
+      repositoryVisibilityChange: false,
+    }) &&
+      capacity?.planVerified === true &&
+      capacity.blanketOperationalAuthority === false &&
+      capacity.optionalFeatureConfigurationVerified === false &&
+      capacity.spendCapConfigurationVerified === false &&
+      capacity.usageAndCostVerified === false,
+    "external-action or governed Supabase Pro capacity boundary drifted",
+  );
+  must(
+    closeout.recordKind === "veroxa_live_status_closeout" &&
+      closeout.status === "live_stack_reconciled_acceptance_incomplete" &&
+      closeout.observedAt === record.updatedAt &&
+      closeout.github?.observedMainCommit === github?.observedMainCommit &&
+      closeout.sites?.runtimeSubtree?.fileCount === sourceTree.fileCount &&
+      closeout.sites?.runtimeSubtree?.sha256 === sourceTree.sha256 &&
+      closeout.sites?.runtimeSubtree?.matchesObservedGitHubMain === true &&
+      closeout.supabase?.migrations?.count === rootMigrationTree.fileCount &&
+      closeout.supabase?.migrations?.treeSha256 === rootMigrationTree.sha256 &&
+      closeout.supabase?.externalActionLocks?.status === "closed" &&
+      closeout.supabase?.externalActionLocks?.rowsWithAnyExternalActionEnabled === 0 &&
+      closeout.supabase?.externalActionLocks?.acceptanceExternalWriteAllowedRows === 0 &&
+      closeout.supabase?.acceptanceSessionBlocker?.state === "expired" &&
+      closeout.edge?.allActiveFunctionBundleSourcesMatchObservedGitHubMain === true &&
+      closeout.r3Program?.founderGate?.momoGo === false &&
+      closeout.productBoundary?.runtimeOrPlatformMutationPerformed === false,
+    "machine-readable live-status closeout drifted or overclaims production work",
+  );
+
+  const expectedFunctions = [
+    ["momo-media-ai-lifecycle", 4, "ACTIVE", true],
+    ["momo-content-ai-lifecycle", 14, "ACTIVE", false],
+    ["momo-content-ai-webhook-lifecycle", 6, "ACTIVE", false],
+    ["momo-content-ai-dispatch-lifecycle", 4, "ACTIVE", false],
+    ["veroxa-legacy-media-purge-20260812", 11, "ACTIVE", true],
+  ];
+  must(
+    sameJson(
+      (closeout.edge?.functions ?? []).map((fn: Record<string, any>) => [
+        fn.slug,
+        fn.version,
+        fn.status,
+        fn.verifyJwt,
+      ]),
+      expectedFunctions,
+    ) && (closeout.edge?.functions ?? []).every(
+      (fn: Record<string, any>) => fn.bundleSourceParity === true,
+    ),
+    "active Edge function inventory or bundle-parity flag drifted",
+  );
+  for (const [path, expectedSha] of Object.entries(
+    closeout.edge?.verifiedSourceFiles ?? {},
+  )) {
+    const rootPath = resolve(repoRoot, path);
+    must(
+      typeof expectedSha === "string" &&
+        existsSync(rootPath) &&
+        sha256File(rootPath) === expectedSha,
+      "canonical Edge source drifted: " + path,
+    );
+  }
+  must(
+    Object.keys(closeout.edge?.verifiedSourceFiles ?? {}).length === 10,
+    "Edge bundle source evidence must remain exactly ten verified files",
+  );
+
+  const capacityAuthority = readFileSync(resolve(
+    repoRoot,
+    "artifacts/veroxa/docs/SUPABASE_PRO_CAPACITY_AND_WORKFLOW_DIRECTION.md",
+  ), "utf8");
+  must(
+    capacityAuthority.includes("governed capacity") &&
+      capacityAuthority.includes("Spend Cap configuration") &&
+      capacityAuthority.includes("unverified") &&
+      capacityAuthority.includes("Copilot alone reviews") &&
+      !capacityAuthority.includes("Keep the existing Supabase Spend Cap enabled"),
+    "Supabase Pro authority overclaims configuration or loses proportional governance",
+  );
+
+  if (failures.length > 0) {
+    throw new Error(
+      "Unsafe current live-status/Supabase-Pro reconciliation: " +
+        failures.join("; "),
+    );
+  }
+}
+
 function assertActivePreinterventionAcceptanceCandidate(
   manifest: DeploymentManifest,
   state: ActiveMediaInspectionCandidateState,
 ): void {
+  if (state.phase ===
+    "r3_acceptance_live_stack_reconciled_auth_session_blocked") {
+    assertCurrentLiveStatusReconciliation(manifest, state);
+    return;
+  }
   const failures: string[] = [];
   const must = (condition: boolean, message: string): void => {
     if (!condition) failures.push(message);

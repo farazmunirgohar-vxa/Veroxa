@@ -1,5 +1,40 @@
 <!-- GUARDED_INTERNAL_AI_ROLLOUT_AUTHORITY -->
 
+## 2026-08-21 — reconciled R3 live status (current authority)
+
+Read `artifacts/veroxa/docs/CURRENT_STATE.json`,
+`artifacts/veroxa/docs/CURRENT_MILESTONE.md`, and
+`artifacts/veroxa/docs/VEROXA_LIVE_STATUS_CLOSEOUT_20260821.json` before older
+status material.
+
+- **Release baseline:** the read-only checkpoint observed GitHub `main` at PR
+  #202 merge `ccbe2ecffd3df8aa24c9b2994efbab35d01e8f56`. Sites v66 deployment
+  `appgdep_6a87ee29daf88191bd2813485deefb88` succeeded, and its exact 245-file
+  runtime subtree (`85f50c41751f38a49bd6ce3eadfb9bf1f90065615b84b2d6c8707ca7e23d89a7`)
+  matches the observed main runtime source. Both custom domains and SSL are
+  active.
+- **Database and Edge:** Supabase is `ACTIVE_HEALTHY` on plan `pro` with 60
+  migrations. All five active Edge bundles matched current-main source bytes;
+  `momo-content-ai-webhook-lifecycle` is v6. Both runtime rows and the internal
+  acceptance scope preserve every external-action lock.
+- **Program:** VER-40 is Done; VER-41 is Todo. The synthetic gate (VER-26) is In
+  Progress, while the authenticated-portal gate (VER-27) and founder gate
+  (VER-28) are Todo. The preserved synthetic session is expired and
+  unregistered; recovery requires a fresh Client-authenticated,
+  database-authorized session for the same exact synthetic bytes.
+- **Verdict:** no Momo or founder GO is claimed. Synthetic success,
+  replay/failure, authenticated portal, separate Team decision, and founder
+  gates remain incomplete. `ready_for_team_review` is not approval,
+  publication, or external authority.
+- **Capacity:** Supabase Pro is governed capacity, not blanket operational or
+  spend authority. Read
+  `artifacts/veroxa/docs/SUPABASE_PRO_CAPACITY_AND_WORKFLOW_DIRECTION.md`;
+  Spend Cap, backup, optional-feature, usage, and cost configuration remain
+  unverified unless directly observed.
+- **Historical evidence:** preserve
+  `artifacts/veroxa/docs/VEROXA_DEPLOYMENT_MANIFEST.json` unchanged as schema-13
+  PR #185 / Sites v56 incident history; it is not current live-status authority.
+
 ## 2026-08-21 — GitHub/Copilot capacity and agent ownership (current workflow authority)
 
 This section governs account capacity and task ownership only. Read
@@ -9,7 +44,7 @@ evidence for current release and production state.
 - **GitHub and Copilot Pro capacity (owner-reported):** Faraz reports that both plans are active for the personal account that owns `farazmunirgohar-vxa/Veroxa`. Use standard public-repository Actions and included Copilot capacity only. Paid AI-credit overage, larger runners, plan upgrades, Copilot autofix/merge, and other paid add-ons remain unauthorized.
 - **Single-owner agent workflow:** This rule applies immediately to every current and future Veroxa task. Codex owns implementation, tests, fixes, connected-platform operations, release evidence, and authorized release execution. GitHub Copilot exclusively owns every pull-request code review assigned to it. Codex must not repeat that review; it may act on Copilot findings and verify objective release evidence. Copilot must not edit or open competing work for a Codex-owned task. Request Copilot only after the candidate head is stable; never auto-review every draft push. If a material fix changes the head, request one Copilot re-review on the next stable head. If Copilot is unavailable or its included credits are exhausted, hold and report the review instead of silently duplicating or transferring it.
 
-## 2026-08-20 — R3 pre-intervention readiness (current authority)
+## 2026-08-20 — R3 pre-intervention readiness (historical, superseded)
 
 Read `artifacts/veroxa/docs/CURRENT_MILESTONE.md` first. Live verified state outranks the ordered R3 Linear program; the program outranks exact reviewed code and evidence; older date-stamped claims are historical.
 
