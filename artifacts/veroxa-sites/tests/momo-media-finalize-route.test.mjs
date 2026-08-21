@@ -1,6 +1,11 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
+import {
+  hasMomoMediaFinalizeProjectAuthCookie,
+  parseMomoMediaFinalizeBearerToken,
+  resolveMomoMediaFinalizeContext,
+} from "../app/api/media/finalize/bearer-auth.ts";
 import { createMomoMediaFinalizeHandler } from "../app/api/media/finalize/core.ts";
 
 const RESTAURANT_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
@@ -18,15 +23,35 @@ const RIGHTS_ID = "77777777-7777-4777-8777-777777777777";
 const INSTRUCTION_ID = "88888888-8888-4888-8888-888888888888";
 const RECEIPT_ID = "99999999-9999-4999-8999-999999999999";
 const STORAGE_PATH = `restaurants/${RESTAURANT_ID}/uploads/2026/07/ffffffff-ffff-4fff-8fff-ffffffffffff.jpg`;
+const SUPABASE_CONFIG = {
+  url: "https://projectref123.supabase.co",
+  publishableKey: "sb_publishable_test_key",
+};
+const BEARER_ACCESS_TOKEN =
+  "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiYmJiYmJiYi1iYmJiLTRiYmItOGJiYi1iYmJiYmJiYmJiYmJiIn0.signature";
+const VALID_AUTH_USER = {
+  id: USER_ID,
+  aud: "authenticated",
+  role: "authenticated",
+  is_anonymous: false,
+  email: "client@example.test",
+  app_metadata: {},
+  user_metadata: {},
+  created_at: "2026-08-01T00:00:00.000Z",
+};
 const VERIFIED_RESULT = {
   verificationId: VERIFICATION_ID,
   status: "verified",
   canonicalAssetId: ASSET_ID,
   duplicateAssetId: null,
 };
-const [routeSource, recoveryMigration] = await Promise.all([
+const [routeSource, bearerSource, recoveryMigration] = await Promise.all([
   readFile(new URL(
     "../app/api/media/finalize/route.ts",
+    import.meta.url,
+  ), "utf8"),
+  readFile(new URL(
+    "../app/api/media/finalize/bearer-auth.ts",
     import.meta.url,
   ), "utf8"),
   readFile(new URL(
@@ -122,6 +147,316 @@ function harness(overrides = {}) {
   };
   return { calls, handler: createMomoMediaFinalizeHandler(dependencies), source };
 }
+
+function authRequest(authorization = null, cookie = null) {
+  return {
+    headers: {
+      get(name) {
+        if (name.toLowerCase() === "authorization") return authorization;
+        if (name.toLowerCase() === "cookie") return cookie;
+        return null;
+      },
+    },
+  };
+}
+
+function bearerAuthHarness(overrides = {}) {
+  const calls = {
+    factory: [],
+    getUser: [],
+    from: [],
+    queries: [],
+  };
+  const user = Object.hasOwn(overrides, "user")
+    ? overrides.user
+    : VALID_AUTH_USER;
+  const profiles = Object.hasOwn(overrides, "profiles")
+    ? overrides.profiles
+    : [{ role: "client", display_name: "MoMo Client", status: "active" }];
+  const memberships = Object.hasOwn(overrides, "memberships")
+    ? overrides.memberships
+    : [{
+        restaurant_id: RESTAURANT_ID,
+        role: "client",
+        status: "active",
+        veroxa_restaurants: { name: "MoMo", status: "active" },
+      }];
+  const client = {
+    auth: {
+      async getUser(token) {
+        calls.getUser.push(token);
+        if (overrides.getUserThrows) throw overrides.getUserThrows;
+        return {
+          data: { user },
+          error: overrides.userError ?? null,
+        };
+      },
+    },
+    from(table) {
+      calls.from.push(table);
+      const result = table === "veroxa_user_profiles"
+        ? { data: profiles, error: overrides.profileError ?? null }
+        : { data: memberships, error: overrides.membershipError ?? null };
+      const query = {
+        select(columns) {
+          calls.queries.push([table, "select", columns]);
+          return query;
+        },
+        eq(column, value) {
+          calls.queries.push([table, "eq", column, value]);
+          return query;
+        },
+        limit(value) {
+          calls.queries.push([table, "limit", value]);
+          return Promise.resolve(result);
+        },
+      };
+      return query;
+    },
+  };
+  return {
+    calls,
+    client,
+    dependencies: {
+      now: () => Date.parse("2026-08-21T00:00:00.000Z"),
+      clientFactory(url, publishableKey, options) {
+        calls.factory.push({ url, publishableKey, options });
+        return client;
+      },
+    },
+  };
+}
+
+test("finalize bearer parsing accepts one bounded JWT and rejects ambiguity", () => {
+  assert.equal(
+    parseMomoMediaFinalizeBearerToken(authRequest(`Bearer ${BEARER_ACCESS_TOKEN}`)),
+    BEARER_ACCESS_TOKEN,
+  );
+  assert.equal(
+    parseMomoMediaFinalizeBearerToken(authRequest(`bearer ${BEARER_ACCESS_TOKEN}`)),
+    BEARER_ACCESS_TOKEN,
+  );
+  for (const authorization of [
+    null,
+    "",
+    "Basic credential",
+    "Bearer",
+    "Bearer ",
+    `Bearer  ${BEARER_ACCESS_TOKEN}`,
+    `Bearer ${BEARER_ACCESS_TOKEN} `,
+    `Bearer ${BEARER_ACCESS_TOKEN}, Bearer ${BEARER_ACCESS_TOKEN}`,
+    `Bearer ${BEARER_ACCESS_TOKEN}\r\nX-Injected: value`,
+    "Bearer opaque-token",
+    `Bearer a.${"b".repeat(8_192)}.c`,
+  ]) {
+    assert.equal(
+      parseMomoMediaFinalizeBearerToken(authRequest(authorization)),
+      null,
+      String(authorization),
+    );
+  }
+});
+
+test("project auth cookies are snapshotted without matching verifier cookies", () => {
+  const base = "sb-projectref123-auth-token";
+  assert.equal(hasMomoMediaFinalizeProjectAuthCookie(
+    authRequest(null, `other=1; ${base}=session`),
+    SUPABASE_CONFIG,
+  ), true);
+  assert.equal(hasMomoMediaFinalizeProjectAuthCookie(
+    authRequest(null, `${base}.0=chunk; ${base}.1=chunk`),
+    SUPABASE_CONFIG,
+  ), true);
+  for (const cookie of [
+    null,
+    `${base}-code-verifier=value`,
+    `${base}.chunk=value`,
+    `sb-otherproject-auth-token=value`,
+    `${base}-lookalike=value`,
+  ]) {
+    assert.equal(hasMomoMediaFinalizeProjectAuthCookie(
+      authRequest(null, cookie),
+      SUPABASE_CONFIG,
+    ), false, String(cookie));
+  }
+});
+
+test("valid cookie context wins and an invalid cookie cannot downgrade to bearer", async () => {
+  const cookieContext = {
+    access: {
+      role: "client",
+      displayName: "Cookie Client",
+      restaurantName: "MoMo",
+      restaurantId: RESTAURANT_ID,
+    },
+    userId: USER_ID,
+    client: {},
+  };
+  const dependencies = {
+    clientFactory() {
+      throw new Error("bearer_factory_must_not_run");
+    },
+  };
+  assert.deepEqual(await resolveMomoMediaFinalizeContext({
+    request: authRequest(`Bearer ${BEARER_ACCESS_TOKEN}`,
+      "sb-projectref123-auth-token=session"),
+    config: SUPABASE_CONFIG,
+    cookieContext,
+    hadProjectAuthCookie: true,
+    dependencies,
+  }), { context: cookieContext });
+  assert.equal(await resolveMomoMediaFinalizeContext({
+    request: authRequest(`Bearer ${BEARER_ACCESS_TOKEN}`,
+      "sb-projectref123-auth-token=invalid"),
+    config: SUPABASE_CONFIG,
+    cookieContext: null,
+    hadProjectAuthCookie: true,
+    dependencies,
+  }), null);
+});
+
+test("valid bearer is network-verified and mapped from one active Client membership", async () => {
+  const { calls, client, dependencies } = bearerAuthHarness();
+  const resolved = await resolveMomoMediaFinalizeContext({
+    request: authRequest(`Bearer ${BEARER_ACCESS_TOKEN}`),
+    config: SUPABASE_CONFIG,
+    cookieContext: null,
+    hadProjectAuthCookie: false,
+    dependencies,
+  });
+  assert.ok(resolved);
+  assert.equal(resolved.serverVerifiedAccessToken, BEARER_ACCESS_TOKEN);
+  assert.deepEqual(resolved.context.access, {
+    role: "client",
+    displayName: "MoMo Client",
+    restaurantName: "MoMo",
+    restaurantId: RESTAURANT_ID,
+  });
+  assert.equal(resolved.context.userId, USER_ID);
+  assert.equal(resolved.context.client, client);
+  assert.equal(
+    Object.hasOwn(resolved.context, "serverVerifiedAccessToken"),
+    false,
+  );
+  assert.deepEqual(calls.getUser, [BEARER_ACCESS_TOKEN]);
+  assert.deepEqual(calls.factory, [{
+    url: SUPABASE_CONFIG.url,
+    publishableKey: SUPABASE_CONFIG.publishableKey,
+    options: {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+        detectSessionInUrl: false,
+      },
+      global: {
+        headers: { Authorization: `Bearer ${BEARER_ACCESS_TOKEN}` },
+      },
+    },
+  }]);
+  assert.deepEqual(calls.from, [
+    "veroxa_user_profiles",
+    "veroxa_restaurant_members",
+  ]);
+  assert.equal(calls.queries.some((entry) =>
+    entry[0] === "veroxa_restaurant_members" && entry[1] === "eq" &&
+    entry[2] === "role"), false,
+  "all active memberships must be counted before checking the role");
+});
+
+test("invalid, expired, anonymous, service-like, or banned bearer users stop before profile reads", async () => {
+  const cases = [
+    ["unavailable", { getUserThrows: new Error("auth_unavailable") }],
+    ["invalid", { userError: new Error("invalid_jwt") }],
+    ["missing", { user: null }],
+    ["anonymous", { user: { ...VALID_AUTH_USER, is_anonymous: true } }],
+    ["service", { user: { ...VALID_AUTH_USER, role: "service_role" } }],
+    ["anon audience", { user: { ...VALID_AUTH_USER, aud: "anon" } }],
+    ["deleted", { user: { ...VALID_AUTH_USER, deleted_at: "2026-08-20T00:00:00.000Z" } }],
+    ["banned", { user: { ...VALID_AUTH_USER, banned_until: "2026-08-22T00:00:00.000Z" } }],
+  ];
+  for (const [name, overrides] of cases) {
+    const { calls, dependencies } = bearerAuthHarness(overrides);
+    assert.equal(await resolveMomoMediaFinalizeContext({
+      request: authRequest(`Bearer ${BEARER_ACCESS_TOKEN}`),
+      config: SUPABASE_CONFIG,
+      cookieContext: null,
+      hadProjectAuthCookie: false,
+      dependencies,
+    }), null, name);
+    assert.deepEqual(calls.from, [], name);
+  }
+});
+
+test("inactive, cross-role, ambiguous, and restaurant-mismatched bearer facts fail closed", async () => {
+  const membership = {
+    restaurant_id: RESTAURANT_ID,
+    role: "client",
+    status: "active",
+    veroxa_restaurants: { name: "MoMo", status: "active" },
+  };
+  const cases = [
+    ["no profile", { profiles: [] }],
+    ["multiple profiles", { profiles: [
+      { role: "client", display_name: "One", status: "active" },
+      { role: "client", display_name: "Two", status: "active" },
+    ] }],
+    ["inactive profile", { profiles: [
+      { role: "client", display_name: "MoMo", status: "disabled" },
+    ] }],
+    ["team profile", { profiles: [
+      { role: "team", display_name: "Team", status: "active" },
+    ] }],
+    ["no membership", { memberships: [] }],
+    ["multiple memberships", { memberships: [membership, {
+      ...membership,
+      restaurant_id: "99999999-9999-4999-8999-999999999999",
+    }] }],
+    ["cross-role membership", { memberships: [{
+      ...membership,
+      role: "team",
+    }] }],
+    ["inactive restaurant", { memberships: [{
+      ...membership,
+      veroxa_restaurants: { name: "MoMo", status: "disabled" },
+    }] }],
+    ["invalid restaurant", { memberships: [{
+      ...membership,
+      restaurant_id: "not-a-uuid",
+    }] }],
+  ];
+  for (const [name, overrides] of cases) {
+    const { dependencies } = bearerAuthHarness(overrides);
+    assert.equal(await resolveMomoMediaFinalizeContext({
+      request: authRequest(`Bearer ${BEARER_ACCESS_TOKEN}`),
+      config: SUPABASE_CONFIG,
+      cookieContext: null,
+      hadProjectAuthCookie: false,
+      dependencies,
+    }), null, name);
+  }
+});
+
+test("route snapshots cookie state before cookie auth and never persists bearer material", () => {
+  assert.ok(
+    routeSource.indexOf("const hadProjectAuthCookie") <
+      routeSource.indexOf("const cookieContext = await getServerVeroxaContext()"),
+  );
+  assert.match(routeSource, /if \(!resolved\)[\s\S]*?authenticate: async \(\) => null/u);
+  assert.match(routeSource,
+    /resolved\.serverVerifiedAccessToken\)\)\(request\)/u);
+  assert.match(bearerSource, /client\.auth\.getUser\(token\)/u);
+  assert.match(bearerSource, /profile\.role !== "client"/u);
+  assert.match(bearerSource, /memberships\.length !== 1/u);
+  assert.match(bearerSource, /persistSession: false/u);
+  assert.match(bearerSource, /autoRefreshToken: false/u);
+  assert.doesNotMatch(bearerSource, /console\.|localStorage|sessionStorage/u);
+  assert.doesNotMatch(
+    `${routeSource}\n${bearerSource}`,
+    /SUPABASE_(SECRET_KEY|SERVICE_ROLE_KEY)/u,
+  );
+  assert.doesNotMatch(bearerSource, /\batob\(|\bJSON\.parse\(/u,
+    "authorization must come from Auth getUser, not decoded bearer claims");
+});
 
 test("byte-verifies one scoped JPG and sends immutable evidence to finalization", async () => {
   const { calls, handler, source } = harness();
