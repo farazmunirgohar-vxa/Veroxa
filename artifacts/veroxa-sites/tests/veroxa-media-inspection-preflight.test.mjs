@@ -27,10 +27,16 @@ const VERSION = "fixture-version-1";
 const SHA256 = "a".repeat(64);
 const PATH = `__veroxa_system/image-inspection-preflight/v1/${SHA256}.jpg`;
 
-const [routeSource, workerSource, recoveryRouteSource, assessmentRouteSource, finalizeRouteSource, artifactMigration, rootMigration, releaseManifestSource] =
+const [routeSource, imageDecoderSource, workerSource, recoveryRouteSource,
+  assessmentRouteSource, finalizeRouteSource, artifactMigration, rootMigration,
+  releaseManifestSource] =
   await Promise.all([
     readFile(new URL(
       "../app/api/internal/veroxa/media/inspection-preflight/route.ts",
+      import.meta.url,
+    ), "utf8"),
+    readFile(new URL(
+      "../app/veroxa-private-media-supabase-image-decode.ts",
       import.meta.url,
     ), "utf8"),
     readFile(new URL("../worker/index.ts", import.meta.url), "utf8"),
@@ -252,7 +258,11 @@ test("production transform adapter proves an immutable storage source through a 
         transform: { width: 1, height: 1, resize: "fill", format: "origin" },
       },
     });
+    assert.equal(Object.hasOwn(calls.fetch[0].init, "cache"), false);
+    assert.equal(Object.hasOwn(calls.fetch[0].init, "credentials"), false);
     assert.equal(calls.fetch[0].init.redirect, "manual");
+    assert.ok(calls.fetch[0].init.signal instanceof AbortSignal);
+    assert.equal(calls.fetch[0].init.signal.aborted, false);
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -341,9 +351,15 @@ test("adapter classifies credential, provider, request, rate-limit, and malforme
     globalThis.fetch = originalFetch;
   }
 
-  globalThis.fetch = async () => new Response(null, {
+  let redirectBodyRead = false;
+  globalThis.fetch = async () => ({
     status: 302,
-    headers: { location: "https://unexpected.example/" },
+    ok: false,
+    headers: new Headers({ location: "https://unexpected.example/" }),
+    get body() {
+      redirectBodyRead = true;
+      throw new Error("redirect_body_must_not_be_read");
+    },
   });
   try {
     const inspect = createVeroxaPrivateMediaStorageImageInspector({
@@ -355,6 +371,7 @@ test("adapter classifies credential, provider, request, rate-limit, and malforme
     assert.equal(result.diagnostics.failureCode,
       "storage_transform_request_rejected");
     assert.equal(result.diagnostics.output?.httpStatus, 302);
+    assert.equal(redirectBodyRead, false);
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -559,6 +576,15 @@ test("signature failures, replays, and failed inspection remain fail-closed", as
 });
 
 test("source-level guard replaces the broken Images-only production dependency with a private canary", () => {
+  const fixtureReader = routeSource.slice(
+    routeSource.indexOf("async function readFixture"),
+    routeSource.indexOf("async function ensureFixture"),
+  );
+  assert.match(fixtureReader, /storage\.download\(FIXTURE_PATH\)/u);
+  assert.doesNotMatch(fixtureReader, /\b(?:cache|credentials)\s*:/u);
+  assert.doesNotMatch(fixtureReader, /storage\.download\(\s*FIXTURE_PATH\s*,/u);
+  assert.doesNotMatch(imageDecoderSource, /\b(?:cache|credentials)\s*:/u);
+  assert.match(imageDecoderSource, /redirect:\s*"manual"/u);
   assert.match(routeSource, /upsert:\s*false/u);
   assert.match(routeSource, /createVeroxaPrivateMediaStorageImageInspector/u);
   assert.doesNotMatch(routeSource, /OPENAI|responses\.create|images\.generate/u);

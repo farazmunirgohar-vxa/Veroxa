@@ -109,11 +109,12 @@ export async function invokeMomoContentAiDispatchBridge<T>(
       "x-veroxa-server-purpose": "momo-content-ai-dispatch-lifecycle-v1",
     },
     body,
-    cache: "no-store",
-    credentials: "omit",
-    redirect: "error",
+    redirect: "manual",
     signal: AbortSignal.timeout(10_000),
   });
+  if (response.status >= 300 && response.status < 400) {
+    throw new Error("momo_content_ai_dispatch_lifecycle_bridge_rejected");
+  }
   const text = await boundedResponseText(response);
   if (!response.ok ||
     !response.headers.get("content-type")?.toLowerCase()

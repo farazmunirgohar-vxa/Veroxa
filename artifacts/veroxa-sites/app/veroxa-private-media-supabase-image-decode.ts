@@ -376,8 +376,6 @@ export function createVeroxaPrivateMediaStorageImageInspector(input: {
       response = await fetch(signedUrl, {
         method: "GET",
         headers: { accept: source.mimeType },
-        cache: "no-store",
-        credentials: "omit",
         // Do not follow a signed URL to another origin. Manual handling keeps
         // a redirect observable as a bounded, fail-closed response instead of
         // collapsing it into an opaque network exception.

@@ -100,11 +100,12 @@ export async function invokeMomoContentAiWebhookBridge<T>(
       "x-veroxa-server-purpose": "momo-content-ai-webhook-lifecycle-v1",
     },
     body,
-    cache: "no-store",
-    credentials: "omit",
-    redirect: "error",
+    redirect: "manual",
     signal: AbortSignal.timeout(5_000),
   });
+  if (response.status >= 300 && response.status < 400) {
+    throw new Error("momo_content_ai_webhook_lifecycle_bridge_rejected");
+  }
   const text = await boundedResponseText(response);
   if (!response.ok ||
     !response.headers.get("content-type")?.toLowerCase().startsWith("application/json")) {

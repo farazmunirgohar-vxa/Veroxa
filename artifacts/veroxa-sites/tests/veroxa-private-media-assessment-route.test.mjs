@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
 import jpegJs from "jpeg-js";
 import { createVeroxaPrivateMediaAssessmentHandler } from "../app/api/media/assessment/core.ts";
@@ -17,6 +18,10 @@ const REUSED_ASSESSMENT_ID = "ffffffff-ffff-4fff-8fff-ffffffffffff";
 const STORAGE_PATH =
   `restaurants/${RESTAURANT_ID}/uploads/2026/08/${ASSET_ID}.jpg`;
 const IDEMPOTENCY_KEY = "private-assessment-route-test-0001";
+const assessmentRouteSource = await readFile(new URL(
+  "../app/api/media/assessment/route.ts",
+  import.meta.url,
+), "utf8");
 
 function jpeg(width = 128, height = 160) {
   const data = new Uint8Array(width * height * 4);
@@ -210,6 +215,35 @@ async function harness(overrides = {}) {
     handler: createVeroxaPrivateMediaAssessmentHandler(dependencies),
   };
 }
+
+test("route uses Worker-compatible private Storage and provider transports", () => {
+  const storageBlock = assessmentRouteSource.slice(
+    assessmentRouteSource.indexOf("async downloadSource"),
+    assessmentRouteSource.indexOf("async sourceInfo"),
+  );
+  const providerBlock = assessmentRouteSource.slice(
+    assessmentRouteSource.indexOf("async callOpenAI"),
+    assessmentRouteSource.indexOf("async complete"),
+  );
+  assert.match(storageBlock, /\.download\(storagePath\)/u);
+  assert.doesNotMatch(storageBlock, /\.download\(\s*storagePath\s*,/u);
+  assert.doesNotMatch(storageBlock, /\b(?:cache|credentials)\s*:/u);
+  assert.doesNotMatch(providerBlock, /\b(?:cache|credentials)\s*:/u);
+  assert.match(providerBlock, /redirect:\s*"manual"/u);
+  assert.match(providerBlock, /AbortSignal\.timeout\(45_000\)/u);
+  assert.ok(
+    providerBlock.indexOf("response.status >= 300") <
+      providerBlock.indexOf("return response"),
+  );
+  const redirectBranch = providerBlock.slice(
+    providerBlock.indexOf("if (response.status >= 300"),
+    providerBlock.indexOf("return response"),
+  );
+  assert.doesNotMatch(
+    redirectBranch,
+    /response\.(?:body|text|json|blob|arrayBuffer)/u,
+  );
+});
 
 test("authenticates, re-verifies exact private bytes, calls OpenAI once, and persists the neutral result", async () => {
   const { calls, handler, sourceHash } = await harness();
@@ -423,6 +457,33 @@ test("provider transport failure is never automatically retried", async () => {
   assert.equal(calls.fail.length, 1);
   assert.equal(calls.fail[0].providerCalled, true);
   assert.equal(calls.fail[0].accountedMicrousd, 1_000_000);
+});
+
+test("provider redirect is failed once without reading its body", async () => {
+  let bodyRead = false;
+  const { calls, handler } = await harness({
+    async callOpenAI() {
+      return {
+        status: 307,
+        ok: false,
+        headers: new Headers({
+          "content-type": "application/json",
+          location: "https://unexpected.example/",
+        }),
+        get body() {
+          bodyRead = true;
+          throw new Error("redirect_body_must_not_be_read");
+        },
+      };
+    },
+  });
+  const response = await handler(request());
+  assert.equal(response.status, 502);
+  assert.equal(bodyRead, false);
+  assert.equal(calls.complete.length, 0);
+  assert.equal(calls.fail.length, 1);
+  assert.equal(calls.fail[0].providerCalled, true);
+  assert.equal(calls.fail[0].errorCode, "provider_rejected");
 });
 
 test("known usage above the reservation fails once and settles the measured cost", async () => {

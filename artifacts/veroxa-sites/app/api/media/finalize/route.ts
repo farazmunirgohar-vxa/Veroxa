@@ -42,7 +42,7 @@ function dependencies(
     async authenticate() { return actor; },
     async download(storagePath: string) {
       const { data, error } = await client.storage.from("restaurant-media")
-        .download(storagePath, undefined, { cache: "no-store" });
+        .download(storagePath);
       if (error || !data) throw new Error("media_download_failed");
       return data;
     },

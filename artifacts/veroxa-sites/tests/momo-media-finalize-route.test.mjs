@@ -458,6 +458,17 @@ test("route snapshots cookie state before cookie auth and never persists bearer 
     "authorization must come from Auth getUser, not decoded bearer claims");
 });
 
+test("finalize route uses the Worker-compatible private Storage download shape", () => {
+  const downloadBlock = routeSource.slice(
+    routeSource.indexOf("async download(storagePath"),
+    routeSource.indexOf("async info(storagePath"),
+  );
+  assert.match(downloadBlock, /\.download\(storagePath\)/u);
+  assert.doesNotMatch(downloadBlock, /\.download\(\s*storagePath\s*,/u);
+  assert.doesNotMatch(downloadBlock, /\b(?:cache|credentials)\s*:/u);
+  assert.doesNotMatch(downloadBlock, /\bundefined\b/u);
+});
+
 test("byte-verifies one scoped JPG and sends immutable evidence to finalization", async () => {
   const { calls, handler, source } = harness();
   const response = await handler(request());

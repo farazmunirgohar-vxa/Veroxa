@@ -91,9 +91,7 @@ async function readFixture(
     before.data.contentType?.split(";", 1)[0].trim() !== "image/jpeg") {
     return null;
   }
-  const downloaded = await storage.download(FIXTURE_PATH, undefined, {
-    cache: "no-store",
-  });
+  const downloaded = await storage.download(FIXTURE_PATH);
   if (downloaded.error || !downloaded.data) return null;
   const bytes = new Uint8Array(await downloaded.data.arrayBuffer());
   const decoded = await inspectMomoImageBytesFully(bytes);

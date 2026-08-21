@@ -28,6 +28,10 @@ const webhookRouteSource = await readFile(new URL(
   "../app/api/openai/webhook/route.ts",
   import.meta.url,
 ), "utf8");
+const webhookBridgeSource = await readFile(new URL(
+  "../app/momo-content-ai-webhook-bridge.ts",
+  import.meta.url,
+), "utf8");
 
 function identity() {
   return {
@@ -75,6 +79,8 @@ function config() {
 }
 
 test("webhook bridge configuration is canonical and fail-closed", () => {
+  assert.doesNotMatch(webhookBridgeSource, /\b(?:cache|credentials)\s*:/u);
+  assert.match(webhookBridgeSource, /redirect:\s*"manual"/u);
   assert.equal(getMomoContentAiWebhookBridgeConfig({}), null);
   assert.equal(getMomoContentAiWebhookBridgeConfig({
     NEXT_PUBLIC_SUPABASE_URL: "http://example.supabase.co",
@@ -114,9 +120,11 @@ test("webhook bridge sends one separately signed server-only request", async () 
       assert.match(init.headers["x-veroxa-content-ai-timestamp-ms"], /^\d{13}$/u);
       assert.match(init.headers["x-veroxa-content-ai-nonce"], /^[0-9a-f-]{36}$/u);
       assert.match(init.headers["x-veroxa-content-ai-signature"], /^[A-Za-z0-9_-]{86}$/u);
-      assert.equal(init.cache, "no-store");
-      assert.equal(init.credentials, "omit");
-      assert.equal(init.redirect, "error");
+      assert.equal(Object.hasOwn(init, "cache"), false);
+      assert.equal(Object.hasOwn(init, "credentials"), false);
+      assert.equal(init.redirect, "manual");
+      assert.ok(init.signal instanceof AbortSignal);
+      assert.equal(init.signal.aborted, false);
       assert.deepEqual(JSON.parse(init.body), request);
       assert.equal(await verifyMomoContentAiWebhookBridgeSignature({
         publicKeyBase64: publicKey,
@@ -129,6 +137,32 @@ test("webhook bridge sends one separately signed server-only request", async () 
     },
   );
   assert.deepEqual(result, [{ run_id: RUN_ID }]);
+});
+
+test("webhook bridge rejects redirects before reading their bodies", async () => {
+  const bridgeConfig = config();
+  assert.ok(bridgeConfig);
+  for (const status of [300, 307, 399]) {
+    let bodyRead = false;
+    await assert.rejects(
+      invokeMomoContentAiWebhookBridge(
+        bridgeConfig,
+        { operation: "claim", ...identity() },
+        async () => ({
+          status,
+          ok: false,
+          headers: new Headers({ location: "https://unexpected.example/" }),
+          get body() {
+            bodyRead = true;
+            throw new Error("redirect_body_must_not_be_read");
+          },
+        }),
+      ),
+      /momo_content_ai_webhook_lifecycle_bridge_rejected/u,
+      String(status),
+    );
+    assert.equal(bodyRead, false, String(status));
+  }
 });
 
 test("webhook lifecycle contract binds header ID, event ID, claim token, and accounting", () => {

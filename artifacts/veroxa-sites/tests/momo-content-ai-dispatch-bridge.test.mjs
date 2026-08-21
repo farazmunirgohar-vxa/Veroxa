@@ -42,6 +42,10 @@ const rejectionSql = await readFile(new URL(
   "../supabase/migrations/20260801045328_momo_content_ai_definitive_http_rejection.sql",
   import.meta.url,
 ), "utf8");
+const dispatchBridgeSource = await readFile(new URL(
+  "../app/momo-content-ai-dispatch-bridge.ts",
+  import.meta.url,
+), "utf8");
 
 function config() {
   return getMomoContentAiDispatchBridgeConfig({
@@ -70,6 +74,8 @@ function functionBody(name, nextName) {
 }
 
 test("dispatch bridge configuration is canonical and fail-closed", () => {
+  assert.doesNotMatch(dispatchBridgeSource, /\b(?:cache|credentials)\s*:/u);
+  assert.match(dispatchBridgeSource, /redirect:\s*"manual"/u);
   assert.equal(getMomoContentAiDispatchBridgeConfig({}), null);
   assert.equal(getMomoContentAiDispatchBridgeConfig({
     NEXT_PUBLIC_SUPABASE_URL: "http://example.supabase.co",
@@ -126,9 +132,11 @@ test("dispatch bridge sends one separately signed server-only request", async ()
         init.headers["x-veroxa-content-ai-signature"],
         /^[A-Za-z0-9_-]{86}$/u,
       );
-      assert.equal(init.cache, "no-store");
-      assert.equal(init.credentials, "omit");
-      assert.equal(init.redirect, "error");
+      assert.equal(Object.hasOwn(init, "cache"), false);
+      assert.equal(Object.hasOwn(init, "credentials"), false);
+      assert.equal(init.redirect, "manual");
+      assert.ok(init.signal instanceof AbortSignal);
+      assert.equal(init.signal.aborted, false);
       assert.deepEqual(JSON.parse(init.body), request);
       assert.equal(await verifyMomoContentAiDispatchBridgeSignature({
         publicKeyBase64: publicKey,
@@ -141,6 +149,32 @@ test("dispatch bridge sends one separately signed server-only request", async ()
     },
   );
   assert.deepEqual(result, [{ run_id: RUN_ID }]);
+});
+
+test("dispatch bridge rejects redirects before reading their bodies", async () => {
+  const bridgeConfig = config();
+  assert.ok(bridgeConfig);
+  for (const status of [300, 307, 399]) {
+    let bodyRead = false;
+    await assert.rejects(
+      invokeMomoContentAiDispatchBridge(
+        bridgeConfig,
+        { operation: "release", ...identity(), errorCode: "source_download_unavailable", retryable: true },
+        async () => ({
+          status,
+          ok: false,
+          headers: new Headers({ location: "https://unexpected.example/" }),
+          get body() {
+            bodyRead = true;
+            throw new Error("redirect_body_must_not_be_read");
+          },
+        }),
+      ),
+      /momo_content_ai_dispatch_lifecycle_bridge_rejected/u,
+      String(status),
+    );
+    assert.equal(bodyRead, false, String(status));
+  }
 });
 
 test("dispatch lifecycle accepts only exact lease-owned state transitions", () => {
