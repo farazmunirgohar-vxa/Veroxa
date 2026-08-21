@@ -1166,11 +1166,13 @@ export function activeMediaInspectionPreflightMigrationIsApplied(): boolean {
 }
 
 function gitPathList(args: string[]): string[] {
-  const output = execFileSync("git", args, {
+  const [command, ...commandArgs] = args;
+  if (!command) return [];
+  const output = execFileSync("git", [command, "-z", ...commandArgs], {
     cwd: repoRoot,
     encoding: "utf8",
   });
-  return output.split("\n").map((path) => path.trim()).filter(Boolean);
+  return output.split("\0").filter((path) => path.length > 0);
 }
 
 /**
