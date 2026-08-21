@@ -287,6 +287,7 @@ test("lifecycle bridge rejects every manual redirect before response-body parsin
 test("lifecycle bridge rejects non-403 failures without reading their body", async () => {
   const events = [];
   let bodyRead = false;
+  let bodyCancelled = false;
   await assert.rejects(
     invokeMomoContentAiLifecycleBridge(
       client(),
@@ -299,7 +300,12 @@ test("lifecycle bridge rejects non-403 failures without reading their body", asy
           status: 500,
           ok: false,
           headers: new Headers({ "content-type": "application/json" }),
-          get body() {
+          body: {
+            async cancel() {
+              bodyCancelled = true;
+            },
+          },
+          async text() {
             bodyRead = true;
             throw new Error("non_403_body_must_not_be_read");
           },
@@ -311,6 +317,7 @@ test("lifecycle bridge rejects non-403 failures without reading their body", asy
       error.httpStatus === 500 && error.upstreamAuthError === null,
   );
   assert.equal(bodyRead, false);
+  assert.equal(bodyCancelled, true);
   assert.equal(events.length, 1);
   assert.equal(events[0].upstreamAuthError, null);
 });
