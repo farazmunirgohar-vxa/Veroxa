@@ -198,14 +198,14 @@ function harness(options = {}) {
 }
 
 test("route uses Worker-compatible source and provider transports", () => {
-  const sourceBlock = dispatchRouteSource.slice(
-    dispatchRouteSource.indexOf("async fetchSource"),
-    dispatchRouteSource.indexOf("async callOpenAI"),
-  );
-  const providerBlock = dispatchRouteSource.slice(
-    dispatchRouteSource.indexOf("async callOpenAI"),
-    dispatchRouteSource.indexOf("\n});", dispatchRouteSource.indexOf("async callOpenAI")),
-  );
+  const sourceStart = dispatchRouteSource.indexOf("async fetchSource");
+  const sourceEnd = dispatchRouteSource.indexOf("async callOpenAI");
+  const providerStart = sourceEnd;
+  const providerEnd = dispatchRouteSource.indexOf("\n});", providerStart);
+  assert.ok(sourceStart >= 0 && sourceEnd > sourceStart);
+  assert.ok(providerStart >= 0 && providerEnd > providerStart);
+  const sourceBlock = dispatchRouteSource.slice(sourceStart, sourceEnd);
+  const providerBlock = dispatchRouteSource.slice(providerStart, providerEnd);
   for (const block of [sourceBlock, providerBlock]) {
     assert.doesNotMatch(block, /\b(?:cache|credentials)\s*:/u);
     assert.match(block, /redirect:\s*"manual"/u);
@@ -213,10 +213,10 @@ test("route uses Worker-compatible source and provider transports", () => {
       block.indexOf("response.status >= 300") <
         block.indexOf("return response"),
     );
-    const redirectBranch = block.slice(
-      block.indexOf("if (response.status >= 300"),
-      block.indexOf("return response"),
-    );
+    const redirectStart = block.indexOf("if (response.status >= 300");
+    const redirectEnd = block.indexOf("return response");
+    assert.ok(redirectStart >= 0 && redirectEnd > redirectStart);
+    const redirectBranch = block.slice(redirectStart, redirectEnd);
     assert.doesNotMatch(
       redirectBranch,
       /response\.(?:body|text|json|blob|arrayBuffer)/u,
