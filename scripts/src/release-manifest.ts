@@ -164,6 +164,15 @@ const ACTIVE_VER42_FINALIZE_BEARER_AUTH_ALLOWED_PATHS = new Set([
   "artifacts/veroxa-sites/tests/momo-media-finalize-route.test.mjs",
   "scripts/src/release-manifest.ts",
 ]);
+const ACTIVE_VER42_FINALIZE_BEARER_AUTH_FIXED_HEAD_COMMIT =
+  "6b167f0abc08720b03348cc9d8b8665f8df88b47";
+const ACTIVE_VER43_LIFECYCLE_AUTH_DIAGNOSTIC_BASE_COMMIT =
+  ACTIVE_VER42_FINALIZE_BEARER_AUTH_FIXED_HEAD_COMMIT;
+const ACTIVE_VER43_LIFECYCLE_AUTH_DIAGNOSTIC_ALLOWED_PATHS = new Set([
+  "artifacts/veroxa-sites/app/momo-content-ai-lifecycle-bridge.ts",
+  "artifacts/veroxa-sites/tests/momo-content-ai-lifecycle-bridge.test.mjs",
+  "scripts/src/release-manifest.ts",
+]);
 
 export const TREE_HASH_ALGORITHM = "veroxa-path-null-content-null-sha256-v1";
 export const REVIEWED_LOCAL_CANDIDATE_RELEASE_STATE =
@@ -1467,17 +1476,74 @@ function assertActiveVer39WorkerLifecycleBridgeRepairDiffScope(): void {
  */
 function assertActiveVer42FinalizeBearerAuthDiffScope(): void {
   const comparisonRange =
-    `${ACTIVE_VER42_FINALIZE_BEARER_AUTH_BASE_COMMIT}...HEAD`;
+    `${ACTIVE_VER42_FINALIZE_BEARER_AUTH_BASE_COMMIT}...${ACTIVE_VER42_FINALIZE_BEARER_AUTH_FIXED_HEAD_COMMIT}`;
   try {
     execFileSync("git", [
       "merge-base",
       "--is-ancestor",
       ACTIVE_VER42_FINALIZE_BEARER_AUTH_BASE_COMMIT,
+      ACTIVE_VER42_FINALIZE_BEARER_AUTH_FIXED_HEAD_COMMIT,
+    ], { cwd: repoRoot, stdio: "ignore" });
+  } catch {
+    throw new Error(
+      "VER-42 finalize bearer auth lacks its immutable 7a0f4b2...6b167f0 range",
+    );
+  }
+
+  try {
+    const paths = gitPathList([
+      "diff", "--find-renames", "--name-only", "--diff-filter=ACM",
+      comparisonRange, "--",
+    ]);
+    const forbidden = gitPathList([
+      "diff", "--find-renames", "--name-only", "--diff-filter=DRTUXB",
+      comparisonRange, "--",
+    ]);
+    const unexpected = paths.filter((path) =>
+      !ACTIVE_VER42_FINALIZE_BEARER_AUTH_ALLOWED_PATHS.has(path)
+    );
+    const missing = Array.from(
+      ACTIVE_VER42_FINALIZE_BEARER_AUTH_ALLOWED_PATHS,
+    ).filter((path) => !paths.includes(path)).sort();
+    if (unexpected.length > 0 || missing.length > 0 || forbidden.length > 0) {
+      throw new Error(
+        "VER-42 finalize bearer auth Git scope drifted: " + [
+          unexpected.length > 0 ? `unexpected=${unexpected.join(",")}` : null,
+          missing.length > 0 ? `missing=${missing.join(",")}` : null,
+          forbidden.length > 0 ? `forbidden=${forbidden.join(",")}` : null,
+        ].filter(Boolean).join("; "),
+      );
+    }
+  } catch (error) {
+    if (error instanceof Error && error.message.startsWith(
+      "VER-42 finalize bearer auth Git scope drifted:",
+    )) throw error;
+    throw new Error(
+      "VER-42 finalize bearer auth cannot verify its immutable Git diff scope: " +
+        (error instanceof Error ? error.message : String(error)),
+    );
+  }
+}
+
+/**
+ * Bind VER-43 to the lifecycle bridge's allowlisted auth-stage telemetry,
+ * its focused redaction tests, and this release guard. Include committed,
+ * staged, unstaged, and untracked paths. Deletions, renames, type changes,
+ * unmerged entries, and lookalikes fail closed.
+ */
+function assertActiveVer43LifecycleAuthDiagnosticDiffScope(): void {
+  const comparisonRange =
+    `${ACTIVE_VER43_LIFECYCLE_AUTH_DIAGNOSTIC_BASE_COMMIT}...HEAD`;
+  try {
+    execFileSync("git", [
+      "merge-base",
+      "--is-ancestor",
+      ACTIVE_VER43_LIFECYCLE_AUTH_DIAGNOSTIC_BASE_COMMIT,
       "HEAD",
     ], { cwd: repoRoot, stdio: "ignore" });
   } catch {
     throw new Error(
-      "VER-42 finalize bearer auth lacks its exact 7a0f4b2 release base",
+      "VER-43 lifecycle auth diagnostic lacks its exact 6b167f0 release base",
     );
   }
 
@@ -1513,14 +1579,14 @@ function assertActiveVer42FinalizeBearerAuthDiffScope(): void {
       ...gitPathList(["ls-files", "--unmerged"]),
     ])).sort();
     const unexpected = paths.filter((path) =>
-      !ACTIVE_VER42_FINALIZE_BEARER_AUTH_ALLOWED_PATHS.has(path)
+      !ACTIVE_VER43_LIFECYCLE_AUTH_DIAGNOSTIC_ALLOWED_PATHS.has(path)
     );
     const missing = Array.from(
-      ACTIVE_VER42_FINALIZE_BEARER_AUTH_ALLOWED_PATHS,
+      ACTIVE_VER43_LIFECYCLE_AUTH_DIAGNOSTIC_ALLOWED_PATHS,
     ).filter((path) => !paths.includes(path)).sort();
     if (unexpected.length > 0 || missing.length > 0 || forbidden.length > 0) {
       throw new Error(
-        "VER-42 finalize bearer auth Git scope drifted: " + [
+        "VER-43 lifecycle auth diagnostic Git scope drifted: " + [
           unexpected.length > 0 ? `unexpected=${unexpected.join(",")}` : null,
           missing.length > 0 ? `missing=${missing.join(",")}` : null,
           forbidden.length > 0 ? `forbidden=${forbidden.join(",")}` : null,
@@ -1529,10 +1595,10 @@ function assertActiveVer42FinalizeBearerAuthDiffScope(): void {
     }
   } catch (error) {
     if (error instanceof Error && error.message.startsWith(
-      "VER-42 finalize bearer auth Git scope drifted:",
+      "VER-43 lifecycle auth diagnostic Git scope drifted:",
     )) throw error;
     throw new Error(
-      "VER-42 finalize bearer auth cannot verify its exact Git diff scope: " +
+      "VER-43 lifecycle auth diagnostic cannot verify its exact Git diff scope: " +
         (error instanceof Error ? error.message : String(error)),
     );
   }
@@ -1885,6 +1951,11 @@ function assertActivePreinterventionAcceptanceCandidate(
   }
   try {
     assertActiveVer42FinalizeBearerAuthDiffScope();
+  } catch (error) {
+    failures.push(error instanceof Error ? error.message : String(error));
+  }
+  try {
+    assertActiveVer43LifecycleAuthDiagnosticDiffScope();
   } catch (error) {
     failures.push(error instanceof Error ? error.message : String(error));
   }
