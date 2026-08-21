@@ -104,7 +104,7 @@ test("lifecycle signing preflight accepts only a matching Ed25519 key pair", asy
   }), null);
 });
 
-test("lifecycle bridge carries one correlation ID on a verified signed request", async () => {
+test("lifecycle bridge uses Worker-compatible fetch controls on a verified signed request", async () => {
   const request = { operation: "record_intake_attempt", assetId: "asset" };
   const result = await invokeMomoContentAiLifecycleBridge(
     client(),
@@ -124,10 +124,11 @@ test("lifecycle bridge carries one correlation ID on a verified signed request",
           "momo-content-ai-lifecycle-v1",
         );
         assert.equal(init.body, JSON.stringify(request));
-        assert.equal(Object.hasOwn(init, "credentials"), false,
-          "the server bridge must not pass browser-only credential mode to the Sites runtime fetch");
-        assert.equal(init.cache, "no-store");
-        assert.equal(init.redirect, "error");
+        assert.equal(Object.hasOwn(init, "credentials"), false);
+        assert.equal(Object.hasOwn(init, "cache"), false,
+          "the Worker bridge must not pass an unsupported RequestInit cache member");
+        assert.equal(init.redirect, "manual",
+          "Workers must expose redirects for explicit fail-closed rejection");
         assert.ok(init.signal instanceof AbortSignal);
         assert.equal(init.signal.aborted, false);
         assert.equal(await verifyMomoContentAiBridgeSignature({
@@ -145,15 +146,55 @@ test("lifecycle bridge carries one correlation ID on a verified signed request",
   assert.deepEqual(result, { status: "recorded" });
 });
 
-test("lifecycle Worker transport remains bounded and browser-credential-free", async () => {
+test("lifecycle Worker transport source excludes unsupported fetch members and stays bounded", async () => {
   const source = await readFile(new URL(
     "../app/momo-content-ai-lifecycle-bridge.ts",
     import.meta.url,
   ), "utf8");
   assert.doesNotMatch(source, /\bcredentials\s*:/u);
+  assert.doesNotMatch(source, /\bcache\s*:/u);
   assert.match(source, /signal:\s*AbortSignal\.timeout\(20_000\)/u);
-  assert.match(source, /redirect:\s*"error"/u);
-  assert.match(source, /cache:\s*"no-store"/u);
+  assert.match(source, /redirect:\s*"manual"/u);
+});
+
+test("lifecycle bridge rejects every manual redirect before response-body parsing", async () => {
+  const events = [];
+  let bodyRead = false;
+  const redirectResponse = {
+    status: 307,
+    ok: false,
+    headers: new Headers({ location: "https://other.example.invalid/" }),
+    async text() {
+      bodyRead = true;
+      return "redirect body";
+    },
+  };
+  await assert.rejects(
+    invokeMomoContentAiLifecycleBridge(
+      client(),
+      bridgeConfig(),
+      { operation: "finalize_upload" },
+      {
+        correlationId: CORRELATION_ID,
+        telemetry: (event) => events.push(event),
+        fetchImplementation: async () => redirectResponse,
+      },
+    ),
+    (error) => error instanceof MomoContentAiLifecycleBridgeError &&
+      error.stage === "response_status" &&
+      error.code === "momo_content_ai_lifecycle_bridge_rejected" &&
+      error.retryable === false && error.httpStatus === 307 &&
+      error.correlationId === CORRELATION_ID,
+  );
+  assert.equal(bodyRead, false);
+  assert.deepEqual(events, [{
+    event: "momo_content_ai_lifecycle_bridge_failure",
+    correlationId: CORRELATION_ID,
+    stage: "response_status",
+    code: "momo_content_ai_lifecycle_bridge_rejected",
+    retryable: false,
+    httpStatus: 307,
+  }]);
 });
 
 test("lifecycle bridge emits a sanitized stage-specific failure", async () => {
