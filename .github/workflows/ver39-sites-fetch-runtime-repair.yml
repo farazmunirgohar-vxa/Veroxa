@@ -1,0 +1,68 @@
+name: VER39 Sites fetch runtime repair
+
+on:
+  push:
+    branches:
+      - agent/ver39-sites-fetch-runtime-repair-20260821
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/ver39-sites-fetch-runtime-repair-20260821
+          fetch-depth: 0
+      - name: Apply narrow transport repair
+        shell: python
+        run: |
+          from pathlib import Path
+
+          bridge = Path("artifacts/veroxa-sites/app/momo-content-ai-lifecycle-bridge.ts")
+          text = bridge.read_text(encoding="utf-8")
+          old = '''      cache: "no-store",\n      credentials: "omit",\n      redirect: "error",'''
+          new = '''      cache: "no-store",\n      redirect: "error",'''
+          if text.count(old) != 1:
+              raise SystemExit(f"expected one bridge fetch options match, found {text.count(old)}")
+          bridge.write_text(text.replace(old, new), encoding="utf-8")
+
+          test = Path("artifacts/veroxa-sites/tests/momo-content-ai-lifecycle-bridge.test.mjs")
+          text = test.read_text(encoding="utf-8")
+          old = '''        assert.equal(init.headers.authorization, `Bearer ${ACCESS_TOKEN}`);\n        assert.equal(await verifyMomoContentAiBridgeSignature({'''
+          new = '''        assert.equal(init.headers.authorization, `Bearer ${ACCESS_TOKEN}`);\n        assert.equal(Object.hasOwn(init, "credentials"), false,\n          "the server bridge must not pass browser-only credential mode to the Sites runtime fetch");\n        assert.equal(init.cache, "no-store");\n        assert.equal(init.redirect, "error");\n        assert.ok(init.signal instanceof AbortSignal);\n        assert.equal(await verifyMomoContentAiBridgeSignature({'''
+          if text.count(old) != 1:
+              raise SystemExit(f"expected one bridge test insertion, found {text.count(old)}")
+          test.write_text(text.replace(old, new), encoding="utf-8")
+
+          manifest = Path("scripts/src/release-manifest.ts")
+          text = manifest.read_text(encoding="utf-8")
+          anchor = '''  "artifacts/veroxa-sites/app/momo-client-data.ts",\n'''
+          insert = '''  "artifacts/veroxa-sites/app/momo-client-data.ts",\n  "artifacts/veroxa-sites/app/momo-content-ai-lifecycle-bridge.ts",\n'''
+          if text.count(anchor) != 1:
+              raise SystemExit(f"expected one manifest app anchor, found {text.count(anchor)}")
+          text = text.replace(anchor, insert)
+          anchor = '''  "artifacts/veroxa-sites/tests/momo-content-ai-lifecycle-auth-config.test.mjs",\n'''
+          insert = '''  "artifacts/veroxa-sites/tests/momo-content-ai-lifecycle-auth-config.test.mjs",\n  "artifacts/veroxa-sites/tests/momo-content-ai-lifecycle-bridge.test.mjs",\n'''
+          if text.count(anchor) != 1:
+              raise SystemExit(f"expected one manifest test anchor, found {text.count(anchor)}")
+          manifest.write_text(text.replace(anchor, insert), encoding="utf-8")
+      - name: Verify narrow scope and focused test
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --check
+          printf '%s\n' "$(git diff --name-only)"
+          test "$(git diff --name-only | wc -l | tr -d ' ')" = "3"
+          node --test artifacts/veroxa-sites/tests/momo-content-ai-lifecycle-bridge.test.mjs
+      - name: Commit repair
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "veroxa-r3-automation"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add artifacts/veroxa-sites/app/momo-content-ai-lifecycle-bridge.ts artifacts/veroxa-sites/tests/momo-content-ai-lifecycle-bridge.test.mjs scripts/src/release-manifest.ts
+          git commit -m "fix(sites): make lifecycle bridge fetch runtime-compatible"
+          git push origin HEAD:agent/ver39-sites-fetch-runtime-repair-20260821
