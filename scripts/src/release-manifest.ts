@@ -85,6 +85,10 @@ const PREINTERVENTION_ACCEPTANCE_MIGRATION =
 const PREINTERVENTION_ACCEPTANCE_PGTAP =
   "veroxa_preintervention_acceptance_v1.sql";
 const ACTIVE_PREINTERVENTION_ACCEPTANCE_CANDIDATE_ALLOWED_PATHS = new Set([
+  "artifacts/veroxa-sites/supabase/config.toml",
+  "artifacts/veroxa-sites/tests/momo-content-ai-lifecycle-auth-config.test.mjs",
+  "artifacts/veroxa-sites/tests/momo-upload-ready-contract.test.mjs",
+  "supabase/config.toml",
   ".github/workflows/supabase-verify.yml",
   "AGENTS.md",
   "artifacts/veroxa-sites/app/account-security.tsx",
@@ -1162,11 +1166,13 @@ export function activeMediaInspectionPreflightMigrationIsApplied(): boolean {
 }
 
 function gitPathList(args: string[]): string[] {
-  const output = execFileSync("git", args, {
+  const [command, ...commandArgs] = args;
+  if (!command) return [];
+  const output = execFileSync("git", [command, "-z", ...commandArgs], {
     cwd: repoRoot,
     encoding: "utf8",
   });
-  return output.split("\n").map((path) => path.trim()).filter(Boolean);
+  return output.split("\0").filter((path) => path.length > 0);
 }
 
 /**
