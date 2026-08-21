@@ -114,13 +114,22 @@ test("lifecycle bridge carries one correlation ID on a verified signed request",
       correlationId: CORRELATION_ID,
       async fetchImplementation(url, init) {
         assert.equal(url, bridgeConfig().endpoint);
-        assert.equal(init.headers["x-veroxa-correlation-id"], CORRELATION_ID);
+        assert.equal(init.method, "POST");
         assert.equal(init.headers.authorization, `Bearer ${ACCESS_TOKEN}`);
+        assert.equal(init.headers.apikey, bridgeConfig().publishableKey);
+        assert.equal(init.headers["content-type"], "application/json");
+        assert.equal(init.headers["x-veroxa-correlation-id"], CORRELATION_ID);
+        assert.equal(
+          init.headers["x-veroxa-server-purpose"],
+          "momo-content-ai-lifecycle-v1",
+        );
+        assert.equal(init.body, JSON.stringify(request));
         assert.equal(Object.hasOwn(init, "credentials"), false,
           "the server bridge must not pass browser-only credential mode to the Sites runtime fetch");
         assert.equal(init.cache, "no-store");
         assert.equal(init.redirect, "error");
         assert.ok(init.signal instanceof AbortSignal);
+        assert.equal(init.signal.aborted, false);
         assert.equal(await verifyMomoContentAiBridgeSignature({
           publicKeyBase64: publicKey,
           timestampMs: init.headers["x-veroxa-content-ai-timestamp-ms"],
@@ -134,6 +143,17 @@ test("lifecycle bridge carries one correlation ID on a verified signed request",
     },
   );
   assert.deepEqual(result, { status: "recorded" });
+});
+
+test("lifecycle Worker transport remains bounded and browser-credential-free", async () => {
+  const source = await readFile(new URL(
+    "../app/momo-content-ai-lifecycle-bridge.ts",
+    import.meta.url,
+  ), "utf8");
+  assert.doesNotMatch(source, /\bcredentials\s*:/u);
+  assert.match(source, /signal:\s*AbortSignal\.timeout\(20_000\)/u);
+  assert.match(source, /redirect:\s*"error"/u);
+  assert.match(source, /cache:\s*"no-store"/u);
 });
 
 test("lifecycle bridge emits a sanitized stage-specific failure", async () => {
