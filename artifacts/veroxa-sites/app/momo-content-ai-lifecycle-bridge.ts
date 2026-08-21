@@ -283,8 +283,7 @@ export async function invokeMomoContentAiLifecycleBridge<T>(
         "x-veroxa-server-purpose": "momo-content-ai-lifecycle-v1",
       },
       body,
-      cache: "no-store",
-      redirect: "error",
+      redirect: "manual",
       signal: AbortSignal.timeout(20_000),
     });
   } catch {
@@ -293,6 +292,16 @@ export async function invokeMomoContentAiLifecycleBridge<T>(
       code: "momo_content_ai_lifecycle_transport_unavailable",
       correlationId,
       retryable: true,
+      telemetry,
+    });
+  }
+  if (response.status >= 300 && response.status < 400) {
+    throw momoContentAiLifecycleBridgeFailure({
+      stage: "response_status",
+      code: "momo_content_ai_lifecycle_bridge_rejected",
+      correlationId,
+      retryable: false,
+      httpStatus: response.status,
       telemetry,
     });
   }
