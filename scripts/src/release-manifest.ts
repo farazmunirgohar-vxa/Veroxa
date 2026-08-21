@@ -1469,10 +1469,10 @@ function assertActiveVer39WorkerLifecycleBridgeRepairDiffScope(): void {
 }
 
 /**
- * Bind VER-42 to the finalize bearer resolver, its route-only token handoff,
- * the signed lifecycle bridge, both focused tests, and this release guard.
- * Include committed, staged, unstaged, and untracked paths. Deletions,
- * renames, type changes, unmerged entries, and lookalikes fail closed.
+ * Bind the merged VER-42 finalize bearer repair to its immutable committed
+ * slice, including the resolver, route-only token handoff, signed bridge,
+ * focused tests, and release guard. Later candidates own their own forward
+ * and working-tree scopes.
  */
 function assertActiveVer42FinalizeBearerAuthDiffScope(): void {
   const comparisonRange =
