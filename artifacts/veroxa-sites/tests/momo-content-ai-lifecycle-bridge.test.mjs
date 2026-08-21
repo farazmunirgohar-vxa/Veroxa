@@ -284,6 +284,37 @@ test("lifecycle bridge rejects every manual redirect before response-body parsin
   }]);
 });
 
+test("lifecycle bridge rejects non-403 failures without reading their body", async () => {
+  const events = [];
+  let bodyRead = false;
+  await assert.rejects(
+    invokeMomoContentAiLifecycleBridge(
+      client(),
+      bridgeConfig(),
+      { operation: "finalize_upload" },
+      {
+        correlationId: CORRELATION_ID,
+        telemetry: (event) => events.push(event),
+        fetchImplementation: async () => ({
+          status: 500,
+          ok: false,
+          headers: new Headers({ "content-type": "application/json" }),
+          get body() {
+            bodyRead = true;
+            throw new Error("non_403_body_must_not_be_read");
+          },
+        }),
+      },
+    ),
+    (error) => error instanceof MomoContentAiLifecycleBridgeError &&
+      error.stage === "response_status" && error.retryable === true &&
+      error.httpStatus === 500 && error.upstreamAuthError === null,
+  );
+  assert.equal(bodyRead, false);
+  assert.equal(events.length, 1);
+  assert.equal(events[0].upstreamAuthError, null);
+});
+
 test("lifecycle bridge emits a sanitized stage-specific failure", async () => {
   const events = [];
   await assert.rejects(
