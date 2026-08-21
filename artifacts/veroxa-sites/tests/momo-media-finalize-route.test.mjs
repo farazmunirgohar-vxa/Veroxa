@@ -459,10 +459,10 @@ test("route snapshots cookie state before cookie auth and never persists bearer 
 });
 
 test("finalize route uses the Worker-compatible private Storage download shape", () => {
-  const downloadBlock = routeSource.slice(
-    routeSource.indexOf("async download(storagePath"),
-    routeSource.indexOf("async info(storagePath"),
-  );
+  const downloadStart = routeSource.indexOf("async download(storagePath");
+  const downloadEnd = routeSource.indexOf("async info(storagePath");
+  assert.ok(downloadStart >= 0 && downloadEnd > downloadStart);
+  const downloadBlock = routeSource.slice(downloadStart, downloadEnd);
   assert.match(downloadBlock, /\.download\(storagePath\)/u);
   assert.doesNotMatch(downloadBlock, /\.download\(\s*storagePath\s*,/u);
   assert.doesNotMatch(downloadBlock, /\b(?:cache|credentials)\s*:/u);
