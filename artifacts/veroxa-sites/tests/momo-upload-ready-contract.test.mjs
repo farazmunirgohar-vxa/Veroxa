@@ -1,12 +1,17 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { execFileSync } from "node:child_process";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { readFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
 const sql = await readFile(new URL("../supabase/migrations/20260801011047_momo_upload_to_ready_pipeline_v1.sql", import.meta.url), "utf8");
 const indexSql = await readFile(new URL("../supabase/migrations/20260801011301_momo_upload_ready_index_hardening.sql", import.meta.url), "utf8");
 const supabaseConfig = await readFile(new URL("../supabase/config.toml", import.meta.url), "utf8");
 const contentRoute = await readFile(new URL("../app/api/team/content-ai/package/route.ts", import.meta.url), "utf8");
 const contentLifecycleEdge = await readFile(new URL("../supabase/functions/momo-content-ai-lifecycle/index.ts", import.meta.url), "utf8");
+const releaseManifest = await readFile(new URL("../../../scripts/src/release-manifest.ts", import.meta.url), "utf8");
 
 test("server intake accepts only an exact three-platform-ready JPG profile", () => {
   assert.match(sql, /detected_mime_type text not null check \(detected_mime_type = 'image\/jpeg'\)/);
@@ -85,6 +90,30 @@ test("content lifecycle bypasses only the platform JWT precheck while enforcing 
   assert.match(contentRoute, /height > MOMO_CONTENT_AI_MAX_SOURCE_HEIGHT/);
   assert.match(contentRoute, /MOMO_CONTENT_AI_MAX_TRUTH_BYTES/);
   assert.doesNotMatch(contentRoute, /enabled:\s*process\.env\.VEROXA_MEDIA_AI_ENABLED/u);
+});
+
+test("release scope preserves whitespace-lookalike Git paths exactly", () => {
+  const helper = releaseManifest.match(/function gitPathList\(args: string\[\]\): string\[\] \{[\s\S]*?\n\}/u)?.[0] ?? "";
+  assert.match(helper, /const \[command, \.\.\.commandArgs\] = args;/u);
+  assert.match(helper, /execFileSync\("git", \[command, "-z", \.\.\.commandArgs\]/u);
+  assert.match(helper, /output\.split\("\\0"\)\.filter\(\(path\) => path\.length > 0\)/u);
+  assert.doesNotMatch(helper, /\.trim\(\)/u);
+
+  const root = mkdtempSync(join(tmpdir(), "veroxa-git-path-"));
+  try {
+    writeFileSync(join(root, "allowed "), "x", "utf8");
+    execFileSync("git", ["init", "-q"], { cwd: root });
+    execFileSync("git", ["add", "--", "allowed "], { cwd: root });
+    const output = execFileSync("git", ["diff", "--cached", "--name-only", "-z", "--"], {
+      cwd: root,
+      encoding: "utf8",
+    });
+    const paths = output.split("\0").filter((path) => path.length > 0);
+    assert.deepEqual(paths, ["allowed "]);
+    assert.notEqual(paths[0], "allowed");
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
 });
 
 test("USD100 authority, indexes, and Momo-only publication guards are asserted", () => {
