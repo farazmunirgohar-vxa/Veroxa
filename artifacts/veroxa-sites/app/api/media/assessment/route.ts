@@ -188,7 +188,7 @@ function dependencies(
     },
     async downloadSource(storagePath: string) {
       const { data, error } = await client.storage.from("restaurant-media")
-        .download(storagePath, undefined, { cache: "no-store" });
+        .download(storagePath);
       if (error || !data) throw new Error("private_media_download_failed");
       return data;
     },
@@ -206,7 +206,7 @@ function dependencies(
       };
     },
     async callOpenAI(rawBody: string) {
-      return fetch(OPENAI_RESPONSES_URL, {
+      const response = await fetch(OPENAI_RESPONSES_URL, {
         method: "POST",
         headers: {
           authorization: `Bearer ${openAiKey}`,
@@ -214,11 +214,13 @@ function dependencies(
           "x-stainless-retry-count": "0",
         },
         body: rawBody,
-        cache: "no-store",
-        credentials: "omit",
-        redirect: "error",
+        redirect: "manual",
         signal: AbortSignal.timeout(45_000),
       });
+      if (response.status >= 300 && response.status < 400) {
+        throw new Error("private_media_provider_redirect_rejected");
+      }
+      return response;
     },
     async complete(input: Record<string, unknown>) {
       if (!bridgeConfig) throw new Error("assessment_bridge_unavailable");

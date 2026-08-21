@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { createHmac } from "node:crypto";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
 import {
   createMomoContentAiDispatchHandler,
@@ -39,6 +40,10 @@ const SOURCE = Uint8Array.from(Buffer.from(
   "base64",
 ));
 const SOURCE_SHA = await momoBytesSha256(SOURCE);
+const dispatchRouteSource = await readFile(new URL(
+  "../app/api/internal/momo/content-ai/dispatch/route.ts",
+  import.meta.url,
+), "utf8");
 
 function signedSourceUrl(path = SOURCE_PATH) {
   return `${SUPABASE_ORIGIN}/storage/v1/object/sign/restaurant-media/${path}?token=${"t".repeat(48)}`;
@@ -191,6 +196,41 @@ function harness(options = {}) {
     handler: createMomoContentAiDispatchHandler(dependencies),
   };
 }
+
+test("route uses Worker-compatible source and provider transports", () => {
+  const sourceStart = dispatchRouteSource.indexOf("async fetchSource");
+  const sourceEnd = dispatchRouteSource.indexOf("async callOpenAI");
+  const providerStart = sourceEnd;
+  const providerEnd = dispatchRouteSource.indexOf("\n});", providerStart);
+  assert.ok(sourceStart >= 0 && sourceEnd > sourceStart);
+  assert.ok(providerStart >= 0 && providerEnd > providerStart);
+  const sourceBlock = dispatchRouteSource.slice(sourceStart, sourceEnd);
+  const providerBlock = dispatchRouteSource.slice(providerStart, providerEnd);
+  for (const block of [sourceBlock, providerBlock]) {
+    assert.doesNotMatch(block, /\b(?:cache|credentials)\s*:/u);
+    assert.match(block, /redirect:\s*"manual"/u);
+    assert.ok(
+      block.indexOf("response.status >= 300") <
+        block.indexOf("return response"),
+    );
+    const redirectStart = block.indexOf("if (response.status >= 300");
+    const redirectEnd = block.indexOf("return response");
+    assert.ok(redirectStart >= 0 && redirectEnd > redirectStart);
+    const redirectBranch = block.slice(redirectStart, redirectEnd);
+    assert.doesNotMatch(
+      redirectBranch,
+      /response\.(?:body|text|json|blob|arrayBuffer)/u,
+    );
+  }
+  assert.match(sourceBlock, /method:\s*"GET"/u);
+  assert.match(sourceBlock, /AbortSignal\.timeout\(10_000\)/u);
+  assert.match(providerBlock, /method:\s*"POST"/u);
+  assert.match(providerBlock, /authorization:\s*`Bearer \$\{openAiKey\}`/u);
+  assert.match(providerBlock, /"content-type":\s*"application\/json"/u);
+  assert.match(providerBlock, /"x-stainless-retry-count":\s*"0"/u);
+  assert.match(providerBlock, /body:\s*rawBody/u);
+  assert.match(providerBlock, /AbortSignal\.timeout\(30_000\)/u);
+});
 
 test("sends one exact hashed provider request only after the durable send intent", async () => {
   const { calls, handler } = harness();
@@ -444,6 +484,33 @@ test("requeues bad storage status or MIME without beginning paid work", async ()
   }
 });
 
+test("redirected source is released without reading its body or starting paid work", async () => {
+  let bodyRead = false;
+  const { calls, handler } = harness({
+    fetchSource: async () => ({
+      status: 307,
+      ok: false,
+      headers: new Headers({
+        "content-type": "image/jpeg",
+        location: "https://unexpected.example/",
+      }),
+      get body() {
+        bodyRead = true;
+        throw new Error("redirect_body_must_not_be_read");
+      },
+    }),
+  });
+  const response = await handler(wakeRequest());
+  assert.equal(response.status, 202);
+  assert.equal((await response.json()).status, "queued");
+  assert.equal(bodyRead, false);
+  assert.equal(calls.release.length, 1);
+  assert.equal(calls.release[0].errorCode, "source_download_unavailable");
+  assert.equal(calls.release[0].retryable, true);
+  assert.equal(calls.begin.length, 0);
+  assert.equal(calls.provider.length, 0);
+});
+
 test("retries begin, then safely cancels the exact pre-POST intent on uncertainty", async () => {
   let attempts = 0;
   const recovered = harness({
@@ -496,6 +563,7 @@ test("fails closed without a provider call if exact pre-POST cancellation is unc
 test("never redispatches after send intent when transport or provider identity is uncertain", async () => {
   const cases = [
     async () => { throw new Error("timeout after send"); },
+    async () => { throw new Error("dispatch_provider_redirect_rejected"); },
     async () => new Response("not json", { status: 200 }),
     async () => providerResponse({ metadata: {
       veroxa_run_id: RUN_ID,
@@ -516,6 +584,7 @@ test("never redispatches after send intent when transport or provider identity i
     assert.equal(calls.bind.length, 0);
     assert.equal(calls.reconcile.length, 1);
     assert.equal(calls.release.length, 0);
+    assert.equal(calls.reject.length, 0);
   }
 });
 

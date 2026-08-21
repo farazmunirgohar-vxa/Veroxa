@@ -109,16 +109,18 @@ const handler = createMomoContentAiDispatchHandler({
     }
   },
   async fetchSource(url) {
-    return fetch(url, {
+    const response = await fetch(url, {
       method: "GET",
-      cache: "no-store",
-      credentials: "omit",
-      redirect: "error",
+      redirect: "manual",
       signal: AbortSignal.timeout(10_000),
     });
+    if (response.status >= 300 && response.status < 400) {
+      throw new Error("dispatch_source_redirect_rejected");
+    }
+    return response;
   },
   async callOpenAI(rawBody) {
-    return fetch(OPENAI_RESPONSES_URL, {
+    const response = await fetch(OPENAI_RESPONSES_URL, {
       method: "POST",
       headers: {
         authorization: `Bearer ${openAiKey}`,
@@ -126,11 +128,13 @@ const handler = createMomoContentAiDispatchHandler({
         "x-stainless-retry-count": "0",
       },
       body: rawBody,
-      cache: "no-store",
-      credentials: "omit",
-      redirect: "error",
+      redirect: "manual",
       signal: AbortSignal.timeout(30_000),
     });
+    if (response.status >= 300 && response.status < 400) {
+      throw new Error("dispatch_provider_redirect_rejected");
+    }
+    return response;
   },
 });
 
