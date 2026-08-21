@@ -284,7 +284,6 @@ export async function invokeMomoContentAiLifecycleBridge<T>(
       },
       body,
       cache: "no-store",
-      credentials: "omit",
       redirect: "error",
       signal: AbortSignal.timeout(20_000),
     });
