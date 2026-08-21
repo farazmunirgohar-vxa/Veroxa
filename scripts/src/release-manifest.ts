@@ -87,6 +87,7 @@ const PREINTERVENTION_ACCEPTANCE_PGTAP =
 const ACTIVE_PREINTERVENTION_ACCEPTANCE_CANDIDATE_ALLOWED_PATHS = new Set([
   "artifacts/veroxa-sites/supabase/config.toml",
   "artifacts/veroxa-sites/tests/momo-content-ai-lifecycle-auth-config.test.mjs",
+  "artifacts/veroxa-sites/tests/momo-content-ai-lifecycle-bridge.test.mjs",
   "artifacts/veroxa-sites/tests/momo-upload-ready-contract.test.mjs",
   "supabase/config.toml",
   ".github/workflows/supabase-verify.yml",
@@ -100,6 +101,7 @@ const ACTIVE_PREINTERVENTION_ACCEPTANCE_CANDIDATE_ALLOWED_PATHS = new Set([
   "artifacts/veroxa-sites/app/api/media/finalize/route.ts",
   "artifacts/veroxa-sites/app/client/[[...slug]]/page.tsx",
   "artifacts/veroxa-sites/app/momo-client-data.ts",
+  "artifacts/veroxa-sites/app/momo-content-ai-lifecycle-bridge.ts",
   "artifacts/veroxa-sites/app/momo-client-portal.tsx",
   "artifacts/veroxa-sites/app/momo-media-finalize-client.ts",
   "artifacts/veroxa-sites/app/momo-operating-center.tsx",
