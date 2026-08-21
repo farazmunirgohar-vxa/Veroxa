@@ -147,9 +147,21 @@ const ACTIVE_PREINTERVENTION_ACCEPTANCE_CANDIDATE_FIXED_HEAD_COMMIT =
   "bb017e7aa4a11da0613be67fe46731e0b00ed30e";
 const ACTIVE_VER39_WORKER_LIFECYCLE_BRIDGE_REPAIR_BASE_COMMIT =
   ACTIVE_PREINTERVENTION_ACCEPTANCE_CANDIDATE_FIXED_HEAD_COMMIT;
+const ACTIVE_VER39_WORKER_LIFECYCLE_BRIDGE_REPAIR_FIXED_HEAD_COMMIT =
+  "7a0f4b23b52d72043d6232ac82b8c4a95351bb23";
 const ACTIVE_VER39_WORKER_LIFECYCLE_BRIDGE_REPAIR_ALLOWED_PATHS = new Set([
   "artifacts/veroxa-sites/app/momo-content-ai-lifecycle-bridge.ts",
   "artifacts/veroxa-sites/tests/momo-content-ai-lifecycle-bridge.test.mjs",
+  "scripts/src/release-manifest.ts",
+]);
+const ACTIVE_VER42_FINALIZE_BEARER_AUTH_BASE_COMMIT =
+  ACTIVE_VER39_WORKER_LIFECYCLE_BRIDGE_REPAIR_FIXED_HEAD_COMMIT;
+const ACTIVE_VER42_FINALIZE_BEARER_AUTH_ALLOWED_PATHS = new Set([
+  "artifacts/veroxa-sites/app/api/media/finalize/bearer-auth.ts",
+  "artifacts/veroxa-sites/app/api/media/finalize/route.ts",
+  "artifacts/veroxa-sites/app/momo-content-ai-lifecycle-bridge.ts",
+  "artifacts/veroxa-sites/tests/momo-content-ai-lifecycle-bridge.test.mjs",
+  "artifacts/veroxa-sites/tests/momo-media-finalize-route.test.mjs",
   "scripts/src/release-manifest.ts",
 ]);
 
@@ -1393,24 +1405,79 @@ function assertActivePreinterventionAcceptanceCandidateDiffScope(): void {
 }
 
 /**
- * Bind VER-39 to exactly its Worker bridge source, focused regression test,
- * and this release guard. Include committed, staged, unstaged, and untracked
- * paths. Deletions, renames, type changes, unmerged entries, and whitespace
- * lookalikes all fail closed.
+ * Bind the merged VER-39 repair to its immutable committed slice. Later
+ * candidates own their own forward and working-tree scopes.
  */
 function assertActiveVer39WorkerLifecycleBridgeRepairDiffScope(): void {
   const comparisonRange =
-    `${ACTIVE_VER39_WORKER_LIFECYCLE_BRIDGE_REPAIR_BASE_COMMIT}...HEAD`;
+    `${ACTIVE_VER39_WORKER_LIFECYCLE_BRIDGE_REPAIR_BASE_COMMIT}...${ACTIVE_VER39_WORKER_LIFECYCLE_BRIDGE_REPAIR_FIXED_HEAD_COMMIT}`;
   try {
     execFileSync("git", [
       "merge-base",
       "--is-ancestor",
       ACTIVE_VER39_WORKER_LIFECYCLE_BRIDGE_REPAIR_BASE_COMMIT,
+      ACTIVE_VER39_WORKER_LIFECYCLE_BRIDGE_REPAIR_FIXED_HEAD_COMMIT,
+    ], { cwd: repoRoot, stdio: "ignore" });
+  } catch {
+    throw new Error(
+      "VER-39 Worker bridge repair lacks its immutable bb017e7...7a0f4b2 range",
+    );
+  }
+
+  try {
+    const paths = gitPathList([
+      "diff", "--find-renames", "--name-only", "--diff-filter=ACM",
+      comparisonRange, "--",
+    ]);
+    const forbidden = gitPathList([
+      "diff", "--find-renames", "--name-only", "--diff-filter=DRTUXB",
+      comparisonRange, "--",
+    ]);
+    const unexpected = paths.filter((path) =>
+      !ACTIVE_VER39_WORKER_LIFECYCLE_BRIDGE_REPAIR_ALLOWED_PATHS.has(path)
+    );
+    const missing = Array.from(
+      ACTIVE_VER39_WORKER_LIFECYCLE_BRIDGE_REPAIR_ALLOWED_PATHS,
+    ).filter((path) => !paths.includes(path)).sort();
+    if (unexpected.length > 0 || missing.length > 0 || forbidden.length > 0) {
+      throw new Error(
+        "VER-39 Worker bridge repair Git scope drifted: " + [
+          unexpected.length > 0 ? `unexpected=${unexpected.join(",")}` : null,
+          missing.length > 0 ? `missing=${missing.join(",")}` : null,
+          forbidden.length > 0 ? `forbidden=${forbidden.join(",")}` : null,
+        ].filter(Boolean).join("; "),
+      );
+    }
+  } catch (error) {
+    if (error instanceof Error && error.message.startsWith(
+      "VER-39 Worker bridge repair Git scope drifted:",
+    )) throw error;
+    throw new Error(
+      "VER-39 Worker bridge repair cannot verify its immutable Git diff scope: " +
+        (error instanceof Error ? error.message : String(error)),
+    );
+  }
+}
+
+/**
+ * Bind VER-42 to the finalize bearer resolver, its route-only token handoff,
+ * the signed lifecycle bridge, both focused tests, and this release guard.
+ * Include committed, staged, unstaged, and untracked paths. Deletions,
+ * renames, type changes, unmerged entries, and lookalikes fail closed.
+ */
+function assertActiveVer42FinalizeBearerAuthDiffScope(): void {
+  const comparisonRange =
+    `${ACTIVE_VER42_FINALIZE_BEARER_AUTH_BASE_COMMIT}...HEAD`;
+  try {
+    execFileSync("git", [
+      "merge-base",
+      "--is-ancestor",
+      ACTIVE_VER42_FINALIZE_BEARER_AUTH_BASE_COMMIT,
       "HEAD",
     ], { cwd: repoRoot, stdio: "ignore" });
   } catch {
     throw new Error(
-      "VER-39 Worker bridge repair lacks its exact bb017e7 release base",
+      "VER-42 finalize bearer auth lacks its exact 7a0f4b2 release base",
     );
   }
 
@@ -1446,14 +1513,14 @@ function assertActiveVer39WorkerLifecycleBridgeRepairDiffScope(): void {
       ...gitPathList(["ls-files", "--unmerged"]),
     ])).sort();
     const unexpected = paths.filter((path) =>
-      !ACTIVE_VER39_WORKER_LIFECYCLE_BRIDGE_REPAIR_ALLOWED_PATHS.has(path)
+      !ACTIVE_VER42_FINALIZE_BEARER_AUTH_ALLOWED_PATHS.has(path)
     );
     const missing = Array.from(
-      ACTIVE_VER39_WORKER_LIFECYCLE_BRIDGE_REPAIR_ALLOWED_PATHS,
+      ACTIVE_VER42_FINALIZE_BEARER_AUTH_ALLOWED_PATHS,
     ).filter((path) => !paths.includes(path)).sort();
     if (unexpected.length > 0 || missing.length > 0 || forbidden.length > 0) {
       throw new Error(
-        "VER-39 Worker bridge repair Git scope drifted: " + [
+        "VER-42 finalize bearer auth Git scope drifted: " + [
           unexpected.length > 0 ? `unexpected=${unexpected.join(",")}` : null,
           missing.length > 0 ? `missing=${missing.join(",")}` : null,
           forbidden.length > 0 ? `forbidden=${forbidden.join(",")}` : null,
@@ -1462,10 +1529,10 @@ function assertActiveVer39WorkerLifecycleBridgeRepairDiffScope(): void {
     }
   } catch (error) {
     if (error instanceof Error && error.message.startsWith(
-      "VER-39 Worker bridge repair Git scope drifted:",
+      "VER-42 finalize bearer auth Git scope drifted:",
     )) throw error;
     throw new Error(
-      "VER-39 Worker bridge repair cannot verify its exact Git diff scope: " +
+      "VER-42 finalize bearer auth cannot verify its exact Git diff scope: " +
         (error instanceof Error ? error.message : String(error)),
     );
   }
@@ -1813,6 +1880,11 @@ function assertActivePreinterventionAcceptanceCandidate(
   }
   try {
     assertActiveVer39WorkerLifecycleBridgeRepairDiffScope();
+  } catch (error) {
+    failures.push(error instanceof Error ? error.message : String(error));
+  }
+  try {
+    assertActiveVer42FinalizeBearerAuthDiffScope();
   } catch (error) {
     failures.push(error instanceof Error ? error.message : String(error));
   }

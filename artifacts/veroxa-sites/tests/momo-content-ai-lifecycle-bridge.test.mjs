@@ -28,6 +28,8 @@ const otherPublicKey = secondPair.publicKey.export({
 }).toString("base64");
 const CORRELATION_ID = "11111111-1111-4111-8111-111111111111";
 const ACCESS_TOKEN = "signed-user-access-token";
+const SERVER_VERIFIED_ACCESS_TOKEN =
+  "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMTExMTExMS0xMTExLTQxMTEtODExMS0xMTExMTExMTExMTEifQ.signature";
 
 function bridgeConfig() {
   return {
@@ -144,6 +146,90 @@ test("lifecycle bridge uses Worker-compatible fetch controls on a verified signe
     },
   );
   assert.deepEqual(result, { status: "recorded" });
+});
+
+test("server-verified bearer bypasses cookie session lookup and signs the exact token", async () => {
+  let sessionCalls = 0;
+  const request = { operation: "finalize_upload", assetId: "asset" };
+  const result = await invokeMomoContentAiLifecycleBridge(
+    {
+      auth: {
+        async getSession() {
+          sessionCalls += 1;
+          throw new Error("session_lookup_must_not_run");
+        },
+      },
+    },
+    bridgeConfig(),
+    request,
+    {
+      correlationId: CORRELATION_ID,
+      serverVerifiedAccessToken: SERVER_VERIFIED_ACCESS_TOKEN,
+      async fetchImplementation(_url, init) {
+        assert.equal(
+          init.headers.authorization,
+          `Bearer ${SERVER_VERIFIED_ACCESS_TOKEN}`,
+        );
+        assert.equal(await verifyMomoContentAiBridgeSignature({
+          publicKeyBase64: publicKey,
+          timestampMs: init.headers["x-veroxa-content-ai-timestamp-ms"],
+          nonce: init.headers["x-veroxa-content-ai-nonce"],
+          accessToken: SERVER_VERIFIED_ACCESS_TOKEN,
+          body: init.body,
+          signature: init.headers["x-veroxa-content-ai-signature"],
+        }), true);
+        return Response.json({ data: { status: "verified" } });
+      },
+    },
+  );
+  assert.equal(sessionCalls, 0);
+  assert.deepEqual(result, { status: "verified" });
+});
+
+test("malformed explicit bearer fails before session or transport without leaking", async () => {
+  let sessionCalls = 0;
+  let fetchCalls = 0;
+  for (const invalid of [
+    undefined,
+    "",
+    "opaque-token",
+    `${SERVER_VERIFIED_ACCESS_TOKEN} `,
+    `${SERVER_VERIFIED_ACCESS_TOKEN},second-token`,
+    `a.${"b".repeat(8_192)}.c`,
+  ]) {
+    const events = [];
+    await assert.rejects(
+      invokeMomoContentAiLifecycleBridge(
+        {
+          auth: {
+            async getSession() {
+              sessionCalls += 1;
+              throw new Error("session_lookup_must_not_run");
+            },
+          },
+        },
+        bridgeConfig(),
+        { operation: "finalize_upload" },
+        {
+          correlationId: CORRELATION_ID,
+          serverVerifiedAccessToken: invalid,
+          telemetry: (event) => events.push(event),
+          fetchImplementation: async () => {
+            fetchCalls += 1;
+            return Response.json({ data: null });
+          },
+        },
+      ),
+      (error) => error instanceof MomoContentAiLifecycleBridgeError &&
+        error.stage === "session" &&
+        error.code === "momo_content_ai_lifecycle_session_unavailable",
+    );
+    assert.equal(events.length, 1);
+    assert.doesNotMatch(JSON.stringify(events),
+      /eyJhbGci|opaque-token|second-token/u);
+  }
+  assert.equal(sessionCalls, 0);
+  assert.equal(fetchCalls, 0);
 });
 
 test("lifecycle Worker transport source excludes unsupported fetch members and stays bounded", async () => {

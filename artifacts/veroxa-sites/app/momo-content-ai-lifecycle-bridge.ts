@@ -3,6 +3,8 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 const FUNCTION_PATH = "/functions/v1/momo-content-ai-lifecycle";
 const CONTEXT = `veroxa:momo-content-ai-lifecycle:v1\nPOST\n${FUNCTION_PATH}`;
 const KEY_PATTERN = /^[A-Za-z0-9+/]{40,196}={0,2}$/u;
+const ACCESS_TOKEN_PATTERN =
+  /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/u;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
 const PREFLIGHT_MESSAGE = new TextEncoder().encode(
   "veroxa:momo-content-ai-lifecycle:key-pair-preflight:v1",
@@ -74,6 +76,7 @@ export type MomoContentAiLifecycleBridgeInvocationOptions = {
   correlationId?: string;
   fetchImplementation?: typeof fetch;
   telemetry?: BridgeTelemetrySink;
+  serverVerifiedAccessToken?: string;
 };
 
 function base64Buffer(value: string): ArrayBuffer {
@@ -205,34 +208,50 @@ export async function invokeMomoContentAiLifecycleBridge<T>(
 ): Promise<T> {
   const correlationId = safeCorrelationId(options.correlationId);
   const telemetry = options.telemetry;
-  let sessionResult;
-  try {
-    sessionResult = await client.auth.getSession();
-    const now = Math.floor(Date.now() / 1_000);
-    if (!sessionResult.error && sessionResult.data.session &&
-      (!Number.isSafeInteger(sessionResult.data.session.expires_at) ||
-        Number(sessionResult.data.session.expires_at) <= now + 300)) {
-      sessionResult = await client.auth.refreshSession();
+  let token = "";
+  if (Object.hasOwn(options, "serverVerifiedAccessToken")) {
+    const serverVerifiedAccessToken = options.serverVerifiedAccessToken;
+    if (typeof serverVerifiedAccessToken !== "string" ||
+      serverVerifiedAccessToken.length > 8_192 ||
+      !ACCESS_TOKEN_PATTERN.test(serverVerifiedAccessToken)) {
+      throw momoContentAiLifecycleBridgeFailure({
+        stage: "session",
+        code: "momo_content_ai_lifecycle_session_unavailable",
+        correlationId,
+        telemetry,
+      });
     }
-  } catch {
-    throw momoContentAiLifecycleBridgeFailure({
-      stage: "session",
-      code: "momo_content_ai_lifecycle_session_unavailable",
-      correlationId,
-      telemetry,
-    });
-  }
-  const now = Math.floor(Date.now() / 1_000);
-  const token = sessionResult.data.session?.access_token?.trim() || "";
-  if (sessionResult.error || !token || token.length > 8_192 ||
-    !Number.isSafeInteger(sessionResult.data.session?.expires_at) ||
-    Number(sessionResult.data.session?.expires_at) <= now + 300) {
-    throw momoContentAiLifecycleBridgeFailure({
-      stage: "session",
-      code: "momo_content_ai_lifecycle_session_unavailable",
-      correlationId,
-      telemetry,
-    });
+    token = serverVerifiedAccessToken;
+  } else {
+    let sessionResult;
+    try {
+      sessionResult = await client.auth.getSession();
+      const now = Math.floor(Date.now() / 1_000);
+      if (!sessionResult.error && sessionResult.data.session &&
+        (!Number.isSafeInteger(sessionResult.data.session.expires_at) ||
+          Number(sessionResult.data.session.expires_at) <= now + 300)) {
+        sessionResult = await client.auth.refreshSession();
+      }
+    } catch {
+      throw momoContentAiLifecycleBridgeFailure({
+        stage: "session",
+        code: "momo_content_ai_lifecycle_session_unavailable",
+        correlationId,
+        telemetry,
+      });
+    }
+    const now = Math.floor(Date.now() / 1_000);
+    token = sessionResult.data.session?.access_token?.trim() || "";
+    if (sessionResult.error || !token || token.length > 8_192 ||
+      !Number.isSafeInteger(sessionResult.data.session?.expires_at) ||
+      Number(sessionResult.data.session?.expires_at) <= now + 300) {
+      throw momoContentAiLifecycleBridgeFailure({
+        stage: "session",
+        code: "momo_content_ai_lifecycle_session_unavailable",
+        correlationId,
+        telemetry,
+      });
+    }
   }
   const body = JSON.stringify(requestBody);
   if (new TextEncoder().encode(body).byteLength > 300_000) {
