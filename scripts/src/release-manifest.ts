@@ -223,6 +223,8 @@ const ACTIVE_LIVE_STATUS_SUPABASE_PRO_PACKET_ALLOWED_PATHS = new Set([
 ]);
 const ACTIVE_R3_ACCEPTANCE_AUTH_PROOF_RUNNER_BASE_COMMIT =
   ACTIVE_LIVE_STATUS_SUPABASE_PRO_PACKET_FIXED_HEAD_COMMIT;
+const ACTIVE_R3_ACCEPTANCE_AUTH_PROOF_RUNNER_FIXED_HEAD_COMMIT =
+  "7e5becf058178f2c0c9fa25b1b6b887f72e0a47b";
 const ACTIVE_R3_ACCEPTANCE_AUTH_PROOF_RUNNER_ALLOWED_PATHS = new Set([
   "artifacts/veroxa-sites/.env.example",
   "artifacts/veroxa-sites/app/api/internal/veroxa/acceptance-auth-proof/core.ts",
@@ -233,6 +235,25 @@ const ACTIVE_R3_ACCEPTANCE_AUTH_PROOF_RUNNER_ALLOWED_PATHS = new Set([
 const ACTIVE_R3_ACCEPTANCE_AUTH_PROOF_RUNNER_SITES_FILE_COUNT = 248;
 const ACTIVE_R3_ACCEPTANCE_AUTH_PROOF_RUNNER_SITES_SHA256 =
   "a2290f0ce4443f838c0f8517cfc42345a8088313b990d57346edda84180a3399";
+const ACTIVE_VER43_HOSTED_SIGNATURE_ENVELOPE_REPAIR_BASE_COMMIT =
+  ACTIVE_R3_ACCEPTANCE_AUTH_PROOF_RUNNER_FIXED_HEAD_COMMIT;
+const ACTIVE_VER43_HOSTED_SIGNATURE_ENVELOPE_REPAIR_ALLOWED_PATHS = new Set([
+  "artifacts/veroxa-sites/app/momo-content-ai-lifecycle-bridge.ts",
+  "artifacts/veroxa-sites/package-lock.json",
+  "artifacts/veroxa-sites/package.json",
+  "artifacts/veroxa-sites/supabase/functions/_shared/momo-content-ai-lifecycle-contract.ts",
+  "artifacts/veroxa-sites/supabase/functions/momo-content-ai-lifecycle/index.ts",
+  "artifacts/veroxa-sites/tests/momo-content-ai-lifecycle-auth-config.test.mjs",
+  "artifacts/veroxa-sites/tests/momo-content-ai-lifecycle-bridge.test.mjs",
+  "artifacts/veroxa-sites/tests/momo-content-lifecycle-contract.test.mjs",
+  "artifacts/veroxa-sites/tests/momo-upload-ready-contract.test.mjs",
+  "scripts/src/release-manifest.ts",
+  "supabase/functions/_shared/momo-content-ai-lifecycle-contract.ts",
+  "supabase/functions/momo-content-ai-lifecycle/index.ts",
+]);
+const ACTIVE_VER43_HOSTED_SIGNATURE_ENVELOPE_REPAIR_SITES_FILE_COUNT = 248;
+const ACTIVE_VER43_HOSTED_SIGNATURE_ENVELOPE_REPAIR_SITES_SHA256 =
+  "926e3a10e081e9b5f8924783add85cb022afc75549272352e9e416b53e3b1504";
 const CURRENT_LIVE_STATUS_CLOSEOUT_PATH =
   "artifacts/veroxa/docs/VEROXA_LIVE_STATUS_CLOSEOUT_20260821.json";
 
@@ -1319,6 +1340,14 @@ function hashTrackedSubtree(
   return { fileCount: files.length, files, sha256: hash.digest("hex") };
 }
 
+function sha256GitFile(commit: string, path: string): string {
+  return createHash("sha256").update(execFileSync(
+    "git",
+    ["show", `${commit}:${path}`],
+    { cwd: repoRoot, maxBuffer: 32 * 1024 * 1024 },
+  )).digest("hex");
+}
+
 /**
  * The immutable schema-13 manifest can only be relaxed for this one exact
  * candidate.  Require its complete diff scope rather than letting a state
@@ -1856,25 +1885,76 @@ function assertActiveLiveStatusSupabaseProPacketDiffScope(): void {
   }
 }
 
-/**
- * Bind the least-privileged R3 synthetic Auth proof runner to merged PR #203
- * plus its committed, staged, unstaged, and untracked paths. The packet may
- * add only the disabled route, its environment placeholder, tests, and this
- * forward release guard. Every unrelated mutation fails closed.
- */
+/** Bind merged PR #204 to its immutable exact committed slice. */
 function assertActiveR3AcceptanceAuthProofRunnerDiffScope(): void {
   const comparisonRange =
-    `${ACTIVE_R3_ACCEPTANCE_AUTH_PROOF_RUNNER_BASE_COMMIT}...HEAD`;
+    `${ACTIVE_R3_ACCEPTANCE_AUTH_PROOF_RUNNER_BASE_COMMIT}...${ACTIVE_R3_ACCEPTANCE_AUTH_PROOF_RUNNER_FIXED_HEAD_COMMIT}`;
   try {
     execFileSync("git", [
       "merge-base",
       "--is-ancestor",
       ACTIVE_R3_ACCEPTANCE_AUTH_PROOF_RUNNER_BASE_COMMIT,
+      ACTIVE_R3_ACCEPTANCE_AUTH_PROOF_RUNNER_FIXED_HEAD_COMMIT,
+    ], { cwd: repoRoot, stdio: "ignore" });
+  } catch {
+    throw new Error(
+      "R3 acceptance Auth proof runner lacks its immutable PR #204 ancestry",
+    );
+  }
+
+  try {
+    const paths = gitPathList([
+      "diff", "--find-renames", "--name-only", "--diff-filter=ACM",
+      comparisonRange, "--",
+    ]).sort();
+    const forbidden = gitPathList([
+      "diff", "--find-renames", "--name-only", "--diff-filter=DRTUXB",
+      comparisonRange, "--",
+    ]).sort();
+    const unexpected = paths.filter((path) =>
+      !ACTIVE_R3_ACCEPTANCE_AUTH_PROOF_RUNNER_ALLOWED_PATHS.has(path)
+    );
+    const missing = Array.from(
+      ACTIVE_R3_ACCEPTANCE_AUTH_PROOF_RUNNER_ALLOWED_PATHS,
+    ).filter((path) => !paths.includes(path)).sort();
+    if (unexpected.length > 0 || missing.length > 0 || forbidden.length > 0) {
+      throw new Error(
+        "R3 acceptance Auth proof runner Git scope drifted: " + [
+          unexpected.length > 0 ? `unexpected=${unexpected.join(",")}` : null,
+          missing.length > 0 ? `missing=${missing.join(",")}` : null,
+          forbidden.length > 0 ? `forbidden=${forbidden.join(",")}` : null,
+        ].filter(Boolean).join("; "),
+      );
+    }
+  } catch (error) {
+    if (error instanceof Error && error.message.startsWith(
+      "R3 acceptance Auth proof runner Git scope drifted:",
+    )) throw error;
+    throw new Error(
+      "R3 acceptance Auth proof runner cannot verify its immutable Git diff scope: " +
+        (error instanceof Error ? error.message : String(error)),
+    );
+  }
+}
+
+/**
+ * Bind the hosted-signature repair to merged PR #204 plus its committed,
+ * staged, unstaged, and untracked paths. Every unrelated mutation fails
+ * closed, including deletion, rename, or an omitted root/Sites mirror.
+ */
+function assertActiveVer43HostedSignatureEnvelopeRepairDiffScope(): void {
+  const comparisonRange =
+    `${ACTIVE_VER43_HOSTED_SIGNATURE_ENVELOPE_REPAIR_BASE_COMMIT}...HEAD`;
+  try {
+    execFileSync("git", [
+      "merge-base",
+      "--is-ancestor",
+      ACTIVE_VER43_HOSTED_SIGNATURE_ENVELOPE_REPAIR_BASE_COMMIT,
       "HEAD",
     ], { cwd: repoRoot, stdio: "ignore" });
   } catch {
     throw new Error(
-      "R3 acceptance Auth proof runner lacks the exact merged PR #203 base",
+      "VER-43 hosted-signature repair lacks the exact merged PR #204 base",
     );
   }
 
@@ -1908,14 +1988,14 @@ function assertActiveR3AcceptanceAuthProofRunnerDiffScope(): void {
       ...gitPathList(["ls-files", "--unmerged"]),
     ])).sort();
     const unexpected = paths.filter((path) =>
-      !ACTIVE_R3_ACCEPTANCE_AUTH_PROOF_RUNNER_ALLOWED_PATHS.has(path)
+      !ACTIVE_VER43_HOSTED_SIGNATURE_ENVELOPE_REPAIR_ALLOWED_PATHS.has(path)
     );
     const missing = Array.from(
-      ACTIVE_R3_ACCEPTANCE_AUTH_PROOF_RUNNER_ALLOWED_PATHS,
+      ACTIVE_VER43_HOSTED_SIGNATURE_ENVELOPE_REPAIR_ALLOWED_PATHS,
     ).filter((path) => !paths.includes(path)).sort();
     if (unexpected.length > 0 || missing.length > 0 || forbidden.length > 0) {
       throw new Error(
-        "R3 acceptance Auth proof runner Git scope drifted: " + [
+        "VER-43 hosted-signature repair Git scope drifted: " + [
           unexpected.length > 0 ? `unexpected=${unexpected.join(",")}` : null,
           missing.length > 0 ? `missing=${missing.join(",")}` : null,
           forbidden.length > 0 ? `forbidden=${forbidden.join(",")}` : null,
@@ -1924,10 +2004,10 @@ function assertActiveR3AcceptanceAuthProofRunnerDiffScope(): void {
     }
   } catch (error) {
     if (error instanceof Error && error.message.startsWith(
-      "R3 acceptance Auth proof runner Git scope drifted:",
+      "VER-43 hosted-signature repair Git scope drifted:",
     )) throw error;
     throw new Error(
-      "R3 acceptance Auth proof runner cannot verify its exact Git diff scope: " +
+      "VER-43 hosted-signature repair cannot verify its exact Git diff scope: " +
         (error instanceof Error ? error.message : String(error)),
     );
   }
@@ -2208,6 +2288,7 @@ function assertCurrentLiveStatusReconciliation(
     assertActiveGitHubCopilotGovernancePacketDiffScope,
     assertActiveLiveStatusSupabaseProPacketDiffScope,
     assertActiveR3AcceptanceAuthProofRunnerDiffScope,
+    assertActiveVer43HostedSignatureEnvelopeRepairDiffScope,
   ]) {
     try {
       guard();
@@ -2250,6 +2331,10 @@ function assertCurrentLiveStatusReconciliation(
   );
   const liveSitesRuntimeTree = hashGitSubtree(
     ACTIVE_LIVE_STATUS_SUPABASE_PRO_PACKET_FIXED_HEAD_COMMIT,
+    "artifacts/veroxa-sites",
+  );
+  const authProofRunnerSitesRuntimeTree = hashGitSubtree(
+    ACTIVE_R3_ACCEPTANCE_AUTH_PROOF_RUNNER_FIXED_HEAD_COMMIT,
     "artifacts/veroxa-sites",
   );
   const candidateSitesRuntimeTree = hashTrackedSubtree(
@@ -2298,11 +2383,18 @@ function assertCurrentLiveStatusReconciliation(
     "Sites v66 identity, domain health, or exact runtime-subtree parity drifted",
   );
   must(
-    candidateSitesRuntimeTree.fileCount ===
+    authProofRunnerSitesRuntimeTree.fileCount ===
         ACTIVE_R3_ACCEPTANCE_AUTH_PROOF_RUNNER_SITES_FILE_COUNT &&
-      candidateSitesRuntimeTree.sha256 ===
+      authProofRunnerSitesRuntimeTree.sha256 ===
         ACTIVE_R3_ACCEPTANCE_AUTH_PROOF_RUNNER_SITES_SHA256,
-    "R3 Auth-proof candidate Sites runtime subtree drifted",
+    "merged PR #204 Auth-proof Sites runtime subtree drifted",
+  );
+  must(
+    candidateSitesRuntimeTree.fileCount ===
+        ACTIVE_VER43_HOSTED_SIGNATURE_ENVELOPE_REPAIR_SITES_FILE_COUNT &&
+      candidateSitesRuntimeTree.sha256 ===
+        ACTIVE_VER43_HOSTED_SIGNATURE_ENVELOPE_REPAIR_SITES_SHA256,
+    "VER-43 hosted-signature repair Sites runtime subtree drifted",
   );
   must(
     supabase?.plan === "pro" &&
@@ -2446,11 +2538,12 @@ function assertCurrentLiveStatusReconciliation(
   for (const [path, expectedSha] of Object.entries(
     closeout.edge?.verifiedSourceFiles ?? {},
   )) {
-    const rootPath = resolve(repoRoot, path);
     must(
       typeof expectedSha === "string" &&
-        existsSync(rootPath) &&
-        sha256File(rootPath) === expectedSha,
+        sha256GitFile(
+          ACTIVE_R3_ACCEPTANCE_AUTH_PROOF_RUNNER_FIXED_HEAD_COMMIT,
+          path,
+        ) === expectedSha,
       "canonical Edge source drifted: " + path,
     );
   }

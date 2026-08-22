@@ -44,9 +44,26 @@ test("browser registration is removed and the server hashes before signed commit
 });
 
 test("the lifecycle Edge boundary cancels oversized streams before buffering", () => {
+  assert.match(edgeSource, /const MAX_LEGACY_REQUEST_BYTES = 300_000/u);
+  assert.match(edgeSource, /const MAX_REQUEST_BYTES = 610_000/u);
   assert.match(edgeSource, /request\.body\.getReader\(\)/u);
   assert.match(edgeSource, /total > MAX_REQUEST_BYTES[\s\S]*?reader\.cancel\("request_too_large"\)/u);
+  assert.match(edgeSource,
+    /new TextEncoder\(\)\.encode\(raw\)\.byteLength > MAX_LEGACY_REQUEST_BYTES/u);
   assert.doesNotMatch(edgeSource, /request\.text\(\)/u);
+});
+
+test("the lifecycle Edge boundary accepts v2 envelopes while retaining v1 rollback", () => {
+  const v2 = edgeSource.indexOf(
+    "verifyMomoContentAiBridgeEnvelopeV2Signature({",
+  );
+  const v1 = edgeSource.indexOf("verifyMomoContentAiBridgeSignature({");
+  const auth = edgeSource.indexOf("userClient.auth.getUser(accessToken)");
+  assert.ok(v2 >= 0 && v2 < auth);
+  assert.ok(v1 >= 0 && v1 < auth);
+  assert.match(edgeSource, /wireValue\.schemaVersion === 2/u);
+  assert.match(edgeSource, /body: verified \? parse\(envelope\.payload\) : null/u);
+  assert.match(edgeSource, /return \{ verified, body: verified \? parse\(raw\) : null \}/u);
 });
 
 function finalizeUpload() {

@@ -1,7 +1,10 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 const FUNCTION_PATH = "/functions/v1/momo-content-ai-lifecycle";
-const CONTEXT = `veroxa:momo-content-ai-lifecycle:v1\nPOST\n${FUNCTION_PATH}`;
+const ENVELOPE_V2_CONTEXT =
+  `veroxa:momo-content-ai-lifecycle:v2\nPOST\n${FUNCTION_PATH}`;
+const MAX_SIGNED_PAYLOAD_BYTES = 300_000;
+const MAX_WIRE_REQUEST_BYTES = 610_000;
 const KEY_PATTERN = /^[A-Za-z0-9+/]{40,196}={0,2}$/u;
 const ACCESS_TOKEN_PATTERN =
   /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/u;
@@ -265,11 +268,12 @@ async function sign(
   privateKey: CryptoKey,
   timestamp: string,
   nonce: string,
+  correlationId: string,
   token: string,
-  body: string,
+  signedPayload: string,
 ): Promise<string> {
   const bytes = new TextEncoder().encode(
-    `${CONTEXT}\n${timestamp}\n${nonce}\n${token}\n${body}`,
+    `${ENVELOPE_V2_CONTEXT}\n${timestamp}\n${nonce}\n${correlationId}\n${token}\n${signedPayload}`,
   );
   return base64Url(
     await crypto.subtle.sign("Ed25519", privateKey, bytes),
@@ -329,8 +333,9 @@ export async function invokeMomoContentAiLifecycleBridge<T>(
       });
     }
   }
-  const body = JSON.stringify(requestBody);
-  if (new TextEncoder().encode(body).byteLength > 300_000) {
+  const signedPayload = JSON.stringify(requestBody);
+  if (new TextEncoder().encode(signedPayload).byteLength >
+    MAX_SIGNED_PAYLOAD_BYTES) {
     throw momoContentAiLifecycleBridgeFailure({
       stage: "request",
       code: "momo_content_ai_lifecycle_request_too_large",
@@ -354,11 +359,34 @@ export async function invokeMomoContentAiLifecycleBridge<T>(
   const nonce = crypto.randomUUID();
   let signature: string;
   try {
-    signature = await sign(signingKey, timestamp, nonce, token, body);
+    signature = await sign(
+      signingKey,
+      timestamp,
+      nonce,
+      correlationId,
+      token,
+      signedPayload,
+    );
   } catch {
     throw momoContentAiLifecycleBridgeFailure({
       stage: "key_preflight",
       code: "momo_content_ai_lifecycle_key_pair_invalid",
+      correlationId,
+      telemetry,
+    });
+  }
+  const body = JSON.stringify({
+    schemaVersion: 2,
+    signedAtMs: timestamp,
+    nonce,
+    correlationId,
+    payload: signedPayload,
+    signature,
+  });
+  if (new TextEncoder().encode(body).byteLength > MAX_WIRE_REQUEST_BYTES) {
+    throw momoContentAiLifecycleBridgeFailure({
+      stage: "request",
+      code: "momo_content_ai_lifecycle_request_too_large",
       correlationId,
       telemetry,
     });
@@ -371,11 +399,8 @@ export async function invokeMomoContentAiLifecycleBridge<T>(
         authorization: `Bearer ${token}`,
         apikey: config.publishableKey,
         "content-type": "application/json",
-        "x-veroxa-content-ai-timestamp-ms": timestamp,
-        "x-veroxa-content-ai-nonce": nonce,
-        "x-veroxa-content-ai-signature": signature,
         "x-veroxa-correlation-id": correlationId,
-        "x-veroxa-server-purpose": "momo-content-ai-lifecycle-v1",
+        "x-veroxa-server-purpose": "momo-content-ai-lifecycle-v2",
       },
       body,
       redirect: "manual",

@@ -4,8 +4,19 @@ const SHA256 = /^[0-9a-f]{64}$/u;
 const SIGNATURE = /^[A-Za-z0-9_-]{86}$/u;
 const ERROR_CODE = /^[a-z0-9_]{3,80}$/u;
 const CONTEXT = "veroxa:momo-content-ai-lifecycle:v1\nPOST\n/functions/v1/momo-content-ai-lifecycle";
+const ENVELOPE_V2_CONTEXT =
+  "veroxa:momo-content-ai-lifecycle:v2\nPOST\n/functions/v1/momo-content-ai-lifecycle";
+const MAX_SIGNED_PAYLOAD_BYTES = 300_000;
 
 export type JsonObject = Record<string, unknown>;
+export type MomoContentAiBridgeEnvelopeV2 = {
+  schemaVersion: 2;
+  signedAtMs: string;
+  nonce: string;
+  correlationId: string;
+  payload: string;
+  signature: string;
+};
 export type MomoContentAiLifecycleRequest =
   | {
     operation: "commit_upload";
@@ -143,6 +154,67 @@ function base64Bytes(value: string): Uint8Array {
 
 function base64UrlBytes(value: string): Uint8Array {
   return base64Bytes(value.replaceAll("-", "+").replaceAll("_", "/") + "=".repeat((4 - value.length % 4) % 4));
+}
+
+export function parseMomoContentAiBridgeEnvelopeV2(
+  value: unknown,
+): MomoContentAiBridgeEnvelopeV2 | null {
+  if (!isPlainObject(value) || !exact(value, [
+    "schemaVersion",
+    "signedAtMs",
+    "nonce",
+    "correlationId",
+    "payload",
+    "signature",
+  ]) || value.schemaVersion !== 2 ||
+    typeof value.signedAtMs !== "string" ||
+    typeof value.nonce !== "string" ||
+    typeof value.correlationId !== "string" ||
+    typeof value.payload !== "string" ||
+    typeof value.signature !== "string" ||
+    new TextEncoder().encode(value.payload).byteLength >
+      MAX_SIGNED_PAYLOAD_BYTES) return null;
+  return value as MomoContentAiBridgeEnvelopeV2;
+}
+
+export async function verifyMomoContentAiBridgeEnvelopeV2Signature(input: {
+  publicKeyBase64: string;
+  accessToken: string;
+  envelope: MomoContentAiBridgeEnvelopeV2;
+  nowMs?: number;
+}): Promise<boolean> {
+  const { envelope } = input;
+  const timestamp = Number(envelope.signedAtMs);
+  const nowMs = input.nowMs ?? Date.now();
+  if (!/^\d{13}$/u.test(envelope.signedAtMs) ||
+    !Number.isSafeInteger(timestamp) ||
+    Math.abs(nowMs - timestamp) > MAX_CLOCK_SKEW_MS ||
+    !UUID.test(envelope.nonce) || !UUID.test(envelope.correlationId) ||
+    !input.accessToken || input.accessToken.length > 8_192 ||
+    envelope.payload.length < 2 ||
+    new TextEncoder().encode(envelope.payload).byteLength >
+      MAX_SIGNED_PAYLOAD_BYTES ||
+    !SIGNATURE.test(envelope.signature)) return false;
+  try {
+    const key = await crypto.subtle.importKey(
+      "spki",
+      base64Bytes(input.publicKeyBase64),
+      { name: "Ed25519" },
+      false,
+      ["verify"],
+    );
+    const message = new TextEncoder().encode(
+      `${ENVELOPE_V2_CONTEXT}\n${envelope.signedAtMs}\n${envelope.nonce}\n${envelope.correlationId}\n${input.accessToken}\n${envelope.payload}`,
+    );
+    return crypto.subtle.verify(
+      "Ed25519",
+      key,
+      base64UrlBytes(envelope.signature),
+      message,
+    );
+  } catch {
+    return false;
+  }
 }
 
 export async function verifyMomoContentAiBridgeSignature(input: {
