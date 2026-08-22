@@ -266,6 +266,8 @@ const ACTIVE_LIVE_STATUS_EDGE15_SITES68_PACKET_ALLOWED_PATHS = new Set([
   "artifacts/veroxa/docs/VEROXA_LIVE_STATUS_CLOSEOUT_20260822.json",
   "artifacts/veroxa/docs/VEROXA_LOCKED_OPERATING_MEMORY.md",
   "scripts/src/check-chatgpt-sites-migration-source-truth.ts",
+  "scripts/src/check-supabase-migration-ledger.ts",
+  "scripts/src/generate-deployment-attestation.ts",
   "scripts/src/release-manifest.ts",
 ]);
 const CURRENT_LIVE_STATUS_CLOSEOUT_PATH =
@@ -1234,9 +1236,7 @@ type ActiveMediaInspectionCandidateState = {
   };
 };
 
-function readActiveMediaInspectionCandidateState():
-  | ActiveMediaInspectionCandidateState
-  | null {
+function readCurrentStateRecord(): ActiveMediaInspectionCandidateState | null {
   if (!existsSync(currentStatePath)) return null;
   try {
     const value = JSON.parse(readFileSync(currentStatePath, "utf8")) as
@@ -1249,6 +1249,78 @@ function readActiveMediaInspectionCandidateState():
       typeof value.phase !== "string" ||
       typeof value.activeCandidate !== "object" ||
       value.activeCandidate === null) return null;
+    return value as unknown as ActiveMediaInspectionCandidateState;
+  } catch {
+    return null;
+  }
+}
+
+function readCurrentLiveStatusReconciliationState():
+  | ActiveMediaInspectionCandidateState
+  | null {
+  const value = readCurrentStateRecord();
+  if (!value) return null;
+  const candidate = value.activeCandidate as Record<string, unknown>;
+  const isBlockedAcceptanceStatus = value.phase ===
+      "r3_acceptance_live_stack_reconciled_auth_session_blocked" &&
+    candidate.kind === "veroxa_preintervention_acceptance" &&
+    candidate.state === "live_platform_reconciled_acceptance_proof_blocked";
+  const isReleaseConvergedStatus = value.phase ===
+      "r3_release_converged_authenticated_proof_pending" &&
+    candidate.kind === "ver43_hosted_signature_envelope_release" &&
+    candidate.state === "release_converged_authenticated_proof_pending";
+  return isBlockedAcceptanceStatus || isReleaseConvergedStatus ? value : null;
+}
+
+export function currentLiveStatusReconciliationEvidence(): {
+  phase: string;
+  source: { root: string; fileCount: number; treeSha256: string };
+  migrations: {
+    root: string;
+    fileCount: number;
+    treeSha256: string;
+    latestMigration: string;
+    latestMigrationSha256: string;
+  };
+} | null {
+  const value = readCurrentLiveStatusReconciliationState();
+  if (!value) return null;
+  const record = value as unknown as Record<string, any>;
+  const sites = record.production?.sites as Record<string, any> | undefined;
+  const supabase = record.production?.supabase as
+    | Record<string, any>
+    | undefined;
+  if (
+    typeof sites?.runtimeSubtreeFileCount !== "number" ||
+    typeof sites.runtimeSubtreeSha256 !== "string" ||
+    typeof supabase?.migrationCount !== "number" ||
+    typeof supabase.migrationTreeSha256 !== "string" ||
+    typeof supabase.latestCanonicalMigration !== "string" ||
+    typeof supabase.latestCanonicalMigrationSha256 !== "string"
+  ) return null;
+  return {
+    phase: value.phase,
+    source: {
+      root: "artifacts/veroxa-sites",
+      fileCount: sites.runtimeSubtreeFileCount,
+      treeSha256: sites.runtimeSubtreeSha256,
+    },
+    migrations: {
+      root: ROOT_MIGRATION_SOURCE_ROOT,
+      fileCount: supabase.migrationCount,
+      treeSha256: supabase.migrationTreeSha256,
+      latestMigration: supabase.latestCanonicalMigration,
+      latestMigrationSha256: supabase.latestCanonicalMigrationSha256,
+    },
+  };
+}
+
+function readActiveMediaInspectionCandidateState():
+  | ActiveMediaInspectionCandidateState
+  | null {
+  const value = readCurrentStateRecord();
+  if (!value) return null;
+  try {
     const candidate = value.activeCandidate as Record<string, unknown>;
     const isPreflightCandidate = value.phase.startsWith("phase_1_") &&
       candidate.kind === "media_inspection_runtime_repair" && [
@@ -1261,23 +1333,15 @@ function readActiveMediaInspectionCandidateState():
       candidate.state ===
         "local_focused_test_passed_pending_pr_review_and_synthetic_production_proof";
     const isPreinterventionCandidate = candidate.kind ===
-        "veroxa_preintervention_acceptance" && ((value.phase ===
+        "veroxa_preintervention_acceptance" && value.phase ===
           "preintervention_acceptance_candidate_pending_exact_head_gates_and_live_proof" &&
         candidate.state ===
-          "local_candidate_pending_exact_head_ci_review_merge_migration_apply_deploy_and_production_proof") ||
-      (value.phase ===
-          "r3_acceptance_live_stack_reconciled_auth_session_blocked" &&
-        candidate.state ===
-          "live_platform_reconciled_acceptance_proof_blocked"));
-    const isReleaseConvergedCandidate = value.phase ===
-        "r3_release_converged_authenticated_proof_pending" &&
-      candidate.kind === "ver43_hosted_signature_envelope_release" &&
-      candidate.state === "release_converged_authenticated_proof_pending";
+          "local_candidate_pending_exact_head_ci_review_merge_migration_apply_deploy_and_production_proof";
     if (!isPreflightCandidate && !isVerifierContractCandidate &&
-      !isPreinterventionCandidate && !isReleaseConvergedCandidate) {
+      !isPreinterventionCandidate) {
       return null;
     }
-    return value as unknown as ActiveMediaInspectionCandidateState;
+    return value;
   } catch {
     return null;
   }
@@ -2008,19 +2072,47 @@ function assertActiveVer43HostedSignatureEnvelopeRepairDiffScope(): void {
 }
 
 /**
- * Bind the current live-status packet to the PR #205 merge plus its committed,
- * staged, unstaged, and untracked paths. Runtime and release files are outside
- * this documentation-only scope.
+ * Resolve the immutable second parent of the PR #206 merge after it lands.
+ * Before merge, HEAD is the stable packet head; on GitHub's synthetic merge or
+ * after the real merge, the second parent remains the immutable packet head
+ * even when later commits advance main.
+ */
+function resolveActiveLiveStatusEdge15Sites68PacketFixedHead(): string {
+  const base = ACTIVE_LIVE_STATUS_EDGE15_SITES68_PACKET_BASE_COMMIT;
+  const firstParentCommits = execFileSync("git", [
+    "rev-list", "--first-parent", "--ancestry-path", "--reverse",
+    `${base}..HEAD`,
+  ], { cwd: repoRoot, encoding: "utf8" }).trim().split("\n").filter(Boolean);
+  for (const commit of firstParentCommits) {
+    const [resolvedCommit, firstParent, secondParent] = execFileSync("git", [
+      "rev-list", "--parents", "-n", "1", commit,
+    ], { cwd: repoRoot, encoding: "utf8" }).trim().split(/\s+/u);
+    if (resolvedCommit === commit && firstParent === base && secondParent) {
+      return secondParent;
+    }
+  }
+  return execFileSync("git", ["rev-parse", "HEAD"], {
+    cwd: repoRoot,
+    encoding: "utf8",
+  }).trim();
+}
+
+/**
+ * Bind the current live-status packet to the immutable PR #206 packet head plus
+ * its staged, unstaged, and untracked paths. Runtime and release files are
+ * outside this documentation-only scope.
  */
 function assertActiveLiveStatusEdge15Sites68PacketDiffScope(): void {
+  const packetFixedHead =
+    resolveActiveLiveStatusEdge15Sites68PacketFixedHead();
   const comparisonRange =
-    `${ACTIVE_LIVE_STATUS_EDGE15_SITES68_PACKET_BASE_COMMIT}...HEAD`;
+    `${ACTIVE_LIVE_STATUS_EDGE15_SITES68_PACKET_BASE_COMMIT}...${packetFixedHead}`;
   try {
     execFileSync("git", [
       "merge-base",
       "--is-ancestor",
       ACTIVE_LIVE_STATUS_EDGE15_SITES68_PACKET_BASE_COMMIT,
-      "HEAD",
+      packetFixedHead,
     ], { cwd: repoRoot, stdio: "ignore" });
   } catch {
     throw new Error(
@@ -2340,6 +2432,54 @@ function assertActivePrivateMediaVerifierContractCandidate(
   }
 }
 
+function matchesPr205CloseoutEvidence(
+  value: Record<string, any> | undefined,
+): boolean {
+  return value?.head === "51dca29248778e842b671f5cbe18783195fbcda0" &&
+    value.mergeCommit === ACTIVE_LIVE_STATUS_EDGE15_SITES68_PACKET_BASE_COMMIT &&
+    value.scope === "hosted_signed_envelope_transport_and_regression_guard" &&
+    value.runtimeChanged === true &&
+    value.changedFiles === 12 &&
+    sameJson(value.requiredWorkflows, {
+      ci: "success",
+      veroxaVerify: "success",
+      sitesVerify: "success",
+      supabaseVerify: "success",
+    }) &&
+    value.review?.owner === "copilot" &&
+    value.review.codexDuplicateReviewPerformed === false &&
+    value.review.firstReviewFindingCount === 1 &&
+    value.review.findingFixed === true &&
+    value.review.reReviewOutcome === "approval_recommended" &&
+    value.review.reReviewNewFindingCount === 0 &&
+    value.review.unresolvedThreadCount === 0;
+}
+
+function matchesAcceptanceSessionBlockerCloseout(
+  value: Record<string, any> | undefined,
+  current: Record<string, any> | undefined,
+): boolean {
+  return value?.sessionId ===
+      "45ad07a3-0192-452b-8a01-5d5bf8528ced" &&
+    value.sessionId === current?.preservedUploadSessionId &&
+    value.state === "expired" &&
+    value.state === current?.preservedUploadSessionState &&
+    value.registered === false &&
+    value.registered === current?.preservedUploadSessionRegistered &&
+    value.proofState === "unconsumed" &&
+    value.proofState === current?.proofState &&
+    value.reusableClientAuthorityAvailable === false &&
+    value.reusableClientAuthorityAvailable ===
+      current?.reusableClientAuthorityAvailable &&
+    value.proofRunnerWakeCredentialConfigured === false &&
+    value.proofRunnerWakeCredentialConfigured ===
+      current?.proofRunnerWakeCredentialConfigured &&
+    value.requiredRecovery === current?.nextSafeStep &&
+    value.oldSessionEvidenceMustRemainImmutable === true &&
+    value.oldSessionEvidenceMustRemainImmutable ===
+      current?.oldSessionEvidenceMustRemainImmutable;
+}
+
 function assertCurrentLiveStatusReconciliation(
   manifest: DeploymentManifest,
   state: ActiveMediaInspectionCandidateState,
@@ -2410,6 +2550,14 @@ function assertCurrentLiveStatusReconciliation(
   );
   const candidateSitesRuntimeTree = hashTrackedSubtree(
     "artifacts/veroxa-sites",
+  );
+
+  must(
+    readCurrentLiveStatusReconciliationState() !== null &&
+      hasActiveMediaInspectionForwardCandidate() === false &&
+      activeMediaInspectionForwardCandidateMigration() === null &&
+      activeMediaInspectionPreflightMigrationIsApplied() === false,
+    "release-converged current status must not be routed as a forward migration candidate",
   );
 
   must(
@@ -2589,17 +2737,12 @@ function assertCurrentLiveStatusReconciliation(
     "external-action or governed Supabase Pro capacity boundary drifted",
   );
   must(
-    closeout.recordKind === "veroxa_live_status_closeout" &&
+    matchesPr205CloseoutEvidence(closeout.github?.pullRequest205) &&
+      closeout.recordKind === "veroxa_live_status_closeout" &&
       closeout.status === "release_converged_authenticated_proof_pending" &&
       closeout.observedAt === record.updatedAt &&
       closeout.github?.observedMainCommit === github?.observedMainCommit &&
       closeout.github?.latestMergedPullRequest === 205 &&
-      closeout.github?.pullRequest205?.requiredWorkflows?.ci === "success" &&
-      closeout.github?.pullRequest205?.review?.owner === "copilot" &&
-      closeout.github?.pullRequest205?.review?.codexDuplicateReviewPerformed === false &&
-      closeout.github?.pullRequest205?.review?.reReviewOutcome ===
-        "approval_recommended" &&
-      closeout.github?.pullRequest205?.review?.reReviewNewFindingCount === 0 &&
       closeout.sites?.version === 68 &&
       closeout.sites?.deploymentId ===
         "appgdep_6a894fe379108191a767de502d56d5bd" &&
@@ -2613,8 +2756,10 @@ function assertCurrentLiveStatusReconciliation(
       closeout.supabase?.externalActionLocks?.status === "closed" &&
       closeout.supabase?.externalActionLocks?.rowsWithAnyExternalActionEnabled === 0 &&
       closeout.supabase?.externalActionLocks?.acceptanceExternalWriteAllowedRows === 0 &&
-      closeout.supabase?.acceptanceSessionBlocker?.state === "expired" &&
-      closeout.supabase?.acceptanceSessionBlocker?.proofState === "unconsumed" &&
+      matchesAcceptanceSessionBlockerCloseout(
+        closeout.supabase?.acceptanceSessionBlocker,
+        blocker,
+      ) &&
       closeout.supabase?.acceptance?.registeredSessionRows === 0 &&
       closeout.supabase?.acceptance?.assetRows === 0 &&
       closeout.supabase?.acceptance?.packageRows === 0 &&
@@ -2629,6 +2774,43 @@ function assertCurrentLiveStatusReconciliation(
       closeout.productBoundary?.realMomoMediaTouched === false,
     "machine-readable live-status closeout drifted or overclaims production work",
   );
+
+  for (const mutate of [
+    (value: Record<string, any>) => { value.head = "mismatched-head"; },
+    (value: Record<string, any>) => { value.mergeCommit = "mismatched-merge"; },
+    (value: Record<string, any>) => { value.requiredWorkflows.ci = "failure"; },
+    (value: Record<string, any>) => { value.requiredWorkflows.veroxaVerify = "failure"; },
+    (value: Record<string, any>) => { value.requiredWorkflows.sitesVerify = "failure"; },
+    (value: Record<string, any>) => { value.requiredWorkflows.supabaseVerify = "failure"; },
+    (value: Record<string, any>) => { value.review.unresolvedThreadCount = 1; },
+  ]) {
+    const mutated = JSON.parse(JSON.stringify(
+      closeout.github?.pullRequest205 ?? {},
+    )) as Record<string, any>;
+    mutate(mutated);
+    must(
+      !matchesPr205CloseoutEvidence(mutated),
+      "PR #205 closeout regression mutation was not rejected",
+    );
+  }
+  for (const mutate of [
+    (value: Record<string, any>) => { value.sessionId = "mismatched-session"; },
+    (value: Record<string, any>) => { value.state = "initiated"; },
+    (value: Record<string, any>) => { value.registered = true; },
+    (value: Record<string, any>) => { value.proofState = "consumed"; },
+    (value: Record<string, any>) => { value.reusableClientAuthorityAvailable = true; },
+    (value: Record<string, any>) => { value.proofRunnerWakeCredentialConfigured = true; },
+    (value: Record<string, any>) => { value.oldSessionEvidenceMustRemainImmutable = false; },
+  ]) {
+    const mutated = JSON.parse(JSON.stringify(
+      closeout.supabase?.acceptanceSessionBlocker ?? {},
+    )) as Record<string, any>;
+    mutate(mutated);
+    must(
+      !matchesAcceptanceSessionBlockerCloseout(mutated, blocker),
+      "acceptance-session blocker regression mutation was not rejected",
+    );
+  }
 
   const expectedFunctions = [
     ["momo-media-ai-lifecycle", 4, "ACTIVE", true],
@@ -4086,6 +4268,11 @@ function assertSchema10HeldRepair(manifest: DeploymentManifest): void {
 function assertMediaRecoveryByteInspectionCandidateManifest(
   manifest: DeploymentManifest,
 ): void {
+  const currentLiveStatus = readCurrentLiveStatusReconciliationState();
+  if (currentLiveStatus) {
+    assertCurrentLiveStatusReconciliation(manifest, currentLiveStatus);
+    return;
+  }
   const activeForwardCandidate = readActiveMediaInspectionCandidateState();
   if (activeForwardCandidate) {
     if (activeForwardCandidate.activeCandidate?.kind ===

@@ -14,8 +14,9 @@ The reviewed release is merged and the production runtime is converged. The
 next blocked outcome is one explicitly authorized, least-privileged synthetic
 Client authentication proof against the preserved expired session. It must
 prove authentication succeeds while immutable expiry/state enforcement rejects
-the request and all media, asset, intake, AI, Ready-package, provider, and
-external-action counts remain zero.
+the request, creates no new rows, preserves all four existing upload-session
+rows unchanged, and keeps registered-session, asset, package,
+provider-connection, publish-queue, and publish-attempt counts at zero.
 
 The remaining ordered program is:
 

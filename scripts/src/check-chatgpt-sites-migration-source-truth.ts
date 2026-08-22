@@ -99,6 +99,9 @@ if (reconciledLiveStatus) {
       closeout.github?.observedMainCommit ===
         "c47920dce981478d757a3cc89ef9f337c39908ef" &&
       closeout.github?.pullRequest205?.requiredWorkflows?.ci === "success" &&
+      closeout.github?.pullRequest205?.requiredWorkflows?.veroxaVerify === "success" &&
+      closeout.github?.pullRequest205?.requiredWorkflows?.sitesVerify === "success" &&
+      closeout.github?.pullRequest205?.requiredWorkflows?.supabaseVerify === "success" &&
       closeout.github?.pullRequest205?.review?.owner === "copilot" &&
       closeout.github?.pullRequest205?.review?.codexDuplicateReviewPerformed === false &&
       closeout.github?.pullRequest205?.review?.reReviewNewFindingCount === 0 &&

@@ -4,6 +4,7 @@ import {
   MEDIA_INSPECTION_PREFLIGHT_MIGRATION,
   activeMediaInspectionForwardCandidateMigration,
   assertDeploymentAttestationManifest,
+  currentLiveStatusReconciliationEvidence,
   deploymentManifestPath,
   ensureParentPath,
   hashTree,
@@ -16,8 +17,14 @@ import {
 
 const manifest = readDeploymentManifest();
 assertDeploymentAttestationManifest(manifest);
+const currentLiveStatus = currentLiveStatusReconciliationEvidence();
 const activeForwardMigration = activeMediaInspectionForwardCandidateMigration();
 const activeForwardCandidate = activeForwardMigration !== null;
+if (currentLiveStatus && activeForwardCandidate) {
+  throw new Error(
+    "Current live reconciliation cannot also be an active forward candidate",
+  );
+}
 const githubSha = (process.env.GITHUB_SHA || "").trim().toLowerCase();
 if (!/^[a-f0-9]{40}$/.test(githubSha)) {
   throw new Error(
@@ -32,10 +39,19 @@ const migrationTree = hashTree(resolve(repoRoot, manifest.migrations.root), {
   suffix: ".sql",
 });
 const latestCandidateMigration = activeForwardMigration ??
+  currentLiveStatus?.migrations.latestMigration ??
   manifest.releaseCandidate.latestCandidateMigration;
 if (activeForwardCandidate
   ? (!migrationTree.files.includes(latestCandidateMigration) ||
     migrationTree.files.at(-1) !== latestCandidateMigration)
+  : currentLiveStatus
+  ? (
+    sourceTree.fileCount !== currentLiveStatus.source.fileCount ||
+    sourceTree.sha256 !== currentLiveStatus.source.treeSha256 ||
+    migrationTree.fileCount !== currentLiveStatus.migrations.fileCount ||
+    migrationTree.sha256 !== currentLiveStatus.migrations.treeSha256 ||
+    migrationTree.files.at(-1) !== currentLiveStatus.migrations.latestMigration
+  )
   : (
     sourceTree.fileCount !== manifest.source.fileCount ||
     sourceTree.sha256 !== manifest.source.treeSha256 ||
@@ -50,6 +66,8 @@ if (activeForwardCandidate
   throw new Error(
     activeForwardCandidate
       ? "Refusing to attest an active forward candidate without its explicit latest migration"
+      : currentLiveStatus
+      ? "Refusing to attest source whose deterministic hashes do not match the current live-status reconciliation"
       : "Refusing to attest source whose deterministic hashes do not match the current manifest and release-candidate fingerprints",
   );
 }
@@ -69,10 +87,11 @@ const latestCandidateMigrationSha256 = sha256File(
     latestCandidateMigration,
   ),
 );
-if (
-  !activeForwardCandidate && latestCandidateMigrationSha256 !==
-  manifest.releaseCandidate.latestCandidateMigrationSha256
-) {
+const expectedLatestMigrationSha256 = currentLiveStatus
+  ?.migrations.latestMigrationSha256 ??
+  manifest.releaseCandidate.latestCandidateMigrationSha256;
+if (!activeForwardCandidate && latestCandidateMigrationSha256 !==
+  expectedLatestMigrationSha256) {
   throw new Error(
     "Refusing to attest a candidate whose latest migration fingerprint is stale",
   );
@@ -89,6 +108,8 @@ writeJson(output, {
   recordKind: "veroxa_ci_deployment_attestation",
   attestationScope: activeForwardCandidate
     ? "exact_ci_active_private_media_forward_candidate_checkout_only_no_production_or_external_action_claim"
+    : currentLiveStatus
+    ? "exact_ci_current_live_status_reconciliation_checkout_only_no_new_production_or_external_action_claim"
     : manifest.schemaVersion === 13
     ? "exact_ci_schema13_private_media_recovery_host_inspection_diagnostics_closeout_checkout_only_runtime_claims_from_canonical_evidence"
     : "exact_ci_schema11_live56_sites_v53_checkout_only_not_remote_or_runtime_parity",
@@ -121,6 +142,20 @@ writeJson(output, {
         productionMigrationApplyProvenByThisAttestation: false,
         historicalManifestReleaseCandidate: manifest.releaseCandidate,
       }
+    : currentLiveStatus
+    ? {
+        ...manifest.releaseCandidate,
+        status: currentLiveStatus.phase,
+        sourceFileCount: currentLiveStatus.source.fileCount,
+        sourceTreeSha256: currentLiveStatus.source.treeSha256,
+        migrationFileCount: currentLiveStatus.migrations.fileCount,
+        migrationTreeSha256: currentLiveStatus.migrations.treeSha256,
+        latestCandidateMigration: currentLiveStatus.migrations.latestMigration,
+        latestCandidateMigrationSha256:
+          currentLiveStatus.migrations.latestMigrationSha256,
+        pendingMigrations: [],
+        candidateMigrationsMatchLiveLedger: true,
+      }
     : manifest.releaseCandidate,
   mediaUploadHandoff: manifest.mediaUploadHandoff ?? null,
   legacyMediaPurgeAndHighResolutionRelease:
@@ -149,6 +184,8 @@ writeJson(output, {
   source: {
     evidenceScope: activeForwardCandidate
       ? "exact_ci_forward_candidate_checkout_hash_no_production_parity_claim"
+      : currentLiveStatus
+      ? "exact_ci_current_live_status_checkout_hash_no_new_production_parity_claim"
       : manifest.source.evidenceScope,
     root: manifest.source.root,
     fileCount: sourceTree.fileCount,
@@ -158,6 +195,8 @@ writeJson(output, {
   migrations: {
     evidenceScope: activeForwardCandidate
       ? "exact_ci_forward_candidate_migration_tree_hash_no_database_apply_claim"
+      : currentLiveStatus
+      ? "exact_ci_current_live_status_migration_tree_hash_no_new_database_apply_claim"
       : manifest.migrations.evidenceScope,
     root: manifest.migrations.root,
     fileCount: migrationTree.fileCount,
