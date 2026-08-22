@@ -230,6 +230,9 @@ const ACTIVE_R3_ACCEPTANCE_AUTH_PROOF_RUNNER_ALLOWED_PATHS = new Set([
   "artifacts/veroxa-sites/tests/veroxa-acceptance-auth-proof.test.mjs",
   "scripts/src/release-manifest.ts",
 ]);
+const ACTIVE_R3_ACCEPTANCE_AUTH_PROOF_RUNNER_SITES_FILE_COUNT = 248;
+const ACTIVE_R3_ACCEPTANCE_AUTH_PROOF_RUNNER_SITES_SHA256 =
+  "a2290f0ce4443f838c0f8517cfc42345a8088313b990d57346edda84180a3399";
 const CURRENT_LIVE_STATUS_CLOSEOUT_PATH =
   "artifacts/veroxa/docs/VEROXA_LIVE_STATUS_CLOSEOUT_20260821.json";
 
@@ -1268,6 +1271,54 @@ function gitPathList(args: string[]): string[] {
   return output.split("\0").filter((path) => path.length > 0);
 }
 
+function hashGitSubtree(
+  commit: string,
+  relativeRoot: string,
+): { fileCount: number; files: string[]; sha256: string } {
+  const root = normalized(relativeRoot).replace(/\/+$/u, "");
+  const prefix = `${root}/`;
+  const fullPaths = gitPathList([
+    "ls-tree", "-r", "--name-only", commit, "--", root,
+  ]).sort();
+  const hash = createHash("sha256");
+  const files = fullPaths.map((path) => {
+    if (!path.startsWith(prefix)) {
+      throw new Error(`Git subtree path escaped ${root}: ${path}`);
+    }
+    const file = path.slice(prefix.length);
+    hash.update(file, "utf8");
+    hash.update("\0");
+    hash.update(execFileSync("git", ["show", `${commit}:${path}`], {
+      cwd: repoRoot,
+      maxBuffer: 32 * 1024 * 1024,
+    }));
+    hash.update("\0");
+    return file;
+  });
+  return { fileCount: files.length, files, sha256: hash.digest("hex") };
+}
+
+function hashTrackedSubtree(
+  relativeRoot: string,
+): { fileCount: number; files: string[]; sha256: string } {
+  const root = normalized(relativeRoot).replace(/\/+$/u, "");
+  const prefix = `${root}/`;
+  const fullPaths = gitPathList(["ls-files", "--", root]).sort();
+  const hash = createHash("sha256");
+  const files = fullPaths.map((path) => {
+    if (!path.startsWith(prefix)) {
+      throw new Error(`Tracked subtree path escaped ${root}: ${path}`);
+    }
+    const file = path.slice(prefix.length);
+    hash.update(file, "utf8");
+    hash.update("\0");
+    hash.update(readFileSync(resolve(repoRoot, path)));
+    hash.update("\0");
+    return file;
+  });
+  return { fileCount: files.length, files, sha256: hash.digest("hex") };
+}
+
 /**
  * The immutable schema-13 manifest can only be relaxed for this one exact
  * candidate.  Require its complete diff scope rather than letting a state
@@ -2197,6 +2248,13 @@ function assertCurrentLiveStatusReconciliation(
     ROOT_MIGRATION_SOURCE_ROOT,
     PREINTERVENTION_ACCEPTANCE_MIGRATION,
   );
+  const liveSitesRuntimeTree = hashGitSubtree(
+    ACTIVE_LIVE_STATUS_SUPABASE_PRO_PACKET_FIXED_HEAD_COMMIT,
+    "artifacts/veroxa-sites",
+  );
+  const candidateSitesRuntimeTree = hashTrackedSubtree(
+    "artifacts/veroxa-sites",
+  );
 
   must(
     manifest.schemaVersion === 13 &&
@@ -2232,10 +2290,19 @@ function assertCurrentLiveStatusReconciliation(
       sites.runtimeSubtreeFileCount === 245 &&
       sites.runtimeSubtreeSha256 ===
         "85f50c41751f38a49bd6ce3eadfb9bf1f90065615b84b2d6c8707ca7e23d89a7" &&
+      liveSitesRuntimeTree.fileCount === sites.runtimeSubtreeFileCount &&
+      liveSitesRuntimeTree.sha256 === sites.runtimeSubtreeSha256 &&
       sites.matchesObservedGitHubMainRuntimeSubtree === true &&
       sites.apexDomainHealthy === true &&
       sites.wwwDomainHealthy === true,
     "Sites v66 identity, domain health, or exact runtime-subtree parity drifted",
+  );
+  must(
+    candidateSitesRuntimeTree.fileCount ===
+        ACTIVE_R3_ACCEPTANCE_AUTH_PROOF_RUNNER_SITES_FILE_COUNT &&
+      candidateSitesRuntimeTree.sha256 ===
+        ACTIVE_R3_ACCEPTANCE_AUTH_PROOF_RUNNER_SITES_SHA256,
+    "R3 Auth-proof candidate Sites runtime subtree drifted",
   );
   must(
     supabase?.plan === "pro" &&

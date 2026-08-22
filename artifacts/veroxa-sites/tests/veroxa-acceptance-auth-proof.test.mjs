@@ -325,10 +325,12 @@ test("production wiring mints no user, resets no credential, and stays release-s
     "data?.user",
     "data?.properties?.hashed_token",
     "data?.session?.access_token",
-    'signOut(\n        accessToken,\n        "local"',
     "VEROXA_INTERNAL_ACCEPTANCE_AUTH_PROOF_HMAC_SECRET",
     "const HMAC = /^[0-9a-f]{64}$/iu;",
+    "function createRequestHandler()",
+    "return createRequestHandler()(request);",
   ]) assert.ok(route.includes(marker), `missing route marker: ${marker}`);
+  assert.match(route, /signOut\(\s*accessToken,\s*"local"/u);
   for (const forbidden of [
     "inviteUserByEmail",
     "createUser",
@@ -336,6 +338,7 @@ test("production wiring mints no user, resets no credential, and stays release-s
     "signInWithPassword",
     "signInWithOtp",
     "resetPasswordForEmail",
+    "const handler = createAcceptanceAuthProofHandler",
   ]) assert.ok(!route.includes(forbidden), `forbidden Auth mutation: ${forbidden}`);
   assert.ok(!route.includes("origin: PRODUCTION_ORIGIN"));
   assert.ok(environment.includes(
