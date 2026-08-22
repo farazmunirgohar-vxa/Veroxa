@@ -18,10 +18,24 @@ import {
 
 const manifest = readDeploymentManifest();
 assertDeploymentAttestationManifest(manifest);
-const currentLiveStatus = currentLiveStatusReconciliationEvidence();
-const currentState = currentLiveStatus
+const reconciliationEvidence = currentLiveStatusReconciliationEvidence();
+const reconciliationState = reconciliationEvidence
   ? JSON.parse(readFileSync(currentStatePath, "utf8")) as Record<string, any>
   : null;
+const reconciliationCandidate = reconciliationState?.activeCandidate as
+  | Record<string, any>
+  | undefined;
+const isExactCurrentReleaseStatus = Boolean(
+  reconciliationEvidence &&
+  reconciliationState?.phase === "r3_release_converged_authenticated_proof_pending" &&
+  reconciliationEvidence.phase === reconciliationState.phase &&
+  reconciliationCandidate?.state === "release_converged_authenticated_proof_pending" &&
+  reconciliationCandidate?.kind === "ver43_hosted_signature_envelope_release",
+);
+const currentLiveStatus = isExactCurrentReleaseStatus
+  ? reconciliationEvidence
+  : null;
+const currentState = currentLiveStatus ? reconciliationState : null;
 const currentProduction = currentState?.production as
   | Record<string, any>
   | undefined;
