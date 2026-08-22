@@ -5,6 +5,7 @@ import {
   REPAIR_MIGRATION_EVIDENCE,
   activeMediaInspectionPreflightMigrationIsApplied,
   assertReviewedLocalCandidateManifest,
+  currentLiveStatusReconciliationEvidence,
   hasActiveMediaInspectionForwardCandidate,
   hashTree,
   readDeploymentManifest,
@@ -28,9 +29,12 @@ const rootTree = hashTree(rootDir, { suffix: ".sql" });
 const mirrorTree = hashTree(mirrorDir, { suffix: ".sql" });
 const manifest = readDeploymentManifest();
 const activeForwardCandidate = hasActiveMediaInspectionForwardCandidate();
+const currentLiveStatus = currentLiveStatusReconciliationEvidence();
 const preflightMigrationApplied =
   activeMediaInspectionPreflightMigrationIsApplied();
-const pending = activeForwardCandidate && !preflightMigrationApplied
+const pending = currentLiveStatus
+  ? []
+  : activeForwardCandidate && !preflightMigrationApplied
   ? [MEDIA_INSPECTION_PREFLIGHT_MIGRATION]
   : manifest.releaseCandidate.pendingMigrations ?? [];
 const liveTree = hashTree(rootDir, { exclusions: pending, suffix: ".sql" });
@@ -48,7 +52,15 @@ must(
   "Root/Sites migration trees are not exact mirrors.",
 );
 must(
-  (activeForwardCandidate || (
+  currentLiveStatus
+    ? rootTree.fileCount === currentLiveStatus.migrations.fileCount &&
+      rootTree.sha256 === currentLiveStatus.migrations.treeSha256 &&
+      rootTree.files.at(-1) === currentLiveStatus.migrations.latestMigration &&
+      sha256File(resolve(
+        rootDir,
+        currentLiveStatus.migrations.latestMigration,
+      )) === currentLiveStatus.migrations.latestMigrationSha256
+    : (activeForwardCandidate || (
     rootTree.fileCount === manifest.migrations.fileCount &&
     rootTree.sha256 === manifest.migrations.treeSha256 &&
     manifest.releaseCandidate.candidateMigrationsMatchLiveLedger ===
@@ -84,7 +96,9 @@ if (failures.length > 0) {
   process.exitCode = 1;
 } else {
   console.log(
-    activeForwardCandidate
+    currentLiveStatus
+      ? `PASS: exact mirrored source matches the reconciled ${rootTree.fileCount}-migration live-status ledger.`
+      : activeForwardCandidate
       ? `PASS: exact mirrored ${rootTree.fileCount}-migration source preserves the guarded CURRENT_STATE live-ledger and pending-migration split.`
       : `PASS: exact mirrored source matches the reconciled ${rootTree.fileCount}-migration ledger.`,
   );

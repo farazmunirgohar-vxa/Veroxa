@@ -1,6 +1,35 @@
 <!-- GUARDED_INTERNAL_AI_ROLLOUT_AUTHORITY -->
 
-## 2026-08-21 — reconciled R3 live status (current authority)
+## 2026-08-22 — PR #205 live convergence and authenticated-proof gate (current authority)
+
+- **Authority chain:** read `CURRENT_STATE.json`, `CURRENT_MILESTONE.md`, and
+  `VEROXA_LIVE_STATUS_CLOSEOUT_20260822.json` first. Exact connected-platform
+  evidence outranks this snapshot.
+- **Release/runtime:** GitHub `main` is PR #205 merge
+  `c47920dce981478d757a3cc89ef9f337c39908ef`. Four workflows passed and
+  Copilot's sole-reviewer re-review recommended approval with zero new
+  findings. Sites v68 deployment `appgdep_6a894fe379108191a767de502d56d5bd`
+  and its 248-file runtime subtree match main. Content lifecycle Edge v15 is
+  ACTIVE and its three deployed files match merged source; it has no proof
+  invocation.
+- **Database/locks:** Supabase is `ACTIVE_HEALTHY`, plan `pro`, at 60
+  migrations. Acceptance has zero registered sessions, assets, packages, or
+  provider connections. External-action controls remain closed.
+- **Blocker/order:** the preserved expired session is immutable and the one
+  authentication proof remains unconsumed. No reusable Client authority or
+  configured proof-runner wake credential is available. A fresh explicit
+  one-shot authorization is required before one temporary least-privileged
+  synthetic Client session and one no-new-media rejection proof. The order is
+  VER-43 → VER-39 → VER-26 → VER-27 → VER-28; VER-41 is Todo behind
+  VER-43/39, and VER-28 is founder-only.
+- **No GO:** `ready_for_team_review` is internal evidence only. No Momo/founder
+  GO, publication, provider write, schedule, message, account connection, or
+  customer action is authorized. IMG_4257 and real/customer media remain
+  untouchable.
+- **Capacity:** Supabase Pro and Copilot Pro are governed included capacity,
+  not blanket operational or spend authority. Paid overage remains prohibited.
+
+## 2026-08-21 — reconciled R3 live status (historical, superseded)
 
 - **Authority chain:** read `CURRENT_STATE.json`, `CURRENT_MILESTONE.md`, and
   `VEROXA_LIVE_STATUS_CLOSEOUT_20260821.json` first. Exact connected-platform

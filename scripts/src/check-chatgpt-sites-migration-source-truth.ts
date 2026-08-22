@@ -21,8 +21,13 @@ const activeForwardCandidate = hasActiveMediaInspectionForwardCandidate();
 const currentState = JSON.parse(
   read("artifacts/veroxa/docs/CURRENT_STATE.json"),
 ) as Record<string, any>;
-const reconciledLiveStatus = currentState.phase ===
-  "r3_acceptance_live_stack_reconciled_auth_session_blocked";
+const reconciledLiveStatus =
+  currentState.phase === "r3_release_converged_authenticated_proof_pending" &&
+  currentState.activeCandidate?.kind ===
+    "ver43_hosted_signature_envelope_release" &&
+  currentState.activeCandidate?.state ===
+    "release_converged_authenticated_proof_pending" &&
+  !activeForwardCandidate;
 try {
   assertReviewedLocalCandidateManifest(manifest);
 } catch (error) {
@@ -36,11 +41,11 @@ if (reconciledLiveStatus) {
     "artifacts/veroxa/docs/VEROXA_LOCKED_OPERATING_MEMORY.md",
   ];
   const requiredCurrentMarkers = [
-    "ccbe2ecffd3df8aa24c9b2994efbab35d01e8f56",
-    "Sites v66",
+    "c47920dce981478d757a3cc89ef9f337c39908ef",
+    "Sites v68",
     "60",
-    "VER-40",
-    "VER-41",
+    "VER-43",
+    "VER-39",
     "VER-26",
     "VER-27",
     "VER-28",
@@ -63,18 +68,18 @@ if (reconciledLiveStatus) {
       must(current.includes(marker),
         path + " is missing reconciled authority marker: " + marker);
     }
-    must(/no Momo or founder GO/iu.test(current),
+    must(/no Momo(?:\s+or\s+|\/)\s*founder\s+GO/iu.test(current),
       path + " does not explicitly preserve the no-GO boundary.");
   }
 
   const milestone = read("artifacts/veroxa/docs/CURRENT_MILESTONE.md");
   for (const marker of [
-    "Current Milestone — R3 Acceptance Proof",
+    "Current Milestone — R3 Authenticated Acceptance Proof",
     "NOT READY",
-    "appgdep_6a87ee29daf88191bd2813485deefb88",
+    "appgdep_6a894fe379108191a767de502d56d5bd",
     "45ad07a3-0192-452b-8a01-5d5bf8528ced",
     "momoGo=false",
-    "VEROXA_LIVE_STATUS_CLOSEOUT_20260821.json",
+    "VEROXA_LIVE_STATUS_CLOSEOUT_20260822.json",
   ]) must(milestone.includes(marker),
     "CURRENT_MILESTONE.md is missing marker: " + marker);
 
@@ -91,28 +96,73 @@ if (reconciledLiveStatus) {
     "Supabase Pro authority is missing marker: " + marker);
 
   const closeout = JSON.parse(read(
-    "artifacts/veroxa/docs/VEROXA_LIVE_STATUS_CLOSEOUT_20260821.json",
+    "artifacts/veroxa/docs/VEROXA_LIVE_STATUS_CLOSEOUT_20260822.json",
   )) as Record<string, any>;
   must(
     closeout.recordKind === "veroxa_live_status_closeout" &&
-      closeout.status === "live_stack_reconciled_acceptance_incomplete" &&
+      closeout.status === "release_converged_authenticated_proof_pending" &&
       closeout.github?.observedMainCommit ===
-        "ccbe2ecffd3df8aa24c9b2994efbab35d01e8f56" &&
-      closeout.sites?.version === 66 &&
+        "c47920dce981478d757a3cc89ef9f337c39908ef" &&
+      closeout.github?.pullRequest205?.requiredWorkflows?.ci === "success" &&
+      closeout.github?.pullRequest205?.requiredWorkflows?.veroxaVerify === "success" &&
+      closeout.github?.pullRequest205?.requiredWorkflows?.sitesVerify === "success" &&
+      closeout.github?.pullRequest205?.requiredWorkflows?.supabaseVerify === "success" &&
+      closeout.github?.pullRequest205?.review?.owner === "copilot" &&
+      closeout.github?.pullRequest205?.review?.codexDuplicateReviewPerformed === false &&
+      closeout.github?.pullRequest205?.review?.reReviewNewFindingCount === 0 &&
+      closeout.github?.pullRequest205?.review?.unresolvedThreadCount === 0 &&
+      closeout.sites?.version === 68 &&
+      closeout.sites?.deploymentId ===
+        "appgdep_6a894fe379108191a767de502d56d5bd" &&
       closeout.sites?.runtimeSubtree?.matchesObservedGitHubMain === true &&
       closeout.supabase?.migrations?.count === 60 &&
+      closeout.supabase?.externalActionLocks?.connectedProviderRows === 0 &&
+      closeout.supabase?.externalActionLocks?.publishQueueRows === 0 &&
+      closeout.supabase?.externalActionLocks?.publishAttemptRows === 0 &&
+      closeout.supabase?.acceptance?.scopeRows === 1 &&
+      closeout.supabase?.acceptance?.customerVisibleRows === 0 &&
+      closeout.supabase?.acceptance?.includedInReportRows === 0 &&
+      closeout.supabase?.acceptance?.uploadSessionRows === 4 &&
+      closeout.supabase?.acceptance?.initiatedSessionRows === 1 &&
+      closeout.supabase?.acceptance?.expiredSessionRows === 3 &&
+      closeout.supabase?.acceptance?.registeredSessionRows === 0 &&
+      closeout.supabase?.acceptance?.assetRows === 0 &&
+      closeout.supabase?.acceptance?.packageRows === 0 &&
+      closeout.supabase?.acceptance?.providerConnectionRows === 0 &&
+      closeout.supabase?.acceptanceSessionBlocker?.requiredRecovery ===
+        "fresh_explicit_one_shot_authorization_then_one_short_lived_least_privileged_synthetic_client_proof" &&
+      closeout.supabase?.privateSchemaDefenseInDepth?.tableCount === 26 &&
+      closeout.supabase?.privateSchemaDefenseInDepth?.tablesWithoutRls === 6 &&
+      closeout.supabase?.privateSchemaDefenseInDepth?.publicAnonAuthenticatedTableGrantCount === 0 &&
+      closeout.supabase?.privateSchemaDefenseInDepth?.publicAnonAuthenticatedSchemaGrantCount === 0 &&
+      closeout.supabase?.privateSchemaDefenseInDepth?.confirmedPublicExposure === false &&
       closeout.edge?.allActiveFunctionBundleSourcesMatchObservedGitHubMain === true &&
+      closeout.edge?.functions?.find?.(
+        (item: Record<string, any>) => item.slug === "momo-content-ai-lifecycle",
+      )?.version === 15 &&
+      closeout.edge?.proofEvidence?.lastInvocationVersion === 14 &&
+      closeout.edge?.proofEvidence?.lastInvocationStatus === 403 &&
+      closeout.edge?.proofEvidence?.version15InvocationCount === 0 &&
+      closeout.edge?.proofEvidence?.proofConsumed === false &&
       closeout.supabase?.externalActionLocks?.status === "closed" &&
+      closeout.r3Program?.ver43?.status === "In Progress" &&
+      closeout.r3Program?.ver39?.status === "In Progress" &&
+      closeout.r3Program?.ver41?.status === "Todo" &&
+      closeout.r3Program?.syntheticGate?.status === "In Progress" &&
       closeout.r3Program?.syntheticGate?.complete === false &&
+      closeout.r3Program?.authenticatedPortalGate?.status === "Todo" &&
       closeout.r3Program?.authenticatedPortalGate?.complete === false &&
+      closeout.r3Program?.founderGate?.status === "Todo" &&
       closeout.r3Program?.founderGate?.complete === false &&
       closeout.r3Program?.founderGate?.momoGo === false &&
-      closeout.productBoundary?.runtimeOrPlatformMutationPerformed === false,
+      closeout.productBoundary?.runtimeOrPlatformMutationPerformed === true &&
+      closeout.productBoundary?.secondAuthenticationProofPerformed === false &&
+      closeout.productBoundary?.realMomoMediaTouched === false,
     "live-status closeout is incomplete, stale, or overclaims an acceptance gate",
   );
   must(
     currentState.currentStatusCloseout ===
-        "artifacts/veroxa/docs/VEROXA_LIVE_STATUS_CLOSEOUT_20260821.json" &&
+        "artifacts/veroxa/docs/VEROXA_LIVE_STATUS_CLOSEOUT_20260822.json" &&
       currentState.updatedAt === closeout.observedAt &&
       currentState.production?.github?.observedMainCommit ===
         closeout.github?.observedMainCommit &&
@@ -120,6 +170,22 @@ if (reconciledLiveStatus) {
         closeout.sites?.runtimeSubtree?.sha256 &&
       currentState.production?.supabase?.migrationTreeSha256 ===
         closeout.supabase?.migrations?.treeSha256 &&
+      currentState.production?.supabase?.privateSchemaTableCount ===
+        closeout.supabase?.privateSchemaDefenseInDepth?.tableCount &&
+      currentState.production?.supabase?.privateSchemaTablesWithoutRls ===
+        closeout.supabase?.privateSchemaDefenseInDepth?.tablesWithoutRls &&
+      currentState.production?.supabase?.publicAnonAuthenticatedPrivateSchemaGrants === 0 &&
+      closeout.supabase?.privateSchemaDefenseInDepth?.publicAnonAuthenticatedTableGrantCount === 0 &&
+      closeout.supabase?.privateSchemaDefenseInDepth?.publicAnonAuthenticatedSchemaGrantCount === 0 &&
+      currentState.production?.edge?.contentLifecycleVersion === 15 &&
+      currentState.production?.edge?.contentLifecycleV15ProofInvocationCount === 0 &&
+      currentState.acceptanceBlocker?.lastProofEdgeVersion ===
+        closeout.edge?.proofEvidence?.lastInvocationVersion &&
+      currentState.acceptanceBlocker?.lastProofHttpStatus ===
+        closeout.edge?.proofEvidence?.lastInvocationStatus &&
+      currentState.acceptanceBlocker?.proofState === "unconsumed" &&
+      currentState.acceptanceBlocker?.nextSafeStep ===
+        "fresh_explicit_one_shot_authorization_then_one_short_lived_least_privileged_synthetic_client_proof" &&
       currentState.activeCandidate?.requiredGates?.syntheticSuccessPassed === false &&
       currentState.activeCandidate?.requiredGates?.restaurantPortalVerified === false &&
       currentState.activeCandidate?.requiredGates?.founderGoIssued === false,
