@@ -27,18 +27,40 @@ test("content lifecycle bypasses only the platform JWT precheck while preserving
   assert.equal(functionVerifyJwt(rootConfig, "momo-media-ai-lifecycle"), "true");
 
   const bearerGate = source.indexOf('authorization.startsWith("Bearer ")');
-  const bridgeSignatureGate = source.indexOf("verifyMomoContentAiBridgeSignature(");
+  const envelopeParser = source.indexOf("parseMomoContentAiBridgeEnvelopeV2(");
+  const envelopeSignatureGate = source.indexOf(
+    "verifyMomoContentAiBridgeEnvelopeV2Signature({",
+  );
+  const legacySignatureGate = source.indexOf(
+    "verifyMomoContentAiBridgeSignature({",
+  );
+  const verifiedGate = source.indexOf("if (!bridgeRequest.verified)");
+  const payloadGate = source.indexOf("const body = bridgeRequest.body");
   const userGate = source.indexOf("userClient.auth.getUser(accessToken)");
   const adminClient = source.indexOf("const admin = createClient");
 
   assert.ok(bearerGate >= 0, "handler must require a bearer user session");
-  assert.ok(bridgeSignatureGate >= 0, "handler must invoke the dedicated Ed25519 bridge signature verifier");
+  assert.ok(envelopeParser >= 0, "handler must parse the exact v2 envelope");
+  assert.ok(envelopeSignatureGate >= 0,
+    "handler must verify the signed v2 envelope");
+  assert.ok(legacySignatureGate >= 0,
+    "handler must retain the rollback-safe v1 verifier");
+  assert.ok(verifiedGate >= 0 && payloadGate > verifiedGate,
+    "payload access must follow successful bridge verification");
   assert.ok(userGate >= 0, "handler must validate the access token through Supabase Auth");
   assert.ok(adminClient >= 0, "handler must retain an explicit privileged client boundary");
   assert.ok(bearerGate < adminClient, "bearer gate must run before privileged access");
-  assert.ok(bridgeSignatureGate < userGate, "bridge signature must fail closed before user lookup");
-  assert.ok(bridgeSignatureGate < adminClient, "bridge signature invocation must run before privileged access");
+  assert.ok(envelopeSignatureGate < userGate,
+    "v2 bridge signature must fail closed before user lookup");
+  assert.ok(legacySignatureGate < userGate,
+    "v1 rollback signature must fail closed before user lookup");
+  assert.ok(payloadGate < userGate,
+    "validated payload must be resolved before user lookup");
+  assert.ok(envelopeSignatureGate < adminClient,
+    "v2 bridge signature invocation must run before privileged access");
+  assert.ok(legacySignatureGate < adminClient,
+    "v1 bridge signature invocation must run before privileged access");
   assert.ok(userGate < adminClient, "Supabase Auth validation must run before privileged access");
-  assert.match(source, /if \(!verified\) return response\(\{ error: "bridge_access_required" \}, 403\)/u);
+  assert.match(source, /if \(!bridgeRequest\.verified\) \{[\s\S]*?bridge_access_required/u);
   assert.match(source, /if \(userError \|\| !userData\.user/u);
 });

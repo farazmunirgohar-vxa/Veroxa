@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import { generateKeyPairSync } from "node:crypto";
 import { readFile } from "node:fs/promises";
+import { fileURLToPath } from "node:url";
 import test from "node:test";
+import { build } from "esbuild";
+import { Miniflare } from "miniflare";
 import {
   getMomoContentAiLifecycleBridgeConfig,
   importVerifiedMomoContentAiLifecycleSigningKey,
@@ -9,7 +12,11 @@ import {
   MOMO_CONTENT_AI_LIFECYCLE_BRIDGE_PUBLIC_KEY_SPKI_BASE64,
   MomoContentAiLifecycleBridgeError,
 } from "../app/momo-content-ai-lifecycle-bridge.ts";
-import { verifyMomoContentAiBridgeSignature } from
+import {
+  parseMomoContentAiBridgeEnvelopeV2,
+  verifyMomoContentAiBridgeEnvelopeV2Signature,
+  verifyMomoContentAiBridgeSignature,
+} from
   "../supabase/functions/_shared/momo-content-ai-lifecycle-contract.ts";
 
 const firstPair = generateKeyPairSync("ed25519");
@@ -123,9 +130,35 @@ test("lifecycle bridge uses Worker-compatible fetch controls on a verified signe
         assert.equal(init.headers["x-veroxa-correlation-id"], CORRELATION_ID);
         assert.equal(
           init.headers["x-veroxa-server-purpose"],
-          "momo-content-ai-lifecycle-v1",
+          "momo-content-ai-lifecycle-v2",
         );
-        assert.equal(init.body, JSON.stringify(request));
+        assert.equal(
+          Object.hasOwn(init.headers, "x-veroxa-content-ai-timestamp-ms"),
+          false,
+        );
+        assert.equal(
+          Object.hasOwn(init.headers, "x-veroxa-content-ai-nonce"),
+          false,
+        );
+        assert.equal(
+          Object.hasOwn(init.headers, "x-veroxa-content-ai-signature"),
+          false,
+        );
+        assert.equal(typeof init.body, "string");
+        const envelope = parseMomoContentAiBridgeEnvelopeV2(
+          JSON.parse(init.body),
+        );
+        assert.ok(envelope);
+        assert.deepEqual(Object.keys(envelope).sort(), [
+          "correlationId",
+          "nonce",
+          "payload",
+          "schemaVersion",
+          "signature",
+          "signedAtMs",
+        ]);
+        assert.equal(envelope.payload, JSON.stringify(request));
+        assert.equal(envelope.correlationId, CORRELATION_ID);
         assert.equal(Object.hasOwn(init, "credentials"), false);
         assert.equal(Object.hasOwn(init, "cache"), false,
           "the Worker bridge must not pass an unsupported RequestInit cache member");
@@ -133,13 +166,10 @@ test("lifecycle bridge uses Worker-compatible fetch controls on a verified signe
           "Workers must expose redirects for explicit fail-closed rejection");
         assert.ok(init.signal instanceof AbortSignal);
         assert.equal(init.signal.aborted, false);
-        assert.equal(await verifyMomoContentAiBridgeSignature({
+        assert.equal(await verifyMomoContentAiBridgeEnvelopeV2Signature({
           publicKeyBase64: publicKey,
-          timestampMs: init.headers["x-veroxa-content-ai-timestamp-ms"],
-          nonce: init.headers["x-veroxa-content-ai-nonce"],
           accessToken: ACCESS_TOKEN,
-          body: init.body,
-          signature: init.headers["x-veroxa-content-ai-signature"],
+          envelope,
         }), true);
         return Response.json({ data: { status: "recorded" } });
       },
@@ -170,13 +200,17 @@ test("server-verified bearer bypasses cookie session lookup and signs the exact 
           init.headers.authorization,
           `Bearer ${SERVER_VERIFIED_ACCESS_TOKEN}`,
         );
-        assert.equal(await verifyMomoContentAiBridgeSignature({
+        assert.equal(typeof init.body, "string");
+        const envelope = parseMomoContentAiBridgeEnvelopeV2(
+          JSON.parse(init.body),
+        );
+        assert.ok(envelope);
+        assert.equal(envelope.payload, JSON.stringify(request));
+        assert.equal(envelope.correlationId, CORRELATION_ID);
+        assert.equal(await verifyMomoContentAiBridgeEnvelopeV2Signature({
           publicKeyBase64: publicKey,
-          timestampMs: init.headers["x-veroxa-content-ai-timestamp-ms"],
-          nonce: init.headers["x-veroxa-content-ai-nonce"],
           accessToken: SERVER_VERIFIED_ACCESS_TOKEN,
-          body: init.body,
-          signature: init.headers["x-veroxa-content-ai-signature"],
+          envelope,
         }), true);
         return Response.json({ data: { status: "verified" } });
       },
@@ -184,6 +218,257 @@ test("server-verified bearer bypasses cookie session lookup and signs the exact 
   );
   assert.equal(sessionCalls, 0);
   assert.deepEqual(result, { status: "verified" });
+});
+
+test("signed envelope rejects every mutation and preserves the v1 rollback verifier", async () => {
+  let envelope;
+  await invokeMomoContentAiLifecycleBridge(
+    client(),
+    bridgeConfig(),
+    { operation: "finalize_upload", assetId: "asset" },
+    {
+      correlationId: CORRELATION_ID,
+      async fetchImplementation(_url, init) {
+        assert.equal(typeof init.body, "string");
+        envelope = parseMomoContentAiBridgeEnvelopeV2(JSON.parse(init.body));
+        return Response.json({ data: null });
+      },
+    },
+  );
+  assert.ok(envelope);
+  const signedAtMs = Number(envelope.signedAtMs);
+  assert.equal(await verifyMomoContentAiBridgeEnvelopeV2Signature({
+    publicKeyBase64: publicKey,
+    accessToken: ACCESS_TOKEN,
+    envelope,
+    nowMs: signedAtMs,
+  }), true);
+
+  const mutations = [
+    { envelope: { ...envelope, payload: `${envelope.payload} ` } },
+    { accessToken: `${ACCESS_TOKEN}-substituted`, envelope },
+    {
+      envelope: {
+        ...envelope,
+        correlationId: "22222222-2222-4222-8222-222222222222",
+      },
+    },
+    {
+      envelope: {
+        ...envelope,
+        nonce: "33333333-3333-4333-8333-333333333333",
+      },
+    },
+    {
+      envelope: {
+        ...envelope,
+        signedAtMs: String(signedAtMs + 1),
+      },
+    },
+    {
+      envelope: {
+        ...envelope,
+        signature: `${envelope.signature[0] === "A" ? "B" : "A"}${
+          envelope.signature.slice(1)
+        }`,
+      },
+    },
+    { envelope, nowMs: signedAtMs + 60_001 },
+    { envelope, nowMs: signedAtMs - 60_001 },
+    { publicKeyBase64: otherPublicKey, envelope },
+  ];
+  for (const mutation of mutations) {
+    assert.equal(await verifyMomoContentAiBridgeEnvelopeV2Signature({
+      publicKeyBase64: mutation.publicKeyBase64 ?? publicKey,
+      accessToken: mutation.accessToken ?? ACCESS_TOKEN,
+      envelope: mutation.envelope,
+      nowMs: mutation.nowMs ?? signedAtMs,
+    }), false);
+  }
+
+  const missingKey = { ...envelope };
+  delete missingKey.signature;
+  assert.equal(parseMomoContentAiBridgeEnvelopeV2(missingKey), null);
+  assert.equal(parseMomoContentAiBridgeEnvelopeV2({
+    ...envelope,
+    unexpected: true,
+  }), null);
+  assert.equal(parseMomoContentAiBridgeEnvelopeV2({
+    ...envelope,
+    payload: "x".repeat(300_001),
+  }), null);
+
+  const legacyTimestamp = Date.now().toString();
+  const legacyNonce = "44444444-4444-4444-8444-444444444444";
+  const legacyBody = JSON.stringify({ operation: "legacy_rollback_probe" });
+  const legacyPrivateKey = await crypto.subtle.importKey(
+    "pkcs8",
+    Buffer.from(privateKey, "base64"),
+    { name: "Ed25519" },
+    false,
+    ["sign"],
+  );
+  const legacySignature = Buffer.from(await crypto.subtle.sign(
+    "Ed25519",
+    legacyPrivateKey,
+    new TextEncoder().encode(
+      `veroxa:momo-content-ai-lifecycle:v1\nPOST\n/functions/v1/momo-content-ai-lifecycle\n${legacyTimestamp}\n${legacyNonce}\n${ACCESS_TOKEN}\n${legacyBody}`,
+    ),
+  )).toString("base64url");
+  assert.equal(await verifyMomoContentAiBridgeSignature({
+    publicKeyBase64: publicKey,
+    timestampMs: legacyTimestamp,
+    nonce: legacyNonce,
+    accessToken: ACCESS_TOKEN,
+    body: legacyBody,
+    signature: legacySignature,
+  }), true);
+});
+
+test("bridge enforces distinct signed-payload and escaped-envelope byte caps", async () => {
+  let fetchCalls = 0;
+  await assert.rejects(
+    invokeMomoContentAiLifecycleBridge(
+      client(),
+      bridgeConfig(),
+      { padding: "x".repeat(300_001) },
+      {
+        correlationId: CORRELATION_ID,
+        telemetry: () => undefined,
+        fetchImplementation: async () => {
+          fetchCalls += 1;
+          return Response.json({ data: null });
+        },
+      },
+    ),
+    (error) => error instanceof MomoContentAiLifecycleBridgeError &&
+      error.stage === "request" &&
+      error.code === "momo_content_ai_lifecycle_request_too_large",
+  );
+  assert.equal(fetchCalls, 0);
+
+  let wireBytes = 0;
+  const request = { padding: "\\".repeat(149_000) };
+  await invokeMomoContentAiLifecycleBridge(
+    client(),
+    bridgeConfig(),
+    request,
+    {
+      correlationId: CORRELATION_ID,
+      async fetchImplementation(_url, init) {
+        fetchCalls += 1;
+        assert.equal(typeof init.body, "string");
+        wireBytes = new TextEncoder().encode(init.body).byteLength;
+        const envelope = parseMomoContentAiBridgeEnvelopeV2(
+          JSON.parse(init.body),
+        );
+        assert.ok(envelope);
+        assert.equal(envelope.payload, JSON.stringify(request));
+        return Response.json({ data: null });
+      },
+    },
+  );
+  assert.equal(fetchCalls, 1);
+  assert.ok(wireBytes > 300_000);
+  assert.ok(wireBytes <= 610_000);
+});
+
+test("real Workerd transport preserves v2 without custom signature headers", async () => {
+  const sitesRoot = fileURLToPath(new URL("..", import.meta.url));
+  const wrapper = `
+    import { invokeMomoContentAiLifecycleBridge } from "./app/momo-content-ai-lifecycle-bridge.ts";
+    export default {
+      async fetch(_request, env) {
+        const data = await invokeMomoContentAiLifecycleBridge(
+          { auth: { getSession() { throw new Error("session_lookup_must_not_run"); } } },
+          {
+            endpoint: "https://upstream.test/functions/v1/momo-content-ai-lifecycle",
+            publishableKey: "sb_publishable_workerd_test",
+            bridgePrivateKey: env.PRIVATE_KEY,
+            bridgePublicKey: env.PUBLIC_KEY,
+          },
+          { operation: "commit_upload", marker: "workerd-v2-envelope" },
+          {
+            correlationId: "${CORRELATION_ID}",
+            serverVerifiedAccessToken: env.ACCESS_TOKEN,
+            fetchImplementation: fetch,
+          },
+        );
+        return Response.json({ data });
+      },
+    };
+  `;
+  const bundle = await build({
+    stdin: { contents: wrapper, loader: "ts", resolveDir: sitesRoot },
+    bundle: true,
+    write: false,
+    format: "esm",
+    platform: "browser",
+    target: "es2022",
+  });
+  let observation;
+  const miniflare = new Miniflare({
+    compatibilityDate: "2026-05-22",
+    modules: [{
+      type: "ESModule",
+      path: "momo-content-ai-lifecycle-sender.js",
+      contents: bundle.outputFiles[0].text,
+    }],
+    bindings: {
+      PRIVATE_KEY: privateKey,
+      PUBLIC_KEY: publicKey,
+      ACCESS_TOKEN: SERVER_VERIFIED_ACCESS_TOKEN,
+    },
+    async outboundService(request) {
+      const raw = await request.text();
+      const envelope = parseMomoContentAiBridgeEnvelopeV2(JSON.parse(raw));
+      assert.ok(envelope);
+      const authorization = request.headers.get("authorization") || "";
+      const accessToken = authorization.startsWith("Bearer ")
+        ? authorization.slice(7)
+        : "";
+      observation = {
+        authorizationExact: accessToken === SERVER_VERIFIED_ACCESS_TOKEN,
+        customSignatureHeadersAbsent: [
+          "x-veroxa-content-ai-timestamp-ms",
+          "x-veroxa-content-ai-nonce",
+          "x-veroxa-content-ai-signature",
+        ].every((name) => request.headers.get(name) === null),
+        payloadExact: envelope.payload === JSON.stringify({
+          operation: "commit_upload",
+          marker: "workerd-v2-envelope",
+        }),
+        correlationExact: envelope.correlationId === CORRELATION_ID,
+        signatureVerified:
+          await verifyMomoContentAiBridgeEnvelopeV2Signature({
+            publicKeyBase64: publicKey,
+            accessToken,
+            envelope,
+          }),
+      };
+      return Response.json({ data: observation });
+    },
+  });
+  try {
+    const response = await miniflare.dispatchFetch("http://local.test/probe");
+    assert.equal(response.status, 200);
+    assert.deepEqual((await response.json()).data, {
+      authorizationExact: true,
+      customSignatureHeadersAbsent: true,
+      payloadExact: true,
+      correlationExact: true,
+      signatureVerified: true,
+    });
+    assert.deepEqual(observation, {
+      authorizationExact: true,
+      customSignatureHeadersAbsent: true,
+      payloadExact: true,
+      correlationExact: true,
+      signatureVerified: true,
+    });
+  } finally {
+    await miniflare.dispose();
+  }
 });
 
 test("malformed explicit bearer fails before session or transport without leaking", async () => {

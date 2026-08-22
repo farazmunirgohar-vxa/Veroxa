@@ -1,7 +1,9 @@
 import { createClient } from "npm:@supabase/supabase-js@2.110.2";
 import {
   isPlainObject,
+  parseMomoContentAiBridgeEnvelopeV2,
   validMomoContentAiLifecycleRequest,
+  verifyMomoContentAiBridgeEnvelopeV2Signature,
   verifyMomoContentAiBridgeSignature,
   type JsonObject,
   type MomoContentAiLifecycleRequest,
@@ -17,7 +19,8 @@ const BRIDGE_TRANSITION_PUBLIC_KEYS_SPKI_BASE64 = [
   BRIDGE_PUBLIC_KEY_SPKI_BASE64,
   BRIDGE_PREVIOUS_PUBLIC_KEY_SPKI_BASE64,
 ] as const;
-const MAX_REQUEST_BYTES = 300_000;
+const MAX_LEGACY_REQUEST_BYTES = 300_000;
+const MAX_REQUEST_BYTES = 610_000;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
 
 function response(body: JsonObject, status: number): Response {
@@ -92,13 +95,37 @@ function parse(raw: string): MomoContentAiLifecycleRequest | null {
   } catch { return null; }
 }
 
-Deno.serve(async (request: Request): Promise<Response> => {
-  if (request.method !== "POST") return response({ error: "method_not_allowed" }, 405);
-  const authorization = request.headers.get("authorization")?.trim() || "";
-  if (!authorization.startsWith("Bearer ") || authorization.length > 8_200) return response({ error: "team_access_required" }, 403);
-  const accessToken = authorization.slice(7);
-  const raw = await rawBody(request);
-  if (!raw) return response({ error: "invalid_request" }, 400);
+async function verifyBridgeRequest(
+  request: Request,
+  accessToken: string,
+  raw: string,
+): Promise<{ verified: boolean; body: MomoContentAiLifecycleRequest | null }> {
+  let wireValue: unknown;
+  try {
+    wireValue = JSON.parse(raw);
+  } catch {
+    return { verified: false, body: null };
+  }
+  if (isPlainObject(wireValue) && wireValue.schemaVersion === 2) {
+    const envelope = parseMomoContentAiBridgeEnvelopeV2(wireValue);
+    if (!envelope) return { verified: false, body: null };
+    const verified = await verifyExactBridgePublicKeyTransition(
+      BRIDGE_TRANSITION_PUBLIC_KEYS_SPKI_BASE64,
+      (publicKeyBase64) =>
+        verifyMomoContentAiBridgeEnvelopeV2Signature({
+          publicKeyBase64,
+          accessToken,
+          envelope,
+        }),
+    );
+    return {
+      verified,
+      body: verified ? parse(envelope.payload) : null,
+    };
+  }
+  if (new TextEncoder().encode(raw).byteLength > MAX_LEGACY_REQUEST_BYTES) {
+    return { verified: false, body: null };
+  }
   const verified = await verifyExactBridgePublicKeyTransition(
     BRIDGE_TRANSITION_PUBLIC_KEYS_SPKI_BASE64,
     (publicKeyBase64) => verifyMomoContentAiBridgeSignature({
@@ -114,8 +141,21 @@ Deno.serve(async (request: Request): Promise<Response> => {
       )?.trim() || "",
     }),
   );
-  if (!verified) return response({ error: "bridge_access_required" }, 403);
-  const body = parse(raw);
+  return { verified, body: verified ? parse(raw) : null };
+}
+
+Deno.serve(async (request: Request): Promise<Response> => {
+  if (request.method !== "POST") return response({ error: "method_not_allowed" }, 405);
+  const authorization = request.headers.get("authorization")?.trim() || "";
+  if (!authorization.startsWith("Bearer ") || authorization.length > 8_200) return response({ error: "team_access_required" }, 403);
+  const accessToken = authorization.slice(7);
+  const raw = await rawBody(request);
+  if (!raw) return response({ error: "invalid_request" }, 400);
+  const bridgeRequest = await verifyBridgeRequest(request, accessToken, raw);
+  if (!bridgeRequest.verified) {
+    return response({ error: "bridge_access_required" }, 403);
+  }
+  const body = bridgeRequest.body;
   if (!body) return response({ error: "invalid_request" }, 400);
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL")?.trim() || "";

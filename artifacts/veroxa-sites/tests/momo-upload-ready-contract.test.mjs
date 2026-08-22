@@ -73,17 +73,37 @@ test("content lifecycle bypasses only the platform JWT precheck while enforcing 
   assert.match(supabaseConfig, /\[functions\.momo-content-ai-lifecycle\]\s+verify_jwt = false/u);
   assert.match(supabaseConfig, /\[functions\.momo-media-ai-lifecycle\]\s+verify_jwt = true/u);
   const bearerGate = contentLifecycleEdge.indexOf('authorization.startsWith("Bearer ")');
-  const signatureGate = contentLifecycleEdge.indexOf("verifyMomoContentAiBridgeSignature(");
+  const envelopeSignatureGate = contentLifecycleEdge.indexOf(
+    "verifyMomoContentAiBridgeEnvelopeV2Signature({",
+  );
+  const legacySignatureGate = contentLifecycleEdge.indexOf(
+    "verifyMomoContentAiBridgeSignature({",
+  );
+  const verifiedGate = contentLifecycleEdge.indexOf(
+    "if (!bridgeRequest.verified)",
+  );
   const userGate = contentLifecycleEdge.indexOf("userClient.auth.getUser(accessToken)");
   const adminClient = contentLifecycleEdge.indexOf("const admin = createClient");
   assert.ok(bearerGate >= 0, "handler must require a bearer user session");
-  assert.ok(signatureGate >= 0, "handler must verify the dedicated bridge signature");
+  assert.ok(envelopeSignatureGate >= 0,
+    "handler must verify the v2 bridge envelope signature");
+  assert.ok(legacySignatureGate >= 0,
+    "handler must retain the v1 rollback signature verifier");
+  assert.ok(verifiedGate >= 0,
+    "handler must reject an unverified bridge request");
   assert.ok(userGate >= 0, "handler must validate the access token with Supabase Auth");
   assert.ok(adminClient >= 0, "handler must preserve a privileged client boundary");
   assert.ok(bearerGate < adminClient, "bearer gate must run before privileged access");
-  assert.ok(signatureGate < adminClient, "bridge signature gate must run before privileged access");
+  assert.ok(envelopeSignatureGate < userGate,
+    "v2 signature gate must run before Supabase Auth");
+  assert.ok(legacySignatureGate < userGate,
+    "v1 signature gate must run before Supabase Auth");
+  assert.ok(envelopeSignatureGate < adminClient,
+    "v2 signature gate must run before privileged access");
+  assert.ok(legacySignatureGate < adminClient,
+    "v1 signature gate must run before privileged access");
   assert.ok(userGate < adminClient, "Supabase Auth validation must run before privileged access");
-  assert.match(contentLifecycleEdge, /if \(!verified\) return response\(\{ error: "bridge_access_required" \}, 403\)/u);
+  assert.match(contentLifecycleEdge, /if \(!bridgeRequest\.verified\) \{[\s\S]*?bridge_access_required/u);
   assert.match(contentLifecycleEdge, /if \(userError \|\| !userData\.user/u);
   assert.match(contentRoute, /VEROXA_MOMO_CONTENT_AI_ENABLED === "true"/u);
   assert.match(contentRoute, /width > MOMO_CONTENT_AI_MAX_SOURCE_WIDTH/);
