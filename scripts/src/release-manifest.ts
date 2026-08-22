@@ -15,6 +15,7 @@ const CURRENT_PR205_HEAD = "51dca29248778e842b671f5cbe18783195fbcda0";
 const CURRENT_PR205_SCOPE = "hosted_signed_envelope_transport_and_regression_guard";
 const CURRENT_PACKET_REVIEW_ANCHOR = "d4db271376b8e698f2af63d875b5b57a35e917d9";
 const CURRENT_PACKET_REVIEW_ANCHOR_TREE = "55266cc553f5dff04168d948ed0b8e6193ce9e2b";
+const CURRENT_PACKET_FINAL_PARENT = "b4695651041970846a90ce7340dd76179020347e";
 const CURRENT_PACKET_PATH_COUNT = 11;
 const CURRENT_CLOSEOUT =
   "artifacts/veroxa/docs/VEROXA_LIVE_STATUS_CLOSEOUT_20260822.json";
@@ -181,6 +182,9 @@ function currentReviewedPacketPaths(): string[] {
   if (!isAncestor(CURRENT_BASE_COMMIT, CURRENT_PACKET_REVIEW_ANCHOR)) {
     throw new Error("Pinned reviewed status-packet anchor does not descend from PR #205 main");
   }
+  if (!isAncestor(CURRENT_PACKET_REVIEW_ANCHOR, CURRENT_PACKET_FINAL_PARENT)) {
+    throw new Error("Pinned final-fix parent does not descend from the reviewed status packet");
+  }
   const anchorTree = gitOutput(["rev-parse", `${CURRENT_PACKET_REVIEW_ANCHOR}^{tree}`]);
   if (anchorTree !== CURRENT_PACKET_REVIEW_ANCHOR_TREE) {
     throw new Error("Pinned reviewed status-packet tree identity drifted");
@@ -200,7 +204,9 @@ function matchesReviewedPacketPaths(paths: string[]): boolean {
 function isExactCurrentPacketHead(head: string): boolean {
   try {
     if (!isAncestor(CURRENT_BASE_COMMIT, head) ||
-        !isAncestor(CURRENT_PACKET_REVIEW_ANCHOR, head)) return false;
+        !isAncestor(CURRENT_PACKET_REVIEW_ANCHOR, CURRENT_PACKET_FINAL_PARENT)) return false;
+    const parents = gitOutput(["rev-list", "--parents", "-n", "1", head]).split(/\s+/u);
+    if (parents.length !== 2 || parents[1] !== CURRENT_PACKET_FINAL_PARENT) return false;
     return matchesReviewedPacketPaths(gitChangedPaths(CURRENT_BASE_COMMIT, head)) &&
       gitForbiddenPaths(CURRENT_BASE_COMMIT, head).length === 0;
   } catch {
@@ -365,6 +371,21 @@ function matchesAcceptanceCounts(
     locks.publishAttemptRows === 0;
 }
 
+function matchesExternalActionLocks(value: Record<string, any> | undefined): boolean {
+  return value?.runtimeControlRows === 2 &&
+    value.providerWritesEnabled === 0 &&
+    value.reviewRepliesEnabled === 0 &&
+    value.websiteWritesEnabled === 0 &&
+    value.externalSchedulingEnabled === 0 &&
+    value.rowsWithAnyExternalActionEnabled === 0 &&
+    value.acceptanceScopeRows === 1 &&
+    value.acceptanceExternalWriteAllowedRows === 0 &&
+    value.connectedProviderRows === 0 &&
+    value.publishQueueRows === 0 &&
+    value.publishAttemptRows === 0 &&
+    value.status === "closed";
+}
+
 function matchesBlocker(
   value: Record<string, any> | undefined,
   current: Record<string, any> | undefined,
@@ -419,6 +440,53 @@ function matchesCandidateMigration(
     value.candidateMigrationTreeSha256 === CURRENT_MIGRATION_TREE_SHA256 &&
     value.candidateMigrationTreeSha256 === tree.sha256 &&
     value.applied === true;
+}
+
+function matchesCurrentSites(
+  value: Record<string, any> | undefined,
+  sourceTree: { fileCount: number; sha256: string },
+): boolean {
+  return value?.projectId === CURRENT_SITES_PROJECT_ID &&
+    value.version === 68 &&
+    value.versionId === CURRENT_SITES_VERSION_ID &&
+    value.deploymentId === CURRENT_SITES_DEPLOYMENT_ID &&
+    value.deploymentStatus === "succeeded" &&
+    value.internalSourceCommit === CURRENT_SITES_INTERNAL_SOURCE_COMMIT &&
+    value.internalSourceTree === CURRENT_SITES_INTERNAL_SOURCE_TREE &&
+    value.runtimeSubtreeFileCount === 248 &&
+    value.runtimeSubtreeSha256 === CURRENT_SITES_SHA256 &&
+    value.matchesObservedGitHubMainRuntimeSubtree === true &&
+    value.environmentRevision === 30 &&
+    value.apexDomainHealthy === true &&
+    value.wwwDomainHealthy === true &&
+    value.postDeployWorkerErrors === 0 &&
+    sourceTree.fileCount === 248 && sourceTree.sha256 === CURRENT_SITES_SHA256;
+}
+
+function matchesCurrentSupabase(
+  value: Record<string, any> | undefined,
+  migrationTree: { fileCount: number; sha256: string; files?: unknown },
+  mirrorMigrationTree: { fileCount: number; sha256: string; files?: unknown },
+  latestMigrationPath: string,
+): boolean {
+  return value?.organizationId === CURRENT_SUPABASE_ORGANIZATION_ID &&
+    value.projectRef === CURRENT_SUPABASE_PROJECT_REF &&
+    value.projectName === "Veroxa Dev" &&
+    value.region === CURRENT_SUPABASE_REGION &&
+    value.plan === "pro" &&
+    value.health === "ACTIVE_HEALTHY" &&
+    value.migrationCount === 60 &&
+    value.latestPlatformMigrationVersion === "20260820163500" &&
+    value.latestCanonicalMigration === CURRENT_MIGRATION &&
+    value.latestCanonicalMigrationSha256 === CURRENT_MIGRATION_SHA256 &&
+    value.migrationTreeSha256 === CURRENT_MIGRATION_TREE_SHA256 &&
+    value.externalActionLocksClosed === true &&
+    migrationTree.fileCount === 60 && migrationTree.sha256 === CURRENT_MIGRATION_TREE_SHA256 &&
+    mirrorMigrationTree.fileCount === migrationTree.fileCount &&
+    mirrorMigrationTree.sha256 === migrationTree.sha256 &&
+    sameJson(mirrorMigrationTree.files, migrationTree.files) &&
+    core.sha256File(latestMigrationPath) === CURRENT_MIGRATION_SHA256 &&
+    statSync(latestMigrationPath).size === CURRENT_MIGRATION_BYTE_LENGTH;
 }
 
 function matchesEdgeSources(value: Record<string, any> | undefined): boolean {
@@ -548,45 +616,10 @@ function assertCurrentReconciledStatus(manifest: core.DeploymentManifest): void 
       github.copilotReReviewOutcome === "approval_recommended_zero_new_findings",
     "GitHub PR #205 live baseline drifted",
   );
-  must(
-    sites?.projectId === CURRENT_SITES_PROJECT_ID &&
-      sites.version === 68 &&
-      sites.versionId === CURRENT_SITES_VERSION_ID &&
-      sites.deploymentId === CURRENT_SITES_DEPLOYMENT_ID &&
-      sites.deploymentStatus === "succeeded" &&
-      sites.internalSourceCommit === CURRENT_SITES_INTERNAL_SOURCE_COMMIT &&
-      sites.internalSourceTree === CURRENT_SITES_INTERNAL_SOURCE_TREE &&
-      sites.runtimeSubtreeFileCount === 248 &&
-      sites.runtimeSubtreeSha256 === CURRENT_SITES_SHA256 &&
-      sites.matchesObservedGitHubMainRuntimeSubtree === true &&
-      sites.environmentRevision === 30 &&
-      sites.apexDomainHealthy === true &&
-      sites.wwwDomainHealthy === true &&
-      sites.postDeployWorkerErrors === 0 &&
-      sourceTree.fileCount === 248 && sourceTree.sha256 === CURRENT_SITES_SHA256,
-    "Sites v68 project/source identity, domain health, or deterministic source parity drifted",
-  );
-  must(
-    supabase?.organizationId === CURRENT_SUPABASE_ORGANIZATION_ID &&
-      supabase.projectRef === CURRENT_SUPABASE_PROJECT_REF &&
-      supabase.projectName === "Veroxa Dev" &&
-      supabase.region === CURRENT_SUPABASE_REGION &&
-      supabase.plan === "pro" &&
-      supabase.health === "ACTIVE_HEALTHY" &&
-      supabase.migrationCount === 60 &&
-      supabase.latestPlatformMigrationVersion === "20260820163500" &&
-      supabase.latestCanonicalMigration === CURRENT_MIGRATION &&
-      supabase.latestCanonicalMigrationSha256 === CURRENT_MIGRATION_SHA256 &&
-      supabase.migrationTreeSha256 === CURRENT_MIGRATION_TREE_SHA256 &&
-      supabase.externalActionLocksClosed === true &&
-      migrationTree.fileCount === 60 && migrationTree.sha256 === CURRENT_MIGRATION_TREE_SHA256 &&
-      mirrorMigrationTree.fileCount === migrationTree.fileCount &&
-      mirrorMigrationTree.sha256 === migrationTree.sha256 &&
-      sameJson(mirrorMigrationTree.files, migrationTree.files) &&
-      core.sha256File(latestMigrationPath) === CURRENT_MIGRATION_SHA256 &&
-      statSync(latestMigrationPath).size === CURRENT_MIGRATION_BYTE_LENGTH,
-    "Supabase project identity, Pro health, or exact 60-migration live ledger drifted",
-  );
+  must(matchesCurrentSites(sites, sourceTree),
+    "Sites v68 project/source identity, domain health, or deterministic source parity drifted");
+  must(matchesCurrentSupabase(supabase, migrationTree, mirrorMigrationTree, latestMigrationPath),
+    "Supabase project identity, Pro health, or exact 60-migration live ledger drifted");
   must(matchesPrivateSchema(closeout.supabase?.privateSchemaDefenseInDepth, supabase),
     "private-schema defense-in-depth evidence drifted or became exposed");
   must(
@@ -689,12 +722,10 @@ function assertCurrentReconciledStatus(manifest: core.DeploymentManifest): void 
       closeout.supabase?.migrations?.canonicalByteLength === CURRENT_MIGRATION_BYTE_LENGTH &&
       closeout.supabase?.migrations?.canonicalSha256 === CURRENT_MIGRATION_SHA256 &&
       closeout.supabase?.migrations?.treeSha256 === CURRENT_MIGRATION_TREE_SHA256 &&
-      closeout.supabase?.externalActionLocks?.status === "closed" &&
-      closeout.supabase?.externalActionLocks?.rowsWithAnyExternalActionEnabled === 0 &&
-      closeout.supabase?.externalActionLocks?.acceptanceExternalWriteAllowedRows === 0 &&
+      matchesExternalActionLocks(closeout.supabase?.externalActionLocks) &&
       matchesAcceptanceCounts(closeout.supabase?.acceptance, closeout.supabase?.externalActionLocks) &&
       matchesBlocker(closeout.supabase?.acceptanceSessionBlocker, blocker),
-    "Supabase identity, acceptance snapshot, no-new-row boundary, or preserved blocker drifted",
+    "Supabase identity, acceptance snapshot, external-action locks, no-new-row boundary, or preserved blocker drifted",
   );
   must(
     closeout.edge?.allActiveFunctionBundleSourcesMatchObservedGitHubMain === true &&
@@ -733,6 +764,8 @@ function assertCurrentReconciledStatus(manifest: core.DeploymentManifest): void 
   scopeMutation[0] = "supabase/functions/momo-content-ai-lifecycle/index.ts";
   must(!matchesReviewedPacketPaths(scopeMutation),
     "reviewed packet scope mutation was not rejected");
+  must(!isExactCurrentPacketHead(CURRENT_PACKET_FINAL_PARENT),
+    "pre-final reviewed parent was incorrectly accepted as the final packet head");
 
   const acceptanceMutation = structuredClone(closeout.supabase?.acceptance ?? {}) as Record<string, any>;
   acceptanceMutation.uploadSessionRows = 5;
@@ -743,6 +776,11 @@ function assertCurrentReconciledStatus(manifest: core.DeploymentManifest): void 
   providerMutation.connectedProviderRows = 1;
   must(!matchesAcceptanceCounts(closeout.supabase?.acceptance, providerMutation),
     "connected-provider mutation was not rejected");
+
+  const externalLocksMutation = structuredClone(closeout.supabase?.externalActionLocks ?? {}) as Record<string, any>;
+  externalLocksMutation.providerWritesEnabled = 1;
+  must(!matchesExternalActionLocks(externalLocksMutation),
+    "external provider-write lock mutation was not rejected");
 
   const blockerMutation = structuredClone(closeout.supabase?.acceptanceSessionBlocker ?? {}) as Record<string, any>;
   const currentBlockerMutation = structuredClone(blocker ?? {}) as Record<string, any>;
@@ -792,13 +830,13 @@ function assertCurrentReconciledStatus(manifest: core.DeploymentManifest): void 
 
   const sitesIdentityMutation = structuredClone(sites ?? {}) as Record<string, any>;
   sitesIdentityMutation.internalSourceCommit = "0".repeat(40);
-  must(sitesIdentityMutation.internalSourceCommit !== CURRENT_SITES_INTERNAL_SOURCE_COMMIT,
-    "Sites source-identity mutation regression setup failed");
+  must(!matchesCurrentSites(sitesIdentityMutation, sourceTree),
+    "Sites source-identity mutation was not rejected by the current-status matcher");
 
   const supabaseIdentityMutation = structuredClone(supabase ?? {}) as Record<string, any>;
   supabaseIdentityMutation.projectRef = "wrong-project";
-  must(supabaseIdentityMutation.projectRef !== CURRENT_SUPABASE_PROJECT_REF,
-    "Supabase project-identity mutation regression setup failed");
+  must(!matchesCurrentSupabase(supabaseIdentityMutation, migrationTree, mirrorMigrationTree, latestMigrationPath),
+    "Supabase project-identity mutation was not rejected by the current-status matcher");
 
   const imgMutation = structuredClone(img4257 ?? {}) as Record<string, any>;
   imgMutation.authorizedRetriesRemaining = 1;
