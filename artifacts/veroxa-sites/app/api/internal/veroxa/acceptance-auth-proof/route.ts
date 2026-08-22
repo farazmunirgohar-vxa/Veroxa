@@ -189,7 +189,6 @@ const handler = createAcceptanceAuthProofHandler({
         headers: {
           authorization: `Bearer ${input.accessToken}`,
           "content-type": "application/json",
-          origin: PRODUCTION_ORIGIN,
           "x-veroxa-correlation-id": input.correlationId,
           "x-veroxa-server-purpose": "internal-acceptance-auth-proof-v1",
         },

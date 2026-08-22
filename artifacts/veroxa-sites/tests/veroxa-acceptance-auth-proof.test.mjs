@@ -307,6 +307,7 @@ test("production wiring mints no user, resets no credential, and stays release-s
     "signInWithOtp",
     "resetPasswordForEmail",
   ]) assert.ok(!route.includes(forbidden), `forbidden Auth mutation: ${forbidden}`);
+  assert.ok(!route.includes("origin: PRODUCTION_ORIGIN"));
   assert.ok(environment.includes(
     "VEROXA_INTERNAL_ACCEPTANCE_AUTH_PROOF_HMAC_SECRET=",
   ));
