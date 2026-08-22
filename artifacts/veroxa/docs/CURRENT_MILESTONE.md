@@ -11,12 +11,14 @@ exact reviewed source and historical records follow.
 founder GO is claimed.**
 
 The reviewed release is merged and the production runtime is converged. The
-next blocked outcome is one explicitly authorized, least-privileged synthetic
-Client authentication proof against the preserved expired session. It must
-prove authentication succeeds while immutable expiry/state enforcement rejects
-the request, creates no new acceptance/output rows, preserves the current
-aggregate upload-session snapshot at four total sessions (one initiated and
-three expired), and keeps registered-session, asset, package,
+next blocked outcome requires one fresh, explicitly authorized, short-lived,
+least-privileged synthetic Client authentication session to prove authentication
+succeeds against content lifecycle v15. A separate rejection request must then
+reference the preserved expired session without mutating it, registering it, or
+reusing any authority from it; immutable expiry/state enforcement must reject
+that request. The proof must create no new acceptance/output rows, preserve the
+current aggregate upload-session snapshot at four total sessions (one initiated
+and three expired), and keep registered-session, asset, package,
 provider-connection, publish-queue, and publish-attempt counts at zero. The
 named preserved expired blocker session remains separately identity-bound and
 immutable by `CURRENT_STATE.json` and the machine closeout.
