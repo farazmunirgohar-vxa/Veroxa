@@ -532,7 +532,7 @@ function assertCurrentReconciledStatus(
   const pr205 = closeout.github?.pullRequest205 as Record<string, any> | undefined;
   must(
     closeout.recordKind === "veroxa_live_status_closeout" &&
-      closeout.status === CURRENT_PHASE &&
+      closeout.status === CURRENT_CANDIDATE_STATE &&
       closeout.observedAt === state.updatedAt &&
       closeout.github?.observedMainCommit === CURRENT_BASE_COMMIT &&
       closeout.github?.latestMergedPullRequest === 205 &&
