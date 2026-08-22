@@ -15,7 +15,7 @@ const CURRENT_PR205_HEAD = "51dca29248778e842b671f5cbe18783195fbcda0";
 const CURRENT_PR205_SCOPE = "hosted_signed_envelope_transport_and_regression_guard";
 const CURRENT_PACKET_REVIEW_ANCHOR = "d4db271376b8e698f2af63d875b5b57a35e917d9";
 const CURRENT_PACKET_REVIEW_ANCHOR_TREE = "55266cc553f5dff04168d948ed0b8e6193ce9e2b";
-const CURRENT_PACKET_FINAL_PARENT = "f0c90a7357146a6ec141094eeb9fb825c635e0cb";
+const CURRENT_PACKET_FINAL_PARENT = "606812b11253447be40dfb314fd8101d30773d7e";
 const CURRENT_PACKET_PATH_COUNT = 11;
 const CURRENT_CLOSEOUT =
   "artifacts/veroxa/docs/VEROXA_LIVE_STATUS_CLOSEOUT_20260822.json";
@@ -123,6 +123,54 @@ function isCurrentReconciledState(
   value: Record<string, any> | null = readCurrentState(),
 ): value is Record<string, any> {
   return isCurrentReconciledStateValue(value);
+}
+
+export function currentLiveStatusReconciliationEvidence(): {
+  phase: string;
+  source: { root: string; fileCount: number; treeSha256: string };
+  migrations: {
+    root: string;
+    fileCount: number;
+    treeSha256: string;
+    latestMigration: string;
+    latestMigrationSha256: string;
+  };
+} | null {
+  const value = readCurrentState();
+  if (!value) return null;
+  const candidate = value.activeCandidate as Record<string, any> | undefined;
+  const isBlockedAcceptanceStatus = value.phase ===
+      "r3_acceptance_live_stack_reconciled_auth_session_blocked" &&
+    candidate?.kind === "veroxa_preintervention_acceptance" &&
+    candidate?.state === "live_platform_reconciled_acceptance_proof_blocked";
+  if (!isBlockedAcceptanceStatus && !isCurrentReconciledStateValue(value)) return null;
+
+  const sites = value.production?.sites as Record<string, any> | undefined;
+  const supabase = value.production?.supabase as Record<string, any> | undefined;
+  if (
+    typeof sites?.runtimeSubtreeFileCount !== "number" ||
+    typeof sites.runtimeSubtreeSha256 !== "string" ||
+    typeof supabase?.migrationCount !== "number" ||
+    typeof supabase.migrationTreeSha256 !== "string" ||
+    typeof supabase.latestCanonicalMigration !== "string" ||
+    typeof supabase.latestCanonicalMigrationSha256 !== "string"
+  ) return null;
+
+  return {
+    phase: value.phase,
+    source: {
+      root: "artifacts/veroxa-sites",
+      fileCount: sites.runtimeSubtreeFileCount,
+      treeSha256: sites.runtimeSubtreeSha256,
+    },
+    migrations: {
+      root: core.ROOT_MIGRATION_SOURCE_ROOT,
+      fileCount: supabase.migrationCount,
+      treeSha256: supabase.migrationTreeSha256,
+      latestMigration: supabase.latestCanonicalMigration,
+      latestMigrationSha256: supabase.latestCanonicalMigrationSha256,
+    },
+  };
 }
 
 function gitPathList(args: string[]): string[] {
