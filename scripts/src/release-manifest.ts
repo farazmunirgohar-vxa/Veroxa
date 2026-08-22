@@ -208,6 +208,8 @@ const ACTIVE_GITHUB_COPILOT_GOVERNANCE_PACKET_ALLOWED_PATHS = new Set([
 ]);
 const ACTIVE_LIVE_STATUS_SUPABASE_PRO_PACKET_BASE_COMMIT =
   ACTIVE_GITHUB_COPILOT_GOVERNANCE_PACKET_FIXED_HEAD_COMMIT;
+const ACTIVE_LIVE_STATUS_SUPABASE_PRO_PACKET_FIXED_HEAD_COMMIT =
+  "d38577f92978edf5dec4d4dd9756a2c24f57ce29";
 const ACTIVE_LIVE_STATUS_SUPABASE_PRO_PACKET_ALLOWED_PATHS = new Set([
   "AGENTS.md",
   "artifacts/veroxa/docs/ACTIVE_DOCS_INDEX.md",
@@ -219,6 +221,18 @@ const ACTIVE_LIVE_STATUS_SUPABASE_PRO_PACKET_ALLOWED_PATHS = new Set([
   "scripts/src/check-chatgpt-sites-migration-source-truth.ts",
   "scripts/src/release-manifest.ts",
 ]);
+const ACTIVE_R3_ACCEPTANCE_AUTH_PROOF_RUNNER_BASE_COMMIT =
+  ACTIVE_LIVE_STATUS_SUPABASE_PRO_PACKET_FIXED_HEAD_COMMIT;
+const ACTIVE_R3_ACCEPTANCE_AUTH_PROOF_RUNNER_ALLOWED_PATHS = new Set([
+  "artifacts/veroxa-sites/.env.example",
+  "artifacts/veroxa-sites/app/api/internal/veroxa/acceptance-auth-proof/core.ts",
+  "artifacts/veroxa-sites/app/api/internal/veroxa/acceptance-auth-proof/route.ts",
+  "artifacts/veroxa-sites/tests/veroxa-acceptance-auth-proof.test.mjs",
+  "scripts/src/release-manifest.ts",
+]);
+const ACTIVE_R3_ACCEPTANCE_AUTH_PROOF_RUNNER_SITES_FILE_COUNT = 248;
+const ACTIVE_R3_ACCEPTANCE_AUTH_PROOF_RUNNER_SITES_SHA256 =
+  "a2290f0ce4443f838c0f8517cfc42345a8088313b990d57346edda84180a3399";
 const CURRENT_LIVE_STATUS_CLOSEOUT_PATH =
   "artifacts/veroxa/docs/VEROXA_LIVE_STATUS_CLOSEOUT_20260821.json";
 
@@ -1257,6 +1271,54 @@ function gitPathList(args: string[]): string[] {
   return output.split("\0").filter((path) => path.length > 0);
 }
 
+function hashGitSubtree(
+  commit: string,
+  relativeRoot: string,
+): { fileCount: number; files: string[]; sha256: string } {
+  const root = normalized(relativeRoot).replace(/\/+$/u, "");
+  const prefix = `${root}/`;
+  const fullPaths = gitPathList([
+    "ls-tree", "-r", "--name-only", commit, "--", root,
+  ]).sort();
+  const hash = createHash("sha256");
+  const files = fullPaths.map((path) => {
+    if (!path.startsWith(prefix)) {
+      throw new Error(`Git subtree path escaped ${root}: ${path}`);
+    }
+    const file = path.slice(prefix.length);
+    hash.update(file, "utf8");
+    hash.update("\0");
+    hash.update(execFileSync("git", ["show", `${commit}:${path}`], {
+      cwd: repoRoot,
+      maxBuffer: 32 * 1024 * 1024,
+    }));
+    hash.update("\0");
+    return file;
+  });
+  return { fileCount: files.length, files, sha256: hash.digest("hex") };
+}
+
+function hashTrackedSubtree(
+  relativeRoot: string,
+): { fileCount: number; files: string[]; sha256: string } {
+  const root = normalized(relativeRoot).replace(/\/+$/u, "");
+  const prefix = `${root}/`;
+  const fullPaths = gitPathList(["ls-files", "--", root]).sort();
+  const hash = createHash("sha256");
+  const files = fullPaths.map((path) => {
+    if (!path.startsWith(prefix)) {
+      throw new Error(`Tracked subtree path escaped ${root}: ${path}`);
+    }
+    const file = path.slice(prefix.length);
+    hash.update(file, "utf8");
+    hash.update("\0");
+    hash.update(readFileSync(resolve(repoRoot, path)));
+    hash.update("\0");
+    return file;
+  });
+  return { fileCount: files.length, files, sha256: hash.digest("hex") };
+}
+
 /**
  * The immutable schema-13 manifest can only be relaxed for this one exact
  * candidate.  Require its complete diff scope rather than letting a state
@@ -1741,23 +1803,78 @@ function assertActiveGitHubCopilotGovernancePacketDiffScope(): void {
 }
 
 /**
- * Bind the live-status/Supabase-Pro packet to the exact merged PR #202 base
- * plus its committed, staged, unstaged, and untracked paths. Renames,
- * deletions, unmerged entries, and every unrelated surface fail closed.
+ * Bind merged PR #203 to its immutable exact committed slice.
  */
 function assertActiveLiveStatusSupabaseProPacketDiffScope(): void {
   const comparisonRange =
-    `${ACTIVE_LIVE_STATUS_SUPABASE_PRO_PACKET_BASE_COMMIT}...HEAD`;
+    `${ACTIVE_LIVE_STATUS_SUPABASE_PRO_PACKET_BASE_COMMIT}...${ACTIVE_LIVE_STATUS_SUPABASE_PRO_PACKET_FIXED_HEAD_COMMIT}`;
   try {
     execFileSync("git", [
       "merge-base",
       "--is-ancestor",
       ACTIVE_LIVE_STATUS_SUPABASE_PRO_PACKET_BASE_COMMIT,
+      ACTIVE_LIVE_STATUS_SUPABASE_PRO_PACKET_FIXED_HEAD_COMMIT,
+    ], { cwd: repoRoot, stdio: "ignore" });
+  } catch {
+    throw new Error(
+      "live-status/Supabase-Pro packet lacks its immutable PR #203 ancestry",
+    );
+  }
+
+  try {
+    const paths = gitPathList([
+      "diff", "--find-renames", "--name-only", "--diff-filter=ACM",
+      comparisonRange, "--",
+    ]).sort();
+    const forbidden = gitPathList([
+      "diff", "--find-renames", "--name-only", "--diff-filter=DRTUXB",
+      comparisonRange, "--",
+    ]).sort();
+    const unexpected = paths.filter((path) =>
+      !ACTIVE_LIVE_STATUS_SUPABASE_PRO_PACKET_ALLOWED_PATHS.has(path)
+    );
+    const missing = Array.from(
+      ACTIVE_LIVE_STATUS_SUPABASE_PRO_PACKET_ALLOWED_PATHS,
+    ).filter((path) => !paths.includes(path)).sort();
+    if (unexpected.length > 0 || missing.length > 0 || forbidden.length > 0) {
+      throw new Error(
+        "live-status/Supabase-Pro packet Git scope drifted: " + [
+          unexpected.length > 0 ? `unexpected=${unexpected.join(",")}` : null,
+          missing.length > 0 ? `missing=${missing.join(",")}` : null,
+          forbidden.length > 0 ? `forbidden=${forbidden.join(",")}` : null,
+        ].filter(Boolean).join("; "),
+      );
+    }
+  } catch (error) {
+    if (error instanceof Error && error.message.startsWith(
+      "live-status/Supabase-Pro packet Git scope drifted:",
+    )) throw error;
+    throw new Error(
+      "live-status/Supabase-Pro packet cannot verify its exact Git diff scope: " +
+        (error instanceof Error ? error.message : String(error)),
+    );
+  }
+}
+
+/**
+ * Bind the least-privileged R3 synthetic Auth proof runner to merged PR #203
+ * plus its committed, staged, unstaged, and untracked paths. The packet may
+ * add only the disabled route, its environment placeholder, tests, and this
+ * forward release guard. Every unrelated mutation fails closed.
+ */
+function assertActiveR3AcceptanceAuthProofRunnerDiffScope(): void {
+  const comparisonRange =
+    `${ACTIVE_R3_ACCEPTANCE_AUTH_PROOF_RUNNER_BASE_COMMIT}...HEAD`;
+  try {
+    execFileSync("git", [
+      "merge-base",
+      "--is-ancestor",
+      ACTIVE_R3_ACCEPTANCE_AUTH_PROOF_RUNNER_BASE_COMMIT,
       "HEAD",
     ], { cwd: repoRoot, stdio: "ignore" });
   } catch {
     throw new Error(
-      "live-status/Supabase-Pro packet lacks its exact merged PR #202 base",
+      "R3 acceptance Auth proof runner lacks the exact merged PR #203 base",
     );
   }
 
@@ -1791,14 +1908,14 @@ function assertActiveLiveStatusSupabaseProPacketDiffScope(): void {
       ...gitPathList(["ls-files", "--unmerged"]),
     ])).sort();
     const unexpected = paths.filter((path) =>
-      !ACTIVE_LIVE_STATUS_SUPABASE_PRO_PACKET_ALLOWED_PATHS.has(path)
+      !ACTIVE_R3_ACCEPTANCE_AUTH_PROOF_RUNNER_ALLOWED_PATHS.has(path)
     );
     const missing = Array.from(
-      ACTIVE_LIVE_STATUS_SUPABASE_PRO_PACKET_ALLOWED_PATHS,
+      ACTIVE_R3_ACCEPTANCE_AUTH_PROOF_RUNNER_ALLOWED_PATHS,
     ).filter((path) => !paths.includes(path)).sort();
     if (unexpected.length > 0 || missing.length > 0 || forbidden.length > 0) {
       throw new Error(
-        "live-status/Supabase-Pro packet Git scope drifted: " + [
+        "R3 acceptance Auth proof runner Git scope drifted: " + [
           unexpected.length > 0 ? `unexpected=${unexpected.join(",")}` : null,
           missing.length > 0 ? `missing=${missing.join(",")}` : null,
           forbidden.length > 0 ? `forbidden=${forbidden.join(",")}` : null,
@@ -1807,10 +1924,10 @@ function assertActiveLiveStatusSupabaseProPacketDiffScope(): void {
     }
   } catch (error) {
     if (error instanceof Error && error.message.startsWith(
-      "live-status/Supabase-Pro packet Git scope drifted:",
+      "R3 acceptance Auth proof runner Git scope drifted:",
     )) throw error;
     throw new Error(
-      "live-status/Supabase-Pro packet cannot verify its exact Git diff scope: " +
+      "R3 acceptance Auth proof runner cannot verify its exact Git diff scope: " +
         (error instanceof Error ? error.message : String(error)),
     );
   }
@@ -2090,6 +2207,7 @@ function assertCurrentLiveStatusReconciliation(
     assertActiveWorkerTransportPacketDiffScope,
     assertActiveGitHubCopilotGovernancePacketDiffScope,
     assertActiveLiveStatusSupabaseProPacketDiffScope,
+    assertActiveR3AcceptanceAuthProofRunnerDiffScope,
   ]) {
     try {
       guard();
@@ -2117,9 +2235,6 @@ function assertCurrentLiveStatusReconciliation(
     resolve(repoRoot, CURRENT_LIVE_STATUS_CLOSEOUT_PATH),
     "utf8",
   )) as Record<string, any>;
-  const sourceTree = hashTree(resolve(repoRoot, DEPLOYABLE_SITES_SOURCE_ROOT), {
-    exclusions: [...GENERATED_PATH_EXCLUSIONS],
-  });
   const rootMigrationTree = hashTree(
     resolve(repoRoot, ROOT_MIGRATION_SOURCE_ROOT),
     { suffix: ".sql" },
@@ -2132,6 +2247,13 @@ function assertCurrentLiveStatusReconciliation(
     repoRoot,
     ROOT_MIGRATION_SOURCE_ROOT,
     PREINTERVENTION_ACCEPTANCE_MIGRATION,
+  );
+  const liveSitesRuntimeTree = hashGitSubtree(
+    ACTIVE_LIVE_STATUS_SUPABASE_PRO_PACKET_FIXED_HEAD_COMMIT,
+    "artifacts/veroxa-sites",
+  );
+  const candidateSitesRuntimeTree = hashTrackedSubtree(
+    "artifacts/veroxa-sites",
   );
 
   must(
@@ -2165,15 +2287,22 @@ function assertCurrentLiveStatusReconciliation(
       sites.deploymentStatus === "succeeded" &&
       sites.internalSourceCommit ===
         "85e2bc4f7eb3a6b23a5bd1d2f3934d0d1c44364f" &&
-      sites.runtimeSubtreeFileCount === sourceTree.fileCount &&
-      sites.runtimeSubtreeSha256 === sourceTree.sha256 &&
+      sites.runtimeSubtreeFileCount === 245 &&
+      sites.runtimeSubtreeSha256 ===
+        "85f50c41751f38a49bd6ce3eadfb9bf1f90065615b84b2d6c8707ca7e23d89a7" &&
+      liveSitesRuntimeTree.fileCount === sites.runtimeSubtreeFileCount &&
+      liveSitesRuntimeTree.sha256 === sites.runtimeSubtreeSha256 &&
       sites.matchesObservedGitHubMainRuntimeSubtree === true &&
       sites.apexDomainHealthy === true &&
-      sites.wwwDomainHealthy === true &&
-      sourceTree.fileCount === 245 &&
-      sourceTree.sha256 ===
-        "85f50c41751f38a49bd6ce3eadfb9bf1f90065615b84b2d6c8707ca7e23d89a7",
+      sites.wwwDomainHealthy === true,
     "Sites v66 identity, domain health, or exact runtime-subtree parity drifted",
+  );
+  must(
+    candidateSitesRuntimeTree.fileCount ===
+        ACTIVE_R3_ACCEPTANCE_AUTH_PROOF_RUNNER_SITES_FILE_COUNT &&
+      candidateSitesRuntimeTree.sha256 ===
+        ACTIVE_R3_ACCEPTANCE_AUTH_PROOF_RUNNER_SITES_SHA256,
+    "R3 Auth-proof candidate Sites runtime subtree drifted",
   );
   must(
     supabase?.plan === "pro" &&
@@ -2277,8 +2406,9 @@ function assertCurrentLiveStatusReconciliation(
       closeout.status === "live_stack_reconciled_acceptance_incomplete" &&
       closeout.observedAt === record.updatedAt &&
       closeout.github?.observedMainCommit === github?.observedMainCommit &&
-      closeout.sites?.runtimeSubtree?.fileCount === sourceTree.fileCount &&
-      closeout.sites?.runtimeSubtree?.sha256 === sourceTree.sha256 &&
+      closeout.sites?.runtimeSubtree?.fileCount === 245 &&
+      closeout.sites?.runtimeSubtree?.sha256 ===
+        "85f50c41751f38a49bd6ce3eadfb9bf1f90065615b84b2d6c8707ca7e23d89a7" &&
       closeout.sites?.runtimeSubtree?.matchesObservedGitHubMain === true &&
       closeout.supabase?.migrations?.count === rootMigrationTree.fileCount &&
       closeout.supabase?.migrations?.treeSha256 === rootMigrationTree.sha256 &&
