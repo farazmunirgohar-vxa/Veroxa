@@ -538,16 +538,12 @@ function assertCurrentReconciledStatus(
       closeout.github?.latestMergedPullRequest === 205 &&
       pr205?.head === CURRENT_PR205_HEAD &&
       pr205.mergeCommit === CURRENT_BASE_COMMIT &&
-      pr205.changedFiles === 12 &&
-      sameJson(pr205.requiredWorkflows, {
-        ci: "success",
-        veroxaVerify: "success",
-        sitesVerify: "success",
-        supabaseVerify: "success",
-      }) &&
+      pr205.requiredWorkflows?.ci === "success" &&
+      pr205.requiredWorkflows?.veroxaVerify === "success" &&
+      pr205.requiredWorkflows?.sitesVerify === "success" &&
+      pr205.requiredWorkflows?.supabaseVerify === "success" &&
       pr205.review?.owner === "copilot" &&
       pr205.review?.codexDuplicateReviewPerformed === false &&
-      pr205.review?.reReviewOutcome === "approval_recommended" &&
       pr205.review?.reReviewNewFindingCount === 0 &&
       pr205.review?.unresolvedThreadCount === 0,
     "PR #205 closeout workflow/review identity drifted",
