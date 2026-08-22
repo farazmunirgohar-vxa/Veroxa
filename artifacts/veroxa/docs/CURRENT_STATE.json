@@ -145,6 +145,15 @@
     "permittedAccess": "read_only_immutable_evidence_reconciliation",
     "terminalInstruction": "never_retry_reprocess_resubmit_move_replace_delete_reupload_or_transition_to_ready"
   },
+  "productBoundary": {
+    "readyForTeamReviewIsExternalApproval": false,
+    "readyForTeamReviewIsPublication": false,
+    "momoGoClaimed": false,
+    "customerMediaUsedForThisObservation": false,
+    "runtimeOrPlatformMutationPerformed": true,
+    "secondAuthenticationProofPerformed": false,
+    "realMomoMediaTouched": false
+  },
   "externalActionLock": {
     "publishing": false,
     "externalScheduling": false,
