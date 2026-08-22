@@ -104,21 +104,13 @@ if (activeForwardCandidate
       : "Refusing to attest source whose deterministic hashes do not match the current manifest and release-candidate fingerprints",
   );
 }
-if (
-  !migrationTree.files.includes(
-    latestCandidateMigration,
-  )
-) {
+if (!migrationTree.files.includes(latestCandidateMigration)) {
   throw new Error(
     "Refusing to attest a candidate whose latest migration is absent from the deterministic migration tree",
   );
 }
 const latestCandidateMigrationSha256 = sha256File(
-  resolve(
-    repoRoot,
-    manifest.migrations.root,
-    latestCandidateMigration,
-  ),
+  resolve(repoRoot, manifest.migrations.root, latestCandidateMigration),
 );
 const expectedLatestMigrationSha256 = currentLiveStatus
   ?.migrations.latestMigrationSha256 ??
@@ -155,7 +147,11 @@ writeJson(output, {
   manifestSchemaVersion: manifest.schemaVersion,
   releaseState: currentLiveStatus ? currentLiveStatus.phase : manifest.releaseState,
   historicalManifestReleaseState: currentLiveStatus ? manifest.releaseState : null,
-  sitesProjectId: manifest.sitesProjectId,
+  sitesProjectId: currentLiveStatus
+    ? currentProduction?.sites?.projectId ?? null
+    : manifest.sitesProjectId,
+  historicalManifestSitesProjectId:
+    currentLiveStatus ? manifest.sitesProjectId : null,
   commitBinding: {
     scope: "exact_ci_checkout_only",
     githubSha,
@@ -184,13 +180,15 @@ writeJson(output, {
         currentStatePath: repositoryRelative(currentStatePath),
         pullRequest: currentCandidate?.pullRequest ?? null,
         mergeCommit: currentCandidate?.mergeCommit ?? null,
-        githubMainCommit:
-          currentProduction?.github?.observedMainCommit ?? null,
+        githubMainCommit: currentProduction?.github?.observedMainCommit ?? null,
+        sitesProjectId: currentProduction?.sites?.projectId ?? null,
         sitesVersion: currentProduction?.sites?.version ?? null,
         sitesVersionId: currentProduction?.sites?.versionId ?? null,
         sitesDeploymentId: currentProduction?.sites?.deploymentId ?? null,
         sitesInternalSourceCommit:
           currentProduction?.sites?.internalSourceCommit ?? null,
+        sitesInternalSourceTree:
+          currentProduction?.sites?.internalSourceTree ?? null,
         sourceFileCount: currentLiveStatus.source.fileCount,
         sourceTreeSha256: currentLiveStatus.source.treeSha256,
         migrationFileCount: currentLiveStatus.migrations.fileCount,
@@ -275,8 +273,7 @@ writeJson(output, {
     root: manifest.migrations.root,
     fileCount: migrationTree.fileCount,
     treeSha256: migrationTree.sha256,
-    latestCandidateMigration:
-      latestCandidateMigration,
+    latestCandidateMigration,
     latestCandidateMigrationSha256,
   },
   applicationQualityEvidence:
