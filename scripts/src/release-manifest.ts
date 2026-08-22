@@ -13,6 +13,9 @@ const CURRENT_BASE_COMMIT = "c47920dce981478d757a3cc89ef9f337c39908ef";
 const CURRENT_BASE_TREE = "1303518c22c5ff40daabc5b8f68803a02d30b8c8";
 const CURRENT_PR205_HEAD = "51dca29248778e842b671f5cbe18783195fbcda0";
 const CURRENT_PR205_SCOPE = "hosted_signed_envelope_transport_and_regression_guard";
+const CURRENT_PACKET_REVIEW_ANCHOR = "d4db271376b8e698f2af63d875b5b57a35e917d9";
+const CURRENT_PACKET_REVIEW_ANCHOR_TREE = "55266cc553f5dff04168d948ed0b8e6193ce9e2b";
+const CURRENT_PACKET_PATH_COUNT = 11;
 const CURRENT_CLOSEOUT =
   "artifacts/veroxa/docs/VEROXA_LIVE_STATUS_CLOSEOUT_20260822.json";
 const CURRENT_REQUIRED_RECOVERY =
@@ -24,26 +27,20 @@ const CURRENT_MIGRATION_SHA256 =
 const CURRENT_MIGRATION_BYTE_LENGTH = 76_641;
 const CURRENT_MIGRATION_TREE_SHA256 =
   "4c91224d731322539bdea70c3c4e802960b0fa4bc154faef19896a5a23794875";
+const CURRENT_SITES_PROJECT_ID = "appgprj_6a53d07c7c28819182801cf35dfd30de";
 const CURRENT_SITES_SHA256 =
   "926e3a10e081e9b5f8924783add85cb022afc75549272352e9e416b53e3b1504";
 const CURRENT_SITES_VERSION_ID =
   "appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_0116de399dc881918935597e6fbc0272";
 const CURRENT_SITES_DEPLOYMENT_ID =
   "appgdep_6a894fe379108191a767de502d56d5bd";
-
-const CURRENT_PACKET_PATHS = [
-  "AGENTS.md",
-  "artifacts/veroxa/docs/ACTIVE_DOCS_INDEX.md",
-  "artifacts/veroxa/docs/CURRENT_MILESTONE.md",
-  "artifacts/veroxa/docs/CURRENT_STATE.json",
-  "artifacts/veroxa/docs/VEROXA_LIVE_STATUS_CLOSEOUT_20260822.json",
-  "artifacts/veroxa/docs/VEROXA_LOCKED_OPERATING_MEMORY.md",
-  "scripts/src/check-chatgpt-sites-migration-source-truth.ts",
-  "scripts/src/check-supabase-migration-ledger.ts",
-  "scripts/src/generate-deployment-attestation.ts",
-  "scripts/src/release-manifest-core.ts",
-  "scripts/src/release-manifest.ts",
-] as const;
+const CURRENT_SITES_INTERNAL_SOURCE_COMMIT =
+  "8ed3dc93be34a5f889aba4e911170f29c6999148";
+const CURRENT_SITES_INTERNAL_SOURCE_TREE =
+  "73fcaed7c34f743408deb74438cdf878a0e77a1b";
+const CURRENT_SUPABASE_ORGANIZATION_ID = "vxenhhycymlsccamhayg";
+const CURRENT_SUPABASE_PROJECT_REF = "mwqkhsvdezeykdpqhqec";
+const CURRENT_SUPABASE_REGION = "us-east-2";
 
 const CURRENT_EDGE_SOURCE_PATHS = [
   "supabase/functions/momo-media-ai-lifecycle/index.ts",
@@ -167,17 +164,45 @@ function gitForbiddenPaths(base: string, head: string): string[] {
   ]).sort();
 }
 
-function isExactCurrentPacketHead(head: string): boolean {
+function isAncestor(ancestor: string, descendant: string): boolean {
   try {
     execFileSync(
       "git",
-      ["merge-base", "--is-ancestor", CURRENT_BASE_COMMIT, head],
+      ["merge-base", "--is-ancestor", ancestor, descendant],
       { cwd: core.repoRoot, stdio: "ignore" },
     );
-    return sameJson(
-      gitChangedPaths(CURRENT_BASE_COMMIT, head),
-      [...CURRENT_PACKET_PATHS].sort(),
-    ) && gitForbiddenPaths(CURRENT_BASE_COMMIT, head).length === 0;
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function currentReviewedPacketPaths(): string[] {
+  if (!isAncestor(CURRENT_BASE_COMMIT, CURRENT_PACKET_REVIEW_ANCHOR)) {
+    throw new Error("Pinned reviewed status-packet anchor does not descend from PR #205 main");
+  }
+  const anchorTree = gitOutput(["rev-parse", `${CURRENT_PACKET_REVIEW_ANCHOR}^{tree}`]);
+  if (anchorTree !== CURRENT_PACKET_REVIEW_ANCHOR_TREE) {
+    throw new Error("Pinned reviewed status-packet tree identity drifted");
+  }
+  const paths = gitChangedPaths(CURRENT_BASE_COMMIT, CURRENT_PACKET_REVIEW_ANCHOR);
+  if (paths.length !== CURRENT_PACKET_PATH_COUNT ||
+      gitForbiddenPaths(CURRENT_BASE_COMMIT, CURRENT_PACKET_REVIEW_ANCHOR).length !== 0) {
+    throw new Error("Pinned reviewed status-packet scope is not the exact 11-file additive/modified packet");
+  }
+  return paths;
+}
+
+function matchesReviewedPacketPaths(paths: string[]): boolean {
+  return sameJson([...paths].sort(), currentReviewedPacketPaths());
+}
+
+function isExactCurrentPacketHead(head: string): boolean {
+  try {
+    if (!isAncestor(CURRENT_BASE_COMMIT, head) ||
+        !isAncestor(CURRENT_PACKET_REVIEW_ANCHOR, head)) return false;
+    return matchesReviewedPacketPaths(gitChangedPaths(CURRENT_BASE_COMMIT, head)) &&
+      gitForbiddenPaths(CURRENT_BASE_COMMIT, head).length === 0;
   } catch {
     return false;
   }
@@ -185,11 +210,23 @@ function isExactCurrentPacketHead(head: string): boolean {
 
 function resolveCurrentPacketIdentity(): { packetHead: string; mergeCommit: string | null } {
   const head = gitOutput(["rev-parse", "HEAD"]);
-  const parents = gitOutput(["rev-list", "--parents", "-n", "1", head]).split(/\s+/u);
-  for (const parent of parents.slice(2)) {
-    if (isExactCurrentPacketHead(parent)) return { packetHead: parent, mergeCommit: head };
+  const direct = gitOutput(["rev-list", "--parents", "-n", "1", head]).split(/\s+/u);
+  if (direct.length >= 3) {
+    const firstParent = direct[1];
+    const secondParent = direct[2];
+    if (isExactCurrentPacketHead(secondParent)) {
+      if (firstParent !== CURRENT_BASE_COMMIT) {
+        throw new Error(
+          "Edge-v15/Sites-v68 packet merge first parent is not the reconciled PR #205 base",
+        );
+      }
+      return { packetHead: secondParent, mergeCommit: head };
+    }
   }
-  if (isExactCurrentPacketHead(head)) return { packetHead: head, mergeCommit: null };
+
+  if (isExactCurrentPacketHead(head)) {
+    return { packetHead: head, mergeCommit: null };
+  }
 
   const commits = gitOutput([
     "rev-list",
@@ -199,14 +236,28 @@ function resolveCurrentPacketIdentity(): { packetHead: string; mergeCommit: stri
     `${CURRENT_BASE_COMMIT}..HEAD`,
   ]).split("\n").filter(Boolean);
   for (const commit of commits) {
-    const commitParents = gitOutput(["rev-list", "--parents", "-n", "1", commit]).split(/\s+/u);
-    for (const secondParent of commitParents.slice(2)) {
-      if (isExactCurrentPacketHead(secondParent)) {
-        return { packetHead: secondParent, mergeCommit: commit };
-      }
+    const parents = gitOutput(["rev-list", "--parents", "-n", "1", commit]).split(/\s+/u);
+    if (parents.length < 3) continue;
+    const firstParent = parents[1];
+    const secondParent = parents[2];
+    if (!isExactCurrentPacketHead(secondParent)) continue;
+    if (firstParent !== CURRENT_BASE_COMMIT) {
+      throw new Error(
+        "Edge-v15/Sites-v68 packet merged after unrelated main changes and requires fresh reconciliation",
+      );
     }
+    return { packetHead: secondParent, mergeCommit: commit };
   }
-  throw new Error("Edge-v15/Sites-v68 status packet cannot resolve its immutable packet head");
+  throw new Error("Edge-v15/Sites-v68 status packet cannot resolve its pinned reviewed packet identity");
+}
+
+function checkoutContainsReviewedPacketAnchor(): boolean {
+  try {
+    const head = gitOutput(["rev-parse", "HEAD"]);
+    return isAncestor(CURRENT_PACKET_REVIEW_ANCHOR, head);
+  } catch {
+    return false;
+  }
 }
 
 function hasCurrentPacketIdentity(): boolean {
@@ -219,11 +270,32 @@ function hasCurrentPacketIdentity(): boolean {
 }
 
 function shouldUseCurrentReconciliationGuard(): boolean {
-  if (!hasCurrentPacketIdentity()) return false;
-  const state = readCurrentStateRequired();
+  const result = readCurrentStateResult();
+  if (!result.ok) {
+    if (checkoutContainsReviewedPacketAnchor()) {
+      throw new Error(
+        `Current R3 status packet is present but ${result.reason}`,
+      );
+    }
+    return false;
+  }
+
+  const state = result.value;
+  const currentMarkersPresent = state.phase === CURRENT_PHASE ||
+    state.activeCandidate?.kind === CURRENT_CANDIDATE_KIND ||
+    state.activeCandidate?.state === CURRENT_CANDIDATE_STATE;
   if (!isCurrentReconciledStateValue(state)) {
+    if (currentMarkersPresent) {
+      throw new Error(
+        "CURRENT_STATE.json partially claims the current R3 reconciliation but its exact release identity is invalid",
+      );
+    }
+    return false;
+  }
+
+  if (!hasCurrentPacketIdentity()) {
     throw new Error(
-      "Current R3 status packet is present but CURRENT_STATE.json does not match its exact release identity",
+      "CURRENT_STATE.json claims the current R3 reconciliation without the pinned reviewed status-packet identity",
     );
   }
   return true;
@@ -249,6 +321,10 @@ function assertCurrentPacketScope(): void {
     throw new Error("Edge-v15/Sites-v68 status packet changed-file set drifted");
   }
   if (mergeCommit) {
+    const mergeParents = gitOutput(["rev-list", "--parents", "-n", "1", mergeCommit]).split(/\s+/u);
+    if (mergeParents[1] !== CURRENT_BASE_COMMIT || mergeParents[2] !== packetHead) {
+      throw new Error("Edge-v15/Sites-v68 packet merge parent identity drifted");
+    }
     const postPacket = gitPathList(["diff", "--name-only", `${mergeCommit}..HEAD`, "--"]);
     if (postPacket.length > 0) {
       throw new Error(
@@ -372,6 +448,28 @@ function matchesPr205Closeout(value: Record<string, any> | undefined): boolean {
     review.unresolvedThreadCount === 0;
 }
 
+function matchesImg4257(value: Record<string, any> | undefined): boolean {
+  return sameJson(value, {
+    label: "IMG_4257",
+    status: "terminal_immutable_read_only_non_ready",
+    authorizedRetriesRemaining: 0,
+    permittedAccess: "read_only_immutable_evidence_reconciliation",
+    terminalInstruction: "never_retry_reprocess_resubmit_move_replace_delete_reupload_or_transition_to_ready",
+  });
+}
+
+function matchesProductBoundary(value: Record<string, any> | undefined): boolean {
+  return sameJson(value, {
+    readyForTeamReviewIsExternalApproval: false,
+    readyForTeamReviewIsPublication: false,
+    momoGoClaimed: false,
+    customerMediaUsedForThisObservation: false,
+    runtimeOrPlatformMutationPerformed: true,
+    secondAuthenticationProofPerformed: false,
+    realMomoMediaTouched: false,
+  });
+}
+
 function assertNoCoreBypassImports(): void {
   const scriptsRoot = resolve(core.repoRoot, "scripts/src");
   const offenders: string[] = [];
@@ -416,6 +514,8 @@ function assertCurrentReconciledStatus(manifest: core.DeploymentManifest): void 
   const gates = candidate?.requiredGates as Record<string, any> | undefined;
   const blocker = state.acceptanceBlocker as Record<string, any> | undefined;
   const program = state.r3Program as Record<string, any> | undefined;
+  const img4257 = state.img4257 as Record<string, any> | undefined;
+  const productBoundary = state.productBoundary as Record<string, any> | undefined;
   const locks = state.externalActionLock as Record<string, any> | undefined;
   const capacity = state.supabaseProGovernance as Record<string, any> | undefined;
 
@@ -449,10 +549,13 @@ function assertCurrentReconciledStatus(manifest: core.DeploymentManifest): void 
     "GitHub PR #205 live baseline drifted",
   );
   must(
-    sites?.version === 68 &&
+    sites?.projectId === CURRENT_SITES_PROJECT_ID &&
+      sites.version === 68 &&
       sites.versionId === CURRENT_SITES_VERSION_ID &&
       sites.deploymentId === CURRENT_SITES_DEPLOYMENT_ID &&
       sites.deploymentStatus === "succeeded" &&
+      sites.internalSourceCommit === CURRENT_SITES_INTERNAL_SOURCE_COMMIT &&
+      sites.internalSourceTree === CURRENT_SITES_INTERNAL_SOURCE_TREE &&
       sites.runtimeSubtreeFileCount === 248 &&
       sites.runtimeSubtreeSha256 === CURRENT_SITES_SHA256 &&
       sites.matchesObservedGitHubMainRuntimeSubtree === true &&
@@ -461,10 +564,14 @@ function assertCurrentReconciledStatus(manifest: core.DeploymentManifest): void 
       sites.wwwDomainHealthy === true &&
       sites.postDeployWorkerErrors === 0 &&
       sourceTree.fileCount === 248 && sourceTree.sha256 === CURRENT_SITES_SHA256,
-    "Sites v68 identity, domain health, or deterministic source parity drifted",
+    "Sites v68 project/source identity, domain health, or deterministic source parity drifted",
   );
   must(
-    supabase?.plan === "pro" &&
+    supabase?.organizationId === CURRENT_SUPABASE_ORGANIZATION_ID &&
+      supabase.projectRef === CURRENT_SUPABASE_PROJECT_REF &&
+      supabase.projectName === "Veroxa Dev" &&
+      supabase.region === CURRENT_SUPABASE_REGION &&
+      supabase.plan === "pro" &&
       supabase.health === "ACTIVE_HEALTHY" &&
       supabase.migrationCount === 60 &&
       supabase.latestPlatformMigrationVersion === "20260820163500" &&
@@ -478,7 +585,7 @@ function assertCurrentReconciledStatus(manifest: core.DeploymentManifest): void 
       sameJson(mirrorMigrationTree.files, migrationTree.files) &&
       core.sha256File(latestMigrationPath) === CURRENT_MIGRATION_SHA256 &&
       statSync(latestMigrationPath).size === CURRENT_MIGRATION_BYTE_LENGTH,
-    "Supabase Pro health or exact 60-migration live ledger drifted",
+    "Supabase project identity, Pro health, or exact 60-migration live ledger drifted",
   );
   must(matchesPrivateSchema(closeout.supabase?.privateSchemaDefenseInDepth, supabase),
     "private-schema defense-in-depth evidence drifted or became exposed");
@@ -509,6 +616,8 @@ function assertCurrentReconciledStatus(manifest: core.DeploymentManifest): void 
       gates.separateTeamDecisionVerified === false && gates.founderGoIssued === false,
     "current state overclaims or omits an R3 acceptance gate",
   );
+  must(matchesImg4257(img4257), "CURRENT_STATE IMG_4257 terminal boundary drifted");
+  must(matchesProductBoundary(productBoundary), "CURRENT_STATE product boundary drifted or overclaimed readiness");
   must(
     blocker?.linearIssue === "VER-43" && blocker.linearStatus === "In Progress" &&
       blocker.downstreamIssue === "VER-39" && blocker.downstreamStatus === "In Progress" &&
@@ -556,16 +665,26 @@ function assertCurrentReconciledStatus(manifest: core.DeploymentManifest): void 
     "PR #205 closeout scope/workflow/review identity drifted",
   );
   must(
-    closeout.sites?.version === 68 && closeout.sites?.versionId === CURRENT_SITES_VERSION_ID &&
+    closeout.sites?.projectId === CURRENT_SITES_PROJECT_ID &&
+      closeout.sites?.version === 68 && closeout.sites?.versionId === CURRENT_SITES_VERSION_ID &&
       closeout.sites?.deploymentId === CURRENT_SITES_DEPLOYMENT_ID &&
+      closeout.sites?.internalSourceCommit === CURRENT_SITES_INTERNAL_SOURCE_COMMIT &&
+      closeout.sites?.internalSourceTree === CURRENT_SITES_INTERNAL_SOURCE_TREE &&
+      closeout.sites?.runtimeSubtree?.gitTree === CURRENT_SITES_INTERNAL_SOURCE_TREE &&
       closeout.sites?.runtimeSubtree?.fileCount === 248 &&
       closeout.sites?.runtimeSubtree?.sha256 === CURRENT_SITES_SHA256 &&
       closeout.sites?.runtimeSubtree?.matchesObservedGitHubMain === true &&
       closeout.sites?.postDeployErrorsOnlyWorkerLogCount === 0,
-    "Sites v68 closeout evidence drifted",
+    "Sites v68 closeout project/source identity or runtime evidence drifted",
   );
   must(
-    closeout.supabase?.migrations?.count === 60 &&
+    closeout.supabase?.organizationId === CURRENT_SUPABASE_ORGANIZATION_ID &&
+      closeout.supabase?.projectRef === CURRENT_SUPABASE_PROJECT_REF &&
+      closeout.supabase?.projectName === "Veroxa Dev" &&
+      closeout.supabase?.region === CURRENT_SUPABASE_REGION &&
+      closeout.supabase?.plan === "pro" &&
+      closeout.supabase?.health === "ACTIVE_HEALTHY" &&
+      closeout.supabase?.migrations?.count === 60 &&
       closeout.supabase?.migrations?.canonicalSource === `supabase/migrations/${CURRENT_MIGRATION}` &&
       closeout.supabase?.migrations?.canonicalByteLength === CURRENT_MIGRATION_BYTE_LENGTH &&
       closeout.supabase?.migrations?.canonicalSha256 === CURRENT_MIGRATION_SHA256 &&
@@ -575,7 +694,7 @@ function assertCurrentReconciledStatus(manifest: core.DeploymentManifest): void 
       closeout.supabase?.externalActionLocks?.acceptanceExternalWriteAllowedRows === 0 &&
       matchesAcceptanceCounts(closeout.supabase?.acceptance, closeout.supabase?.externalActionLocks) &&
       matchesBlocker(closeout.supabase?.acceptanceSessionBlocker, blocker),
-    "acceptance snapshot, no-new-row boundary, or preserved blocker drifted",
+    "Supabase identity, acceptance snapshot, no-new-row boundary, or preserved blocker drifted",
   );
   must(
     closeout.edge?.allActiveFunctionBundleSourcesMatchObservedGitHubMain === true &&
@@ -604,12 +723,16 @@ function assertCurrentReconciledStatus(manifest: core.DeploymentManifest): void 
       closeout.r3Program?.authenticatedPortalGate?.status === "Todo" &&
       closeout.r3Program?.authenticatedPortalGate?.complete === false &&
       closeout.r3Program?.founderGate?.status === "Todo" && closeout.r3Program?.founderGate?.complete === false &&
-      closeout.r3Program?.founderGate?.momoGo === false &&
-      closeout.productBoundary?.runtimeOrPlatformMutationPerformed === true &&
-      closeout.productBoundary?.secondAuthenticationProofPerformed === false &&
-      closeout.productBoundary?.realMomoMediaTouched === false,
+      closeout.r3Program?.founderGate?.founderGoIssued === false && closeout.r3Program?.founderGate?.momoGo === false &&
+      matchesProductBoundary(closeout.productBoundary),
     "machine closeout overclaims an incomplete R3 or product-boundary gate",
   );
+
+  const reviewedScope = currentReviewedPacketPaths();
+  const scopeMutation = [...reviewedScope];
+  scopeMutation[0] = "supabase/functions/momo-content-ai-lifecycle/index.ts";
+  must(!matchesReviewedPacketPaths(scopeMutation),
+    "reviewed packet scope mutation was not rejected");
 
   const acceptanceMutation = structuredClone(closeout.supabase?.acceptance ?? {}) as Record<string, any>;
   acceptanceMutation.uploadSessionRows = 5;
@@ -666,6 +789,24 @@ function assertCurrentReconciledStatus(manifest: core.DeploymentManifest): void 
   const prReviewOutcomeMutation = structuredClone(pr205 ?? {}) as Record<string, any>;
   prReviewOutcomeMutation.review.reReviewOutcome = "changes_recommended";
   must(!matchesPr205Closeout(prReviewOutcomeMutation), "PR #205 re-review outcome mutation was not rejected");
+
+  const sitesIdentityMutation = structuredClone(sites ?? {}) as Record<string, any>;
+  sitesIdentityMutation.internalSourceCommit = "0".repeat(40);
+  must(sitesIdentityMutation.internalSourceCommit !== CURRENT_SITES_INTERNAL_SOURCE_COMMIT,
+    "Sites source-identity mutation regression setup failed");
+
+  const supabaseIdentityMutation = structuredClone(supabase ?? {}) as Record<string, any>;
+  supabaseIdentityMutation.projectRef = "wrong-project";
+  must(supabaseIdentityMutation.projectRef !== CURRENT_SUPABASE_PROJECT_REF,
+    "Supabase project-identity mutation regression setup failed");
+
+  const imgMutation = structuredClone(img4257 ?? {}) as Record<string, any>;
+  imgMutation.authorizedRetriesRemaining = 1;
+  must(!matchesImg4257(imgMutation), "IMG_4257 retry-boundary mutation was not rejected");
+
+  const productMutation = structuredClone(productBoundary ?? {}) as Record<string, any>;
+  productMutation.customerMediaUsedForThisObservation = true;
+  must(!matchesProductBoundary(productMutation), "product-boundary customer-media mutation was not rejected");
 
   if (failures.length > 0) {
     throw new Error("Unsafe current live-status reconciliation: " + failures.join("; "));
