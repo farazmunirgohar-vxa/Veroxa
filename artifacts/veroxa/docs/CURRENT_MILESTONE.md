@@ -14,9 +14,12 @@ The reviewed release is merged and the production runtime is converged. The
 next blocked outcome is one explicitly authorized, least-privileged synthetic
 Client authentication proof against the preserved expired session. It must
 prove authentication succeeds while immutable expiry/state enforcement rejects
-the request, creates no new rows, preserves all four existing upload-session
-rows unchanged, and keeps registered-session, asset, package,
-provider-connection, publish-queue, and publish-attempt counts at zero.
+the request, creates no new acceptance/output rows, preserves the current
+aggregate upload-session snapshot at four total sessions (one initiated and
+three expired), and keeps registered-session, asset, package,
+provider-connection, publish-queue, and publish-attempt counts at zero. The
+named preserved expired blocker session remains separately identity-bound and
+immutable by `CURRENT_STATE.json` and the machine closeout.
 
 The remaining ordered program is:
 
@@ -88,26 +91,3 @@ authorization. Revoke the temporary session after the proof.
   writes, advertising, external scheduling, customer contact, account
   connection, pricing changes, and repository-visibility changes remain
   fail-closed.
-- IMG_4257 remains terminal, immutable, read-only, non-Ready, and has zero
-  retries. Never retry, reprocess, resubmit, move, replace, delete, re-upload,
-  or use it as a fixture.
-- Supabase Pro is governed capacity, not blanket operational or spend
-  authority. Paid overage and optional feature changes remain unauthorized.
-- Codex owns implementation, tests, connected-platform operations, objective
-  evidence, and authorized releases. Copilot exclusively reviews assigned PR
-  diffs; Codex does not duplicate that review.
-
-## Evidence and history
-
-- `VEROXA_LIVE_STATUS_CLOSEOUT_20260822.json` is the machine-readable current
-  observation.
-- `SUPABASE_PRO_CAPACITY_AND_WORKFLOW_DIRECTION.md` is the current Pro-capacity
-  governance authority.
-- `VEROXA_LIVE_STATUS_CLOSEOUT_20260821.json` is superseded history.
-- `VEROXA_DEPLOYMENT_MANIFEST.json` remains immutable schema-13 PR #185 / Sites
-  v56 historical incident evidence.
-
-If evidence is missing or conflicting, preserve every lock and identify the
-smallest safe next gate. This status packet authorizes no additional proof,
-production migration, deployment, customer/media action, external write, or
-Momo activation.
