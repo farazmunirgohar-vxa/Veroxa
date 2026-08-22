@@ -293,6 +293,9 @@ test("production wiring mints no user, resets no credential, and stays release-s
     'type: "magiclink"',
     "verifyOtp",
     "getUserById",
+    "data?.user",
+    "data?.properties?.hashed_token",
+    "data?.session?.access_token",
     'signOut(\n        accessToken,\n        "local"',
     "VEROXA_INTERNAL_ACCEPTANCE_AUTH_PROOF_HMAC_SECRET",
   ]) assert.ok(route.includes(marker), `missing route marker: ${marker}`);

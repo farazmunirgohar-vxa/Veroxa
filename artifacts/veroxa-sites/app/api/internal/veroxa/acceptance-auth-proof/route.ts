@@ -118,14 +118,14 @@ const handler = createAcceptanceAuthProofHandler({
         acceptanceAuthProofTarget.userId,
       );
       if (error) throw new Error("acceptance_identity_read_failed");
-      return userRecord(data.user);
+      return userRecord(data?.user ?? null);
     },
     async generateMagicLinkTokenHash() {
       const { data, error } = await requireAdmin().auth.admin.generateLink({
         type: "magiclink",
         email: acceptanceAuthProofTarget.email,
       });
-      const tokenHash = data.properties?.hashed_token;
+      const tokenHash = data?.properties?.hashed_token;
       if (error || !tokenHash) {
         throw new Error("acceptance_magic_link_generation_failed");
       }
@@ -136,9 +136,9 @@ const handler = createAcceptanceAuthProofHandler({
         type: "magiclink",
         token_hash: tokenHash,
       });
-      const accessToken = data.session?.access_token;
-      const expiresAt = data.session?.expires_at;
-      if (error || !data.user || !accessToken || !expiresAt) return null;
+      const accessToken = data?.session?.access_token;
+      const expiresAt = data?.session?.expires_at;
+      if (error || !data?.user || !accessToken || !expiresAt) return null;
       return {
         user: userRecord(data.user)!,
         accessToken,
