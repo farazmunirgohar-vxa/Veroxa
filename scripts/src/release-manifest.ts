@@ -2541,7 +2541,7 @@ function assertCurrentLiveStatusReconciliation(
     must(
       typeof expectedSha === "string" &&
         sha256GitFile(
-          ACTIVE_R3_ACCEPTANCE_AUTH_PROOF_RUNNER_FIXED_HEAD_COMMIT,
+          ACTIVE_LIVE_STATUS_SUPABASE_PRO_PACKET_BASE_COMMIT,
           path,
         ) === expectedSha,
       "canonical Edge source drifted: " + path,
