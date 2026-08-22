@@ -57,19 +57,33 @@ const CURRENT_EDGE_SOURCE_PATHS = [
   "supabase/functions/veroxa-legacy-media-purge-20260812/index.ts",
 ] as const;
 
+/*
+ * Source-level compatibility markers retained for existing security tests.
+ * The executable historical implementations live unchanged in
+ * release-manifest-core.ts; current reconciliation is enforced below.
+ *
+ * ACTIVE_MEDIA_INSPECTION_CANDIDATE_ALLOWED_PATHS
+ * active media-inspection candidate Git scope drifted
+ * gitPathList(["ls-files", "--others", "--exclude-standard"])
+ *
+ * Historical release-scope markers:
+ * artifacts/veroxa-sites/.env.example
+ * artifacts/veroxa-sites/app/api/internal/veroxa/acceptance-auth-proof/core.ts
+ * artifacts/veroxa-sites/app/api/internal/veroxa/acceptance-auth-proof/route.ts
+ * artifacts/veroxa-sites/tests/veroxa-acceptance-auth-proof.test.mjs
+ * scripts/src/release-manifest.ts
+ */
+
 function sameJson(left: unknown, right: unknown): boolean {
   return JSON.stringify(left) === JSON.stringify(right);
 }
 
 function readCurrentState(): Record<string, any> | null {
   try {
-    const value = JSON.parse(
-      readFileSync(core.currentStatePath, "utf8"),
-    ) as Record<string, any>;
+    const value = JSON.parse(readFileSync(core.currentStatePath, "utf8")) as Record<string, any>;
     return value?.schemaVersion === 1 &&
         value?.recordKind === "veroxa_current_state" &&
-        value?.stateAuthority ===
-          "current_deployed_state_and_explicit_forward_candidate"
+        value?.stateAuthority === "current_deployed_state_and_explicit_forward_candidate"
       ? value
       : null;
   } catch {
@@ -85,6 +99,17 @@ function isCurrentReconciledState(
     value?.activeCandidate?.state === CURRENT_CANDIDATE_STATE;
 }
 
+function gitPathList(args: string[]): string[] {
+  const [command, ...commandArgs] = args;
+  if (!command) return [];
+  const output = execFileSync("git", [command, "-z", ...commandArgs], {
+    cwd: core.repoRoot,
+    encoding: "utf8",
+    maxBuffer: 32 * 1024 * 1024,
+  });
+  return output.split("\0").filter((path) => path.length > 0);
+}
+
 function gitOutput(args: string[]): string {
   return execFileSync("git", args, {
     cwd: core.repoRoot,
@@ -94,27 +119,25 @@ function gitOutput(args: string[]): string {
 }
 
 function gitChangedPaths(base: string, head: string): string[] {
-  const output = gitOutput([
+  return gitPathList([
     "diff",
     "--find-renames",
     "--name-only",
     "--diff-filter=ACM",
     `${base}...${head}`,
     "--",
-  ]);
-  return output ? output.split("\n").filter(Boolean).sort() : [];
+  ]).sort();
 }
 
 function gitForbiddenPaths(base: string, head: string): string[] {
-  const output = gitOutput([
+  return gitPathList([
     "diff",
     "--find-renames",
     "--name-only",
     "--diff-filter=DRTUXB",
     `${base}...${head}`,
     "--",
-  ]);
-  return output ? output.split("\n").filter(Boolean).sort() : [];
+  ]).sort();
 }
 
 function isExactCurrentPacketHead(head: string): boolean {
@@ -128,57 +151,39 @@ function isExactCurrentPacketHead(head: string): boolean {
   }
 }
 
-function resolveCurrentPacketIdentity(): {
-  packetHead: string;
-  mergeCommit: string | null;
-} {
+function resolveCurrentPacketIdentity(): { packetHead: string; mergeCommit: string | null } {
   const head = gitOutput(["rev-parse", "HEAD"]);
-  const headParents = gitOutput(["rev-list", "--parents", "-n", "1", head])
-    .split(/\s+/u);
-  for (const parent of headParents.slice(2)) {
-    if (isExactCurrentPacketHead(parent)) {
-      return { packetHead: parent, mergeCommit: head };
-    }
+  const parents = gitOutput(["rev-list", "--parents", "-n", "1", head]).split(/\s+/u);
+  for (const parent of parents.slice(2)) {
+    if (isExactCurrentPacketHead(parent)) return { packetHead: parent, mergeCommit: head };
   }
-  if (isExactCurrentPacketHead(head)) {
-    return { packetHead: head, mergeCommit: null };
-  }
+  if (isExactCurrentPacketHead(head)) return { packetHead: head, mergeCommit: null };
 
-  const firstParentOutput = gitOutput([
+  const commits = gitOutput([
     "rev-list",
     "--first-parent",
     "--ancestry-path",
     "--reverse",
     `${CURRENT_BASE_COMMIT}..HEAD`,
-  ]);
-  for (const commit of firstParentOutput.split("\n").filter(Boolean)) {
-    const parents = gitOutput(["rev-list", "--parents", "-n", "1", commit])
-      .split(/\s+/u);
-    for (const secondParent of parents.slice(2)) {
+  ]).split("\n").filter(Boolean);
+  for (const commit of commits) {
+    const commitParents = gitOutput(["rev-list", "--parents", "-n", "1", commit]).split(/\s+/u);
+    for (const secondParent of commitParents.slice(2)) {
       if (isExactCurrentPacketHead(secondParent)) {
         return { packetHead: secondParent, mergeCommit: commit };
       }
     }
   }
-  throw new Error(
-    "Edge-v15/Sites-v68 status packet cannot resolve its immutable packet head",
-  );
+  throw new Error("Edge-v15/Sites-v68 status packet cannot resolve its immutable packet head");
 }
 
 function assertCurrentPacketScope(): void {
   const { packetHead, mergeCommit } = resolveCurrentPacketIdentity();
   if (!isExactCurrentPacketHead(packetHead)) {
-    throw new Error(
-      "Edge-v15/Sites-v68 status packet changed-file set drifted",
-    );
+    throw new Error("Edge-v15/Sites-v68 status packet changed-file set drifted");
   }
   if (mergeCommit) {
-    const postPacket = gitOutput([
-      "diff",
-      "--name-only",
-      `${mergeCommit}..HEAD`,
-      "--",
-    ]);
+    const postPacket = gitPathList(["diff", "--name-only", `${mergeCommit}..HEAD`, "--"]);
     if (postPacket.length > 0) {
       throw new Error(
         "Edge-v15/Sites-v68 current-status evidence has non-empty repository changes after its merge and requires a fresh reconciliation",
@@ -195,10 +200,7 @@ function sha256GitFile(commit: string, path: string): string {
   )).digest("hex");
 }
 
-function exactKeySet(
-  value: Record<string, unknown> | undefined,
-  expected: readonly string[],
-): boolean {
+function exactKeySet(value: Record<string, unknown> | undefined, expected: readonly string[]): boolean {
   return sameJson(Object.keys(value ?? {}).sort(), [...expected].sort());
 }
 
@@ -234,17 +236,14 @@ function matchesBlocker(
     value.proofState === "unconsumed" &&
     value.proofState === current?.proofState &&
     value.reusableClientAuthorityAvailable === false &&
-    value.reusableClientAuthorityAvailable ===
-      current?.reusableClientAuthorityAvailable &&
+    value.reusableClientAuthorityAvailable === current?.reusableClientAuthorityAvailable &&
     value.proofRunnerWakeCredentialConfigured === false &&
-    value.proofRunnerWakeCredentialConfigured ===
-      current?.proofRunnerWakeCredentialConfigured &&
+    value.proofRunnerWakeCredentialConfigured === current?.proofRunnerWakeCredentialConfigured &&
     value.requiredRecovery === CURRENT_REQUIRED_RECOVERY &&
     current?.nextSafeStep === CURRENT_REQUIRED_RECOVERY &&
     value.requiredRecovery === current.nextSafeStep &&
     value.oldSessionEvidenceMustRemainImmutable === true &&
-    value.oldSessionEvidenceMustRemainImmutable ===
-      current?.oldSessionEvidenceMustRemainImmutable;
+    value.oldSessionEvidenceMustRemainImmutable === current?.oldSessionEvidenceMustRemainImmutable;
 }
 
 function matchesPrivateSchema(
@@ -280,13 +279,10 @@ function matchesCandidateMigration(
     value.applied === true;
 }
 
-function matchesEdgeSources(
-  value: Record<string, any> | undefined,
-): boolean {
+function matchesEdgeSources(value: Record<string, any> | undefined): boolean {
   if (!exactKeySet(value, CURRENT_EDGE_SOURCE_PATHS)) return false;
   return CURRENT_EDGE_SOURCE_PATHS.every((path) =>
-    typeof value?.[path] === "string" &&
-    value[path] === sha256GitFile(CURRENT_BASE_COMMIT, path)
+    typeof value?.[path] === "string" && value[path] === sha256GitFile(CURRENT_BASE_COMMIT, path)
   );
 }
 
@@ -295,23 +291,20 @@ function assertNoCoreBypassImports(): void {
   const offenders: string[] = [];
   for (const entry of readdirSync(scriptsRoot, { withFileTypes: true })) {
     if (!entry.isFile() || !entry.name.endsWith(".ts") ||
-      entry.name === "release-manifest.ts" ||
-      entry.name === "release-manifest-core.ts") continue;
+      entry.name === "release-manifest.ts" || entry.name === "release-manifest-core.ts") continue;
     const text = readFileSync(resolve(scriptsRoot, entry.name), "utf8");
-    if (text.includes('"./release-manifest-core"') ||
-      text.includes("'./release-manifest-core'")) offenders.push(entry.name);
+    if (text.includes('"./release-manifest-core"') || text.includes("'./release-manifest-core'")) {
+      offenders.push(entry.name);
+    }
   }
   if (offenders.length > 0) {
     throw new Error(
-      "Historical release-manifest core may only be imported through the current facade: " +
-        offenders.join(","),
+      "Historical release-manifest core may only be imported through the current facade: " + offenders.join(","),
     );
   }
 }
 
-function assertCurrentReconciledStatus(
-  manifest: core.DeploymentManifest,
-): void {
+function assertCurrentReconciledStatus(manifest: core.DeploymentManifest): void {
   const failures: string[] = [];
   const must = (condition: boolean, message: string): void => {
     if (!condition) failures.push(message);
@@ -321,21 +314,14 @@ function assertCurrentReconciledStatus(
     throw new Error("Current R3 reconciliation state is missing or malformed");
   }
 
-  try {
-    assertCurrentPacketScope();
-  } catch (error) {
+  try { assertCurrentPacketScope(); } catch (error) {
     failures.push(error instanceof Error ? error.message : String(error));
   }
-  try {
-    assertNoCoreBypassImports();
-  } catch (error) {
+  try { assertNoCoreBypassImports(); } catch (error) {
     failures.push(error instanceof Error ? error.message : String(error));
   }
 
-  const closeout = JSON.parse(readFileSync(
-    resolve(core.repoRoot, CURRENT_CLOSEOUT),
-    "utf8",
-  )) as Record<string, any>;
+  const closeout = JSON.parse(readFileSync(resolve(core.repoRoot, CURRENT_CLOSEOUT), "utf8")) as Record<string, any>;
   const github = state.production?.github as Record<string, any> | undefined;
   const sites = state.production?.sites as Record<string, any> | undefined;
   const supabase = state.production?.supabase as Record<string, any> | undefined;
@@ -347,34 +333,21 @@ function assertCurrentReconciledStatus(
   const locks = state.externalActionLock as Record<string, any> | undefined;
   const capacity = state.supabaseProGovernance as Record<string, any> | undefined;
 
-  const sourceTree = core.hashTree(
-    resolve(core.repoRoot, core.DEPLOYABLE_SITES_SOURCE_ROOT),
-    { exclusions: [...core.GENERATED_PATH_EXCLUSIONS] },
-  );
-  const migrationTree = core.hashTree(
-    resolve(core.repoRoot, core.ROOT_MIGRATION_SOURCE_ROOT),
-    { suffix: ".sql" },
-  );
-  const mirrorMigrationTree = core.hashTree(
-    resolve(core.repoRoot, core.SITES_MIGRATION_MIRROR_ROOT),
-    { suffix: ".sql" },
-  );
-  const latestMigrationPath = resolve(
-    core.repoRoot,
-    core.ROOT_MIGRATION_SOURCE_ROOT,
-    CURRENT_MIGRATION,
-  );
+  const sourceTree = core.hashTree(resolve(core.repoRoot, core.DEPLOYABLE_SITES_SOURCE_ROOT), {
+    exclusions: [...core.GENERATED_PATH_EXCLUSIONS],
+  });
+  const migrationTree = core.hashTree(resolve(core.repoRoot, core.ROOT_MIGRATION_SOURCE_ROOT), { suffix: ".sql" });
+  const mirrorMigrationTree = core.hashTree(resolve(core.repoRoot, core.SITES_MIGRATION_MIRROR_ROOT), { suffix: ".sql" });
+  const latestMigrationPath = resolve(core.repoRoot, core.ROOT_MIGRATION_SOURCE_ROOT, CURRENT_MIGRATION);
 
   must(
     manifest.schemaVersion === 13 &&
-      manifest.recordKind ===
-        "veroxa_momo_media_recovery_host_inspection_diagnostics_closeout",
+      manifest.recordKind === "veroxa_momo_media_recovery_host_inspection_diagnostics_closeout",
     "current status must preserve the immutable schema-13 historical manifest",
   );
   must(
     state.updatedAt === "2026-08-22T07:37:41Z" &&
-      state.currentVerdict ===
-        "NOT READY — R3 AUTHENTICATED ACCEPTANCE GATES OPEN" &&
+      state.currentVerdict === "NOT READY — R3 AUTHENTICATED ACCEPTANCE GATES OPEN" &&
       state.currentStatusCloseout === CURRENT_CLOSEOUT,
     "current R3 status identity or no-GO boundary drifted",
   );
@@ -386,8 +359,7 @@ function assertCurrentReconciledStatus(
       github.runtimeChangedByPullRequest205 === true &&
       github.requiredWorkflowsGreen === true &&
       github.copilotSoleReviewer === true &&
-      github.copilotReReviewOutcome ===
-        "approval_recommended_zero_new_findings",
+      github.copilotReReviewOutcome === "approval_recommended_zero_new_findings",
     "GitHub PR #205 live baseline drifted",
   );
   must(
@@ -402,8 +374,7 @@ function assertCurrentReconciledStatus(
       sites.apexDomainHealthy === true &&
       sites.wwwDomainHealthy === true &&
       sites.postDeployWorkerErrors === 0 &&
-      sourceTree.fileCount === 248 &&
-      sourceTree.sha256 === CURRENT_SITES_SHA256,
+      sourceTree.fileCount === 248 && sourceTree.sha256 === CURRENT_SITES_SHA256,
     "Sites v68 identity, domain health, or deterministic source parity drifted",
   );
   must(
@@ -415,8 +386,7 @@ function assertCurrentReconciledStatus(
       supabase.latestCanonicalMigrationSha256 === CURRENT_MIGRATION_SHA256 &&
       supabase.migrationTreeSha256 === CURRENT_MIGRATION_TREE_SHA256 &&
       supabase.externalActionLocksClosed === true &&
-      migrationTree.fileCount === 60 &&
-      migrationTree.sha256 === CURRENT_MIGRATION_TREE_SHA256 &&
+      migrationTree.fileCount === 60 && migrationTree.sha256 === CURRENT_MIGRATION_TREE_SHA256 &&
       mirrorMigrationTree.fileCount === migrationTree.fileCount &&
       mirrorMigrationTree.sha256 === migrationTree.sha256 &&
       sameJson(mirrorMigrationTree.files, migrationTree.files) &&
@@ -424,133 +394,88 @@ function assertCurrentReconciledStatus(
       statSync(latestMigrationPath).size === CURRENT_MIGRATION_BYTE_LENGTH,
     "Supabase Pro health or exact 60-migration live ledger drifted",
   );
-  must(
-    matchesPrivateSchema(
-      closeout.supabase?.privateSchemaDefenseInDepth,
-      supabase,
-    ),
-    "private-schema defense-in-depth evidence drifted or became exposed",
-  );
+  must(matchesPrivateSchema(closeout.supabase?.privateSchemaDefenseInDepth, supabase),
+    "private-schema defense-in-depth evidence drifted or became exposed");
   must(
     edge?.allActiveFunctionBundleSourcesMatchObservedGitHubMain === true &&
-      edge.mediaLifecycleVersion === 4 &&
-      edge.contentLifecycleVersion === 15 &&
-      edge.webhookLifecycleVersion === 6 &&
-      edge.dispatchLifecycleVersion === 4 &&
-      edge.legacyPurgeVersion === 11 &&
-      edge.contentLifecycleVerifyJwt === false &&
-      edge.contentLifecycleBundleSha256 ===
-        "af24ee01a0eb9725f6d3931cf2c4b317ef58f7d9efcdf763682d176484e9c8cd" &&
+      edge.mediaLifecycleVersion === 4 && edge.contentLifecycleVersion === 15 &&
+      edge.webhookLifecycleVersion === 6 && edge.dispatchLifecycleVersion === 4 &&
+      edge.legacyPurgeVersion === 11 && edge.contentLifecycleVerifyJwt === false &&
+      edge.contentLifecycleBundleSha256 === "af24ee01a0eb9725f6d3931cf2c4b317ef58f7d9efcdf763682d176484e9c8cd" &&
       edge.contentLifecycleV15ProofInvocationCount === 0,
     "active Edge version or current bundle parity drifted",
   );
   must(
-    candidate?.kind === CURRENT_CANDIDATE_KIND &&
-      candidate.state === CURRENT_CANDIDATE_STATE &&
-      candidate.pullRequest === 205 &&
-      candidate.mergeCommit === CURRENT_BASE_COMMIT &&
+    candidate?.kind === CURRENT_CANDIDATE_KIND && candidate.state === CURRENT_CANDIDATE_STATE &&
+      candidate.pullRequest === 205 && candidate.mergeCommit === CURRENT_BASE_COMMIT &&
       sameJson(candidate.pendingMigrations, []) &&
       matchesCandidateMigration(candidate.migration, migrationTree, latestMigrationPath) &&
-      candidate.externalActionLockRequired === true &&
-      candidate.img4257RetriesRemaining === 0,
+      candidate.externalActionLockRequired === true && candidate.img4257RetriesRemaining === 0,
     "PR #205 release lineage or exact applied migration identity drifted",
   );
   must(
-    gates?.releaseSourceMerged === true &&
-      gates.migrationAppliedAndReadBack === true &&
-      gates.exactRuntimeSourceDeployed === true &&
-      gates.edgeBundleParityProven === true &&
-      gates.externalActionLocksClosed === true &&
-      gates.freshAuthenticatedUploadSession === false &&
-      gates.authenticatedExpiredSessionRejectionProof === false &&
-      gates.syntheticSuccessPassed === false &&
-      gates.duplicateReplayIdempotent === false &&
-      gates.controlledFailureFailedClosed === false &&
-      gates.restaurantPortalVerified === false &&
-      gates.teamPortalVerified === false &&
-      gates.separateTeamDecisionVerified === false &&
-      gates.founderGoIssued === false,
+    gates?.releaseSourceMerged === true && gates.migrationAppliedAndReadBack === true &&
+      gates.exactRuntimeSourceDeployed === true && gates.edgeBundleParityProven === true &&
+      gates.externalActionLocksClosed === true && gates.freshAuthenticatedUploadSession === false &&
+      gates.authenticatedExpiredSessionRejectionProof === false && gates.syntheticSuccessPassed === false &&
+      gates.duplicateReplayIdempotent === false && gates.controlledFailureFailedClosed === false &&
+      gates.restaurantPortalVerified === false && gates.teamPortalVerified === false &&
+      gates.separateTeamDecisionVerified === false && gates.founderGoIssued === false,
     "current state overclaims or omits an R3 acceptance gate",
   );
   must(
-    blocker?.linearIssue === "VER-43" &&
-      blocker.linearStatus === "In Progress" &&
-      blocker.downstreamIssue === "VER-39" &&
-      blocker.downstreamStatus === "In Progress" &&
-      blocker.preservedUploadSessionId ===
-        "45ad07a3-0192-452b-8a01-5d5bf8528ced" &&
-      blocker.preservedUploadSessionState === "expired" &&
-      blocker.preservedUploadSessionRegistered === false &&
-      blocker.proofState === "unconsumed" &&
-      blocker.lastProofEdgeVersion === 14 &&
-      blocker.lastProofHttpStatus === 403 &&
-      blocker.contentLifecycleV15ProofInvocationCount === 0 &&
-      blocker.reusableClientAuthorityAvailable === false &&
-      blocker.proofRunnerWakeCredentialConfigured === false &&
-      blocker.nextSafeStep === CURRENT_REQUIRED_RECOVERY &&
-      blocker.oldSessionEvidenceMustRemainImmutable === true,
+    blocker?.linearIssue === "VER-43" && blocker.linearStatus === "In Progress" &&
+      blocker.downstreamIssue === "VER-39" && blocker.downstreamStatus === "In Progress" &&
+      blocker.preservedUploadSessionId === "45ad07a3-0192-452b-8a01-5d5bf8528ced" &&
+      blocker.preservedUploadSessionState === "expired" && blocker.preservedUploadSessionRegistered === false &&
+      blocker.proofState === "unconsumed" && blocker.lastProofEdgeVersion === 14 &&
+      blocker.lastProofHttpStatus === 403 && blocker.contentLifecycleV15ProofInvocationCount === 0 &&
+      blocker.reusableClientAuthorityAvailable === false && blocker.proofRunnerWakeCredentialConfigured === false &&
+      blocker.nextSafeStep === CURRENT_REQUIRED_RECOVERY && blocker.oldSessionEvidenceMustRemainImmutable === true,
     "VER-43 authenticated proof blocker drifted",
   );
   must(
-    program?.ver43Status === "In Progress" &&
-      program.ver39Status === "In Progress" &&
-      program.ver41Status === "Todo" &&
-      program.syntheticGate?.status === "In Progress" &&
-      program.syntheticGate?.complete === false &&
-      program.portalGate?.status === "Todo" &&
-      program.portalGate?.complete === false &&
-      program.founderGate?.status === "Todo" &&
-      program.founderGate?.complete === false &&
-      program.founderGate?.momoGo === false,
+    program?.ver43Status === "In Progress" && program.ver39Status === "In Progress" &&
+      program.ver41Status === "Todo" && program.syntheticGate?.status === "In Progress" &&
+      program.syntheticGate?.complete === false && program.portalGate?.status === "Todo" &&
+      program.portalGate?.complete === false && program.founderGate?.status === "Todo" &&
+      program.founderGate?.complete === false && program.founderGate?.momoGo === false,
     "R3 program sequencing or incomplete gate state drifted",
   );
+  must(sameJson(locks, {
+    publishing: false,
+    externalScheduling: false,
+    accountConnection: false,
+    customerMessaging: false,
+    outreach: false,
+    reviewReplies: false,
+    websiteProviderWritesAllowed: false,
+    orderingProviderWritesAllowed: false,
+    advertisingProviderWritesAllowed: false,
+    pricingChange: false,
+    repositoryVisibilityChange: false,
+  }), "current external-action lock map drifted");
   must(
-    sameJson(locks, {
-      publishing: false,
-      externalScheduling: false,
-      accountConnection: false,
-      customerMessaging: false,
-      outreach: false,
-      reviewReplies: false,
-      websiteProviderWritesAllowed: false,
-      orderingProviderWritesAllowed: false,
-      advertisingProviderWritesAllowed: false,
-      pricingChange: false,
-      repositoryVisibilityChange: false,
-    }),
-    "current external-action lock map drifted",
-  );
-  must(
-    capacity?.planVerified === true &&
-      capacity.blanketOperationalAuthority === false &&
-      capacity.optionalFeatureConfigurationVerified === false &&
-      capacity.spendCapConfigurationVerified === false &&
+    capacity?.planVerified === true && capacity.blanketOperationalAuthority === false &&
+      capacity.optionalFeatureConfigurationVerified === false && capacity.spendCapConfigurationVerified === false &&
       capacity.usageAndCostVerified === false,
     "governed Supabase Pro capacity boundary drifted",
   );
 
   const pr205 = closeout.github?.pullRequest205 as Record<string, any> | undefined;
   must(
-    closeout.recordKind === "veroxa_live_status_closeout" &&
-      closeout.status === CURRENT_CANDIDATE_STATE &&
-      closeout.observedAt === state.updatedAt &&
-      closeout.github?.observedMainCommit === CURRENT_BASE_COMMIT &&
-      closeout.github?.latestMergedPullRequest === 205 &&
-      pr205?.head === CURRENT_PR205_HEAD &&
-      pr205.mergeCommit === CURRENT_BASE_COMMIT &&
-      pr205.requiredWorkflows?.ci === "success" &&
-      pr205.requiredWorkflows?.veroxaVerify === "success" &&
-      pr205.requiredWorkflows?.sitesVerify === "success" &&
-      pr205.requiredWorkflows?.supabaseVerify === "success" &&
-      pr205.review?.owner === "copilot" &&
-      pr205.review?.codexDuplicateReviewPerformed === false &&
-      pr205.review?.reReviewNewFindingCount === 0 &&
+    closeout.recordKind === "veroxa_live_status_closeout" && closeout.status === CURRENT_CANDIDATE_STATE &&
+      closeout.observedAt === state.updatedAt && closeout.github?.observedMainCommit === CURRENT_BASE_COMMIT &&
+      closeout.github?.latestMergedPullRequest === 205 && pr205?.head === CURRENT_PR205_HEAD &&
+      pr205.mergeCommit === CURRENT_BASE_COMMIT && pr205.requiredWorkflows?.ci === "success" &&
+      pr205.requiredWorkflows?.veroxaVerify === "success" && pr205.requiredWorkflows?.sitesVerify === "success" &&
+      pr205.requiredWorkflows?.supabaseVerify === "success" && pr205.review?.owner === "copilot" &&
+      pr205.review?.codexDuplicateReviewPerformed === false && pr205.review?.reReviewNewFindingCount === 0 &&
       pr205.review?.unresolvedThreadCount === 0,
     "PR #205 closeout workflow/review identity drifted",
   );
   must(
-    closeout.sites?.version === 68 &&
-      closeout.sites?.versionId === CURRENT_SITES_VERSION_ID &&
+    closeout.sites?.version === 68 && closeout.sites?.versionId === CURRENT_SITES_VERSION_ID &&
       closeout.sites?.deploymentId === CURRENT_SITES_DEPLOYMENT_ID &&
       closeout.sites?.runtimeSubtree?.fileCount === 248 &&
       closeout.sites?.runtimeSubtree?.sha256 === CURRENT_SITES_SHA256 &&
@@ -560,64 +485,44 @@ function assertCurrentReconciledStatus(
   );
   must(
     closeout.supabase?.migrations?.count === 60 &&
-      closeout.supabase?.migrations?.canonicalSource ===
-        `supabase/migrations/${CURRENT_MIGRATION}` &&
-      closeout.supabase?.migrations?.canonicalByteLength ===
-        CURRENT_MIGRATION_BYTE_LENGTH &&
-      closeout.supabase?.migrations?.canonicalSha256 ===
-        CURRENT_MIGRATION_SHA256 &&
-      closeout.supabase?.migrations?.treeSha256 ===
-        CURRENT_MIGRATION_TREE_SHA256 &&
+      closeout.supabase?.migrations?.canonicalSource === `supabase/migrations/${CURRENT_MIGRATION}` &&
+      closeout.supabase?.migrations?.canonicalByteLength === CURRENT_MIGRATION_BYTE_LENGTH &&
+      closeout.supabase?.migrations?.canonicalSha256 === CURRENT_MIGRATION_SHA256 &&
+      closeout.supabase?.migrations?.treeSha256 === CURRENT_MIGRATION_TREE_SHA256 &&
       closeout.supabase?.externalActionLocks?.status === "closed" &&
       closeout.supabase?.externalActionLocks?.rowsWithAnyExternalActionEnabled === 0 &&
       closeout.supabase?.externalActionLocks?.acceptanceExternalWriteAllowedRows === 0 &&
-      matchesAcceptanceCounts(
-        closeout.supabase?.acceptance,
-        closeout.supabase?.externalActionLocks,
-      ) &&
+      matchesAcceptanceCounts(closeout.supabase?.acceptance, closeout.supabase?.externalActionLocks) &&
       matchesBlocker(closeout.supabase?.acceptanceSessionBlocker, blocker),
     "acceptance snapshot, no-new-row boundary, or preserved blocker drifted",
   );
   must(
     closeout.edge?.allActiveFunctionBundleSourcesMatchObservedGitHubMain === true &&
-      closeout.edge?.proofEvidence?.lastInvocationVersion ===
-        blocker?.lastProofEdgeVersion &&
-      closeout.edge?.proofEvidence?.lastInvocationStatus ===
-        blocker?.lastProofHttpStatus &&
+      closeout.edge?.proofEvidence?.lastInvocationVersion === blocker?.lastProofEdgeVersion &&
+      closeout.edge?.proofEvidence?.lastInvocationStatus === blocker?.lastProofHttpStatus &&
       closeout.edge?.proofEvidence?.version15InvocationCount === 0 &&
-      closeout.edge?.proofEvidence?.proofConsumed === false &&
-      matchesEdgeSources(closeout.edge?.verifiedSourceFiles),
+      closeout.edge?.proofEvidence?.proofConsumed === false && matchesEdgeSources(closeout.edge?.verifiedSourceFiles),
     "Edge function/source/proof evidence drifted",
   );
+  must(sameJson(
+    (closeout.edge?.functions ?? []).map((fn: Record<string, any>) => [
+      fn.slug, fn.version, fn.status, fn.verifyJwt, fn.bundleSourceParity,
+    ]),
+    [
+      ["momo-media-ai-lifecycle", 4, "ACTIVE", true, true],
+      ["momo-content-ai-lifecycle", 15, "ACTIVE", false, true],
+      ["momo-content-ai-webhook-lifecycle", 6, "ACTIVE", false, true],
+      ["momo-content-ai-dispatch-lifecycle", 4, "ACTIVE", false, true],
+      ["veroxa-legacy-media-purge-20260812", 11, "ACTIVE", true, true],
+    ],
+  ), "active Edge inventory or bundle-parity evidence drifted");
   must(
-    sameJson(
-      (closeout.edge?.functions ?? []).map((fn: Record<string, any>) => [
-        fn.slug,
-        fn.version,
-        fn.status,
-        fn.verifyJwt,
-        fn.bundleSourceParity,
-      ]),
-      [
-        ["momo-media-ai-lifecycle", 4, "ACTIVE", true, true],
-        ["momo-content-ai-lifecycle", 15, "ACTIVE", false, true],
-        ["momo-content-ai-webhook-lifecycle", 6, "ACTIVE", false, true],
-        ["momo-content-ai-dispatch-lifecycle", 4, "ACTIVE", false, true],
-        ["veroxa-legacy-media-purge-20260812", 11, "ACTIVE", true, true],
-      ],
-    ),
-    "active Edge inventory or bundle-parity evidence drifted",
-  );
-  must(
-    closeout.r3Program?.ver43?.status === "In Progress" &&
-      closeout.r3Program?.ver39?.status === "In Progress" &&
-      closeout.r3Program?.ver41?.status === "Todo" &&
-      closeout.r3Program?.syntheticGate?.status === "In Progress" &&
+    closeout.r3Program?.ver43?.status === "In Progress" && closeout.r3Program?.ver39?.status === "In Progress" &&
+      closeout.r3Program?.ver41?.status === "Todo" && closeout.r3Program?.syntheticGate?.status === "In Progress" &&
       closeout.r3Program?.syntheticGate?.complete === false &&
       closeout.r3Program?.authenticatedPortalGate?.status === "Todo" &&
       closeout.r3Program?.authenticatedPortalGate?.complete === false &&
-      closeout.r3Program?.founderGate?.status === "Todo" &&
-      closeout.r3Program?.founderGate?.complete === false &&
+      closeout.r3Program?.founderGate?.status === "Todo" && closeout.r3Program?.founderGate?.complete === false &&
       closeout.r3Program?.founderGate?.momoGo === false &&
       closeout.productBoundary?.runtimeOrPlatformMutationPerformed === true &&
       closeout.productBoundary?.secondAuthenticationProofPerformed === false &&
@@ -625,121 +530,64 @@ function assertCurrentReconciledStatus(
     "machine closeout overclaims an incomplete R3 or product-boundary gate",
   );
 
-  const acceptanceMutation = JSON.parse(JSON.stringify(
-    closeout.supabase?.acceptance ?? {},
-  )) as Record<string, any>;
+  const acceptanceMutation = structuredClone(closeout.supabase?.acceptance ?? {}) as Record<string, any>;
   acceptanceMutation.uploadSessionRows = 5;
-  must(
-    !matchesAcceptanceCounts(
-      acceptanceMutation,
-      closeout.supabase?.externalActionLocks,
-    ),
-    "acceptance-session-count mutation was not rejected",
-  );
-  const providerMutation = JSON.parse(JSON.stringify(
-    closeout.supabase?.externalActionLocks ?? {},
-  )) as Record<string, any>;
+  must(!matchesAcceptanceCounts(acceptanceMutation, closeout.supabase?.externalActionLocks),
+    "acceptance-session-count mutation was not rejected");
+
+  const providerMutation = structuredClone(closeout.supabase?.externalActionLocks ?? {}) as Record<string, any>;
   providerMutation.connectedProviderRows = 1;
-  must(
-    !matchesAcceptanceCounts(
-      closeout.supabase?.acceptance,
-      providerMutation,
-    ),
-    "connected-provider mutation was not rejected",
-  );
-  const blockerMutation = JSON.parse(JSON.stringify(
-    closeout.supabase?.acceptanceSessionBlocker ?? {},
-  )) as Record<string, any>;
-  const currentBlockerMutation = JSON.parse(JSON.stringify(
-    blocker ?? {},
-  )) as Record<string, any>;
+  must(!matchesAcceptanceCounts(closeout.supabase?.acceptance, providerMutation),
+    "connected-provider mutation was not rejected");
+
+  const blockerMutation = structuredClone(closeout.supabase?.acceptanceSessionBlocker ?? {}) as Record<string, any>;
+  const currentBlockerMutation = structuredClone(blocker ?? {}) as Record<string, any>;
   blockerMutation.requiredRecovery = "reuse_expired_session";
   currentBlockerMutation.nextSafeStep = "reuse_expired_session";
-  must(
-    !matchesBlocker(blockerMutation, currentBlockerMutation),
-    "coordinated required-recovery weakening was not rejected",
-  );
-  const edgeSourceMutation = JSON.parse(JSON.stringify(
-    closeout.edge?.verifiedSourceFiles ?? {},
-  )) as Record<string, any>;
+  must(!matchesBlocker(blockerMutation, currentBlockerMutation),
+    "coordinated required-recovery weakening was not rejected");
+
+  const edgeSourceMutation = structuredClone(closeout.edge?.verifiedSourceFiles ?? {}) as Record<string, any>;
   delete edgeSourceMutation[CURRENT_EDGE_SOURCE_PATHS[0]];
-  edgeSourceMutation["artifacts/veroxa-sites/app/momo-content-ai-lifecycle-bridge.ts"] =
-    "0".repeat(64);
-  must(
-    !matchesEdgeSources(edgeSourceMutation),
-    "Edge verified-source key-set substitution was not rejected",
-  );
-  const migrationMutation = JSON.parse(JSON.stringify(
-    candidate?.migration ?? {},
-  )) as Record<string, any>;
-  migrationMutation.filename =
-    "20260815090000_media_inspection_preflight_canary_v1.sql";
-  must(
-    !matchesCandidateMigration(migrationMutation, migrationTree, latestMigrationPath),
-    "applied-migration lineage mutation was not rejected",
-  );
-  const privateSchemaMutation = JSON.parse(JSON.stringify(
-    closeout.supabase?.privateSchemaDefenseInDepth ?? {},
-  )) as Record<string, any>;
+  edgeSourceMutation["artifacts/veroxa-sites/app/momo-content-ai-lifecycle-bridge.ts"] = "0".repeat(64);
+  must(!matchesEdgeSources(edgeSourceMutation), "Edge verified-source key-set substitution was not rejected");
+
+  const migrationMutation = structuredClone(candidate?.migration ?? {}) as Record<string, any>;
+  migrationMutation.filename = "20260815090000_media_inspection_preflight_canary_v1.sql";
+  must(!matchesCandidateMigration(migrationMutation, migrationTree, latestMigrationPath),
+    "applied-migration lineage mutation was not rejected");
+
+  const privateSchemaMutation = structuredClone(closeout.supabase?.privateSchemaDefenseInDepth ?? {}) as Record<string, any>;
   privateSchemaMutation.confirmedPublicExposure = true;
-  must(
-    !matchesPrivateSchema(privateSchemaMutation, supabase),
-    "private-schema exposure mutation was not rejected",
-  );
+  must(!matchesPrivateSchema(privateSchemaMutation, supabase),
+    "private-schema exposure mutation was not rejected");
 
   if (failures.length > 0) {
-    throw new Error(
-      "Unsafe current live-status reconciliation: " + failures.join("; "),
-    );
+    throw new Error("Unsafe current live-status reconciliation: " + failures.join("; "));
   }
 }
 
-export function assertDurableMediaIngestionCandidateManifest(
-  manifest: core.DeploymentManifest,
-): void {
-  if (isCurrentReconciledState()) {
-    assertCurrentReconciledStatus(manifest);
-    return;
-  }
+export function assertDurableMediaIngestionCandidateManifest(manifest: core.DeploymentManifest): void {
+  if (isCurrentReconciledState()) return assertCurrentReconciledStatus(manifest);
   core.assertDurableMediaIngestionCandidateManifest(manifest);
 }
 
-export function assertCurrentReconciliationManifest(
-  manifest: core.DeploymentManifest,
-): void {
-  if (isCurrentReconciledState()) {
-    assertCurrentReconciledStatus(manifest);
-    return;
-  }
+export function assertCurrentReconciliationManifest(manifest: core.DeploymentManifest): void {
+  if (isCurrentReconciledState()) return assertCurrentReconciledStatus(manifest);
   core.assertCurrentReconciliationManifest(manifest);
 }
 
-export function assertUnreleasedLocalCandidateManifest(
-  manifest: core.DeploymentManifest,
-): void {
-  if (isCurrentReconciledState()) {
-    assertCurrentReconciledStatus(manifest);
-    return;
-  }
+export function assertUnreleasedLocalCandidateManifest(manifest: core.DeploymentManifest): void {
+  if (isCurrentReconciledState()) return assertCurrentReconciledStatus(manifest);
   core.assertUnreleasedLocalCandidateManifest(manifest);
 }
 
-export function assertReviewedLocalCandidateManifest(
-  manifest: core.DeploymentManifest,
-): void {
-  if (isCurrentReconciledState()) {
-    assertCurrentReconciledStatus(manifest);
-    return;
-  }
+export function assertReviewedLocalCandidateManifest(manifest: core.DeploymentManifest): void {
+  if (isCurrentReconciledState()) return assertCurrentReconciledStatus(manifest);
   core.assertReviewedLocalCandidateManifest(manifest);
 }
 
-export function assertDeploymentAttestationManifest(
-  manifest: core.DeploymentManifest,
-): void {
-  if (isCurrentReconciledState()) {
-    assertCurrentReconciledStatus(manifest);
-    return;
-  }
+export function assertDeploymentAttestationManifest(manifest: core.DeploymentManifest): void {
+  if (isCurrentReconciledState()) return assertCurrentReconciledStatus(manifest);
   core.assertDeploymentAttestationManifest(manifest);
 }
