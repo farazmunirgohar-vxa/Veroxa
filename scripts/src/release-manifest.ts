@@ -15,7 +15,7 @@ const CURRENT_PR205_HEAD = "51dca29248778e842b671f5cbe18783195fbcda0";
 const CURRENT_PR205_SCOPE = "hosted_signed_envelope_transport_and_regression_guard";
 const CURRENT_PACKET_REVIEW_ANCHOR = "d4db271376b8e698f2af63d875b5b57a35e917d9";
 const CURRENT_PACKET_REVIEW_ANCHOR_TREE = "55266cc553f5dff04168d948ed0b8e6193ce9e2b";
-const CURRENT_PACKET_FINAL_PARENT = "b4695651041970846a90ce7340dd76179020347e";
+const CURRENT_PACKET_FINAL_PARENT = "f0c90a7357146a6ec141094eeb9fb825c635e0cb";
 const CURRENT_PACKET_PATH_COUNT = 11;
 const CURRENT_CLOSEOUT =
   "artifacts/veroxa/docs/VEROXA_LIVE_STATUS_CLOSEOUT_20260822.json";
@@ -331,10 +331,38 @@ function assertCurrentPacketScope(): void {
     if (mergeParents[1] !== CURRENT_BASE_COMMIT || mergeParents[2] !== packetHead) {
       throw new Error("Edge-v15/Sites-v68 packet merge parent identity drifted");
     }
-    const postPacket = gitPathList(["diff", "--name-only", `${mergeCommit}..HEAD`, "--"]);
-    if (postPacket.length > 0) {
+    // Inspect every first-parent commit after the packet merge. An endpoint
+    // tree diff is insufficient because change-then-revert history is still a
+    // non-empty post-reconciliation mutation and must fail closed.
+    const postMergeCommits = gitOutput([
+      "rev-list",
+      "--first-parent",
+      "--reverse",
+      `${mergeCommit}..HEAD`,
+    ]).split("\n").filter(Boolean);
+    const nonEmptyPostMergeCommits = postMergeCommits.filter((commit) => {
+      const parents = gitOutput([
+        "rev-list",
+        "--parents",
+        "-n",
+        "1",
+        commit,
+      ]).split(/\s+/u);
+      if (!parents[1]) return true;
+      return gitPathList([
+        "diff-tree",
+        "--no-commit-id",
+        "--name-only",
+        "-r",
+        parents[1],
+        commit,
+        "--",
+      ]).length > 0;
+    });
+    if (nonEmptyPostMergeCommits.length > 0) {
       throw new Error(
-        "Edge-v15/Sites-v68 current-status evidence has non-empty repository changes after its merge and requires a fresh reconciliation",
+        "Edge-v15/Sites-v68 current-status evidence has non-empty repository commits after its merge and requires a fresh reconciliation: " +
+          nonEmptyPostMergeCommits.join(","),
       );
     }
   }
