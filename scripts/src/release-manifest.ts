@@ -12,6 +12,7 @@ const CURRENT_CANDIDATE_STATE = "release_converged_authenticated_proof_pending";
 const CURRENT_BASE_COMMIT = "c47920dce981478d757a3cc89ef9f337c39908ef";
 const CURRENT_BASE_TREE = "1303518c22c5ff40daabc5b8f68803a02d30b8c8";
 const CURRENT_PR205_HEAD = "51dca29248778e842b671f5cbe18783195fbcda0";
+const CURRENT_PR205_SCOPE = "hosted_signed_envelope_transport_and_regression_guard";
 const CURRENT_CLOSEOUT =
   "artifacts/veroxa/docs/VEROXA_LIVE_STATUS_CLOSEOUT_20260822.json";
 const CURRENT_REQUIRED_RECOVERY =
@@ -78,25 +79,52 @@ function sameJson(left: unknown, right: unknown): boolean {
   return JSON.stringify(left) === JSON.stringify(right);
 }
 
-function readCurrentState(): Record<string, any> | null {
+type CurrentStateRead =
+  | { ok: true; value: Record<string, any> }
+  | { ok: false; reason: string };
+
+function readCurrentStateResult(): CurrentStateRead {
+  let value: unknown;
   try {
-    const value = JSON.parse(readFileSync(core.currentStatePath, "utf8")) as Record<string, any>;
-    return value?.schemaVersion === 1 &&
-        value?.recordKind === "veroxa_current_state" &&
-        value?.stateAuthority === "current_deployed_state_and_explicit_forward_candidate"
-      ? value
-      : null;
+    value = JSON.parse(readFileSync(core.currentStatePath, "utf8"));
   } catch {
-    return null;
+    return { ok: false, reason: "CURRENT_STATE.json is missing or invalid JSON" };
   }
+  if (!value || typeof value !== "object") {
+    return { ok: false, reason: "CURRENT_STATE.json is not an object" };
+  }
+  const record = value as Record<string, any>;
+  if (record.schemaVersion !== 1 ||
+      record.recordKind !== "veroxa_current_state" ||
+      record.stateAuthority !== "current_deployed_state_and_explicit_forward_candidate") {
+    return { ok: false, reason: "CURRENT_STATE.json authority identity is invalid" };
+  }
+  return { ok: true, value: record };
+}
+
+function readCurrentState(): Record<string, any> | null {
+  const result = readCurrentStateResult();
+  return result.ok ? result.value : null;
+}
+
+function readCurrentStateRequired(): Record<string, any> {
+  const result = readCurrentStateResult();
+  if (!result.ok) throw new Error(result.reason);
+  return result.value;
+}
+
+function isCurrentReconciledStateValue(
+  value: Record<string, any> | null,
+): value is Record<string, any> {
+  return value?.phase === CURRENT_PHASE &&
+    value?.activeCandidate?.kind === CURRENT_CANDIDATE_KIND &&
+    value?.activeCandidate?.state === CURRENT_CANDIDATE_STATE;
 }
 
 function isCurrentReconciledState(
   value: Record<string, any> | null = readCurrentState(),
 ): value is Record<string, any> {
-  return value?.phase === CURRENT_PHASE &&
-    value?.activeCandidate?.kind === CURRENT_CANDIDATE_KIND &&
-    value?.activeCandidate?.state === CURRENT_CANDIDATE_STATE;
+  return isCurrentReconciledStateValue(value);
 }
 
 function gitPathList(args: string[]): string[] {
@@ -105,7 +133,6 @@ function gitPathList(args: string[]): string[] {
   const output = execFileSync("git", [command, "-z", ...commandArgs], {
     cwd: core.repoRoot,
     encoding: "utf8",
-    maxBuffer: 32 * 1024 * 1024,
   });
   return output.split("\0").filter((path) => path.length > 0);
 }
@@ -142,6 +169,11 @@ function gitForbiddenPaths(base: string, head: string): string[] {
 
 function isExactCurrentPacketHead(head: string): boolean {
   try {
+    execFileSync(
+      "git",
+      ["merge-base", "--is-ancestor", CURRENT_BASE_COMMIT, head],
+      { cwd: core.repoRoot, stdio: "ignore" },
+    );
     return sameJson(
       gitChangedPaths(CURRENT_BASE_COMMIT, head),
       [...CURRENT_PACKET_PATHS].sort(),
@@ -177,7 +209,41 @@ function resolveCurrentPacketIdentity(): { packetHead: string; mergeCommit: stri
   throw new Error("Edge-v15/Sites-v68 status packet cannot resolve its immutable packet head");
 }
 
+function hasCurrentPacketIdentity(): boolean {
+  try {
+    resolveCurrentPacketIdentity();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function shouldUseCurrentReconciliationGuard(): boolean {
+  if (!hasCurrentPacketIdentity()) return false;
+  const state = readCurrentStateRequired();
+  if (!isCurrentReconciledStateValue(state)) {
+    throw new Error(
+      "Current R3 status packet is present but CURRENT_STATE.json does not match its exact release identity",
+    );
+  }
+  return true;
+}
+
+function assertCleanCheckout(): void {
+  const output = execFileSync(
+    "git",
+    ["status", "--porcelain=v1", "-z", "--untracked-files=all"],
+    { cwd: core.repoRoot },
+  );
+  if (output.length > 0) {
+    throw new Error(
+      "Edge-v15/Sites-v68 current-status validation requires a clean tracked/index/untracked checkout",
+    );
+  }
+}
+
 function assertCurrentPacketScope(): void {
+  assertCleanCheckout();
   const { packetHead, mergeCommit } = resolveCurrentPacketIdentity();
   if (!isExactCurrentPacketHead(packetHead)) {
     throw new Error("Edge-v15/Sites-v68 status packet changed-file set drifted");
@@ -286,6 +352,26 @@ function matchesEdgeSources(value: Record<string, any> | undefined): boolean {
   );
 }
 
+function matchesPr205Closeout(value: Record<string, any> | undefined): boolean {
+  const review = value?.review as Record<string, any> | undefined;
+  return value?.head === CURRENT_PR205_HEAD &&
+    value.mergeCommit === CURRENT_BASE_COMMIT &&
+    value.scope === CURRENT_PR205_SCOPE &&
+    value.runtimeChanged === true &&
+    value.changedFiles === 12 &&
+    value.requiredWorkflows?.ci === "success" &&
+    value.requiredWorkflows?.veroxaVerify === "success" &&
+    value.requiredWorkflows?.sitesVerify === "success" &&
+    value.requiredWorkflows?.supabaseVerify === "success" &&
+    review?.owner === "copilot" &&
+    review.codexDuplicateReviewPerformed === false &&
+    review.firstReviewFindingCount === 1 &&
+    review.findingFixed === true &&
+    review.reReviewOutcome === "approval_recommended" &&
+    review.reReviewNewFindingCount === 0 &&
+    review.unresolvedThreadCount === 0;
+}
+
 function assertNoCoreBypassImports(): void {
   const scriptsRoot = resolve(core.repoRoot, "scripts/src");
   const offenders: string[] = [];
@@ -309,8 +395,8 @@ function assertCurrentReconciledStatus(manifest: core.DeploymentManifest): void 
   const must = (condition: boolean, message: string): void => {
     if (!condition) failures.push(message);
   };
-  const state = readCurrentState();
-  if (!isCurrentReconciledState(state)) {
+  const state = readCurrentStateRequired();
+  if (!isCurrentReconciledStateValue(state)) {
     throw new Error("Current R3 reconciliation state is missing or malformed");
   }
 
@@ -466,13 +552,8 @@ function assertCurrentReconciledStatus(manifest: core.DeploymentManifest): void 
   must(
     closeout.recordKind === "veroxa_live_status_closeout" && closeout.status === CURRENT_CANDIDATE_STATE &&
       closeout.observedAt === state.updatedAt && closeout.github?.observedMainCommit === CURRENT_BASE_COMMIT &&
-      closeout.github?.latestMergedPullRequest === 205 && pr205?.head === CURRENT_PR205_HEAD &&
-      pr205.mergeCommit === CURRENT_BASE_COMMIT && pr205.requiredWorkflows?.ci === "success" &&
-      pr205.requiredWorkflows?.veroxaVerify === "success" && pr205.requiredWorkflows?.sitesVerify === "success" &&
-      pr205.requiredWorkflows?.supabaseVerify === "success" && pr205.review?.owner === "copilot" &&
-      pr205.review?.codexDuplicateReviewPerformed === false && pr205.review?.reReviewNewFindingCount === 0 &&
-      pr205.review?.unresolvedThreadCount === 0,
-    "PR #205 closeout workflow/review identity drifted",
+      closeout.github?.latestMergedPullRequest === 205 && matchesPr205Closeout(pr205),
+    "PR #205 closeout scope/workflow/review identity drifted",
   );
   must(
     closeout.sites?.version === 68 && closeout.sites?.versionId === CURRENT_SITES_VERSION_ID &&
@@ -562,32 +643,56 @@ function assertCurrentReconciledStatus(manifest: core.DeploymentManifest): void 
   must(!matchesPrivateSchema(privateSchemaMutation, supabase),
     "private-schema exposure mutation was not rejected");
 
+  const prScopeMutation = structuredClone(pr205 ?? {}) as Record<string, any>;
+  prScopeMutation.scope = "weakened_scope";
+  must(!matchesPr205Closeout(prScopeMutation), "PR #205 scope mutation was not rejected");
+
+  const prRuntimeMutation = structuredClone(pr205 ?? {}) as Record<string, any>;
+  prRuntimeMutation.runtimeChanged = false;
+  must(!matchesPr205Closeout(prRuntimeMutation), "PR #205 runtimeChanged mutation was not rejected");
+
+  const prChangedFilesMutation = structuredClone(pr205 ?? {}) as Record<string, any>;
+  prChangedFilesMutation.changedFiles = 11;
+  must(!matchesPr205Closeout(prChangedFilesMutation), "PR #205 changedFiles mutation was not rejected");
+
+  const prReviewCountMutation = structuredClone(pr205 ?? {}) as Record<string, any>;
+  prReviewCountMutation.review.firstReviewFindingCount = 0;
+  must(!matchesPr205Closeout(prReviewCountMutation), "PR #205 first-review count mutation was not rejected");
+
+  const prReviewFixedMutation = structuredClone(pr205 ?? {}) as Record<string, any>;
+  prReviewFixedMutation.review.findingFixed = false;
+  must(!matchesPr205Closeout(prReviewFixedMutation), "PR #205 findingFixed mutation was not rejected");
+
+  const prReviewOutcomeMutation = structuredClone(pr205 ?? {}) as Record<string, any>;
+  prReviewOutcomeMutation.review.reReviewOutcome = "changes_recommended";
+  must(!matchesPr205Closeout(prReviewOutcomeMutation), "PR #205 re-review outcome mutation was not rejected");
+
   if (failures.length > 0) {
     throw new Error("Unsafe current live-status reconciliation: " + failures.join("; "));
   }
 }
 
 export function assertDurableMediaIngestionCandidateManifest(manifest: core.DeploymentManifest): void {
-  if (isCurrentReconciledState()) return assertCurrentReconciledStatus(manifest);
+  if (shouldUseCurrentReconciliationGuard()) return assertCurrentReconciledStatus(manifest);
   core.assertDurableMediaIngestionCandidateManifest(manifest);
 }
 
 export function assertCurrentReconciliationManifest(manifest: core.DeploymentManifest): void {
-  if (isCurrentReconciledState()) return assertCurrentReconciledStatus(manifest);
+  if (shouldUseCurrentReconciliationGuard()) return assertCurrentReconciledStatus(manifest);
   core.assertCurrentReconciliationManifest(manifest);
 }
 
 export function assertUnreleasedLocalCandidateManifest(manifest: core.DeploymentManifest): void {
-  if (isCurrentReconciledState()) return assertCurrentReconciledStatus(manifest);
+  if (shouldUseCurrentReconciliationGuard()) return assertCurrentReconciledStatus(manifest);
   core.assertUnreleasedLocalCandidateManifest(manifest);
 }
 
 export function assertReviewedLocalCandidateManifest(manifest: core.DeploymentManifest): void {
-  if (isCurrentReconciledState()) return assertCurrentReconciledStatus(manifest);
+  if (shouldUseCurrentReconciliationGuard()) return assertCurrentReconciledStatus(manifest);
   core.assertReviewedLocalCandidateManifest(manifest);
 }
 
 export function assertDeploymentAttestationManifest(manifest: core.DeploymentManifest): void {
-  if (isCurrentReconciledState()) return assertCurrentReconciledStatus(manifest);
+  if (shouldUseCurrentReconciliationGuard()) return assertCurrentReconciledStatus(manifest);
   core.assertDeploymentAttestationManifest(manifest);
 }
