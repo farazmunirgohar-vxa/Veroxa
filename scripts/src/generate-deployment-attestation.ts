@@ -1,10 +1,11 @@
-import { mkdirSync } from "node:fs";
+import { mkdirSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import {
   MEDIA_INSPECTION_PREFLIGHT_MIGRATION,
   activeMediaInspectionForwardCandidateMigration,
   assertDeploymentAttestationManifest,
   currentLiveStatusReconciliationEvidence,
+  currentStatePath,
   deploymentManifestPath,
   ensureParentPath,
   hashTree,
@@ -18,11 +19,29 @@ import {
 const manifest = readDeploymentManifest();
 assertDeploymentAttestationManifest(manifest);
 const currentLiveStatus = currentLiveStatusReconciliationEvidence();
+const currentState = currentLiveStatus
+  ? JSON.parse(readFileSync(currentStatePath, "utf8")) as Record<string, any>
+  : null;
+const currentProduction = currentState?.production as
+  | Record<string, any>
+  | undefined;
+const currentCandidate = currentState?.activeCandidate as
+  | Record<string, any>
+  | undefined;
 const activeForwardMigration = activeMediaInspectionForwardCandidateMigration();
 const activeForwardCandidate = activeForwardMigration !== null;
 if (currentLiveStatus && activeForwardCandidate) {
   throw new Error(
     "Current live reconciliation cannot also be an active forward candidate",
+  );
+}
+if (currentLiveStatus && (
+  currentState?.phase !== currentLiveStatus.phase ||
+  currentCandidate?.state !== "release_converged_authenticated_proof_pending" ||
+  currentCandidate?.kind !== "ver43_hosted_signature_envelope_release"
+)) {
+  throw new Error(
+    "Current live reconciliation is missing its exact CURRENT_STATE release identity",
   );
 }
 const githubSha = (process.env.GITHUB_SHA || "").trim().toLowerCase();
@@ -120,7 +139,8 @@ writeJson(output, {
   manifestPath: repositoryRelative(deploymentManifestPath),
   manifestSha256: sha256File(deploymentManifestPath),
   manifestSchemaVersion: manifest.schemaVersion,
-  releaseState: manifest.releaseState,
+  releaseState: currentLiveStatus ? currentLiveStatus.phase : manifest.releaseState,
+  historicalManifestReleaseState: currentLiveStatus ? manifest.releaseState : null,
   sitesProjectId: manifest.sitesProjectId,
   commitBinding: {
     scope: "exact_ci_checkout_only",
@@ -144,8 +164,19 @@ writeJson(output, {
       }
     : currentLiveStatus
     ? {
-        ...manifest.releaseCandidate,
+        kind: currentCandidate?.kind ?? null,
+        state: currentCandidate?.state ?? null,
         status: currentLiveStatus.phase,
+        currentStatePath: repositoryRelative(currentStatePath),
+        pullRequest: currentCandidate?.pullRequest ?? null,
+        mergeCommit: currentCandidate?.mergeCommit ?? null,
+        githubMainCommit:
+          currentProduction?.github?.observedMainCommit ?? null,
+        sitesVersion: currentProduction?.sites?.version ?? null,
+        sitesVersionId: currentProduction?.sites?.versionId ?? null,
+        sitesDeploymentId: currentProduction?.sites?.deploymentId ?? null,
+        sitesInternalSourceCommit:
+          currentProduction?.sites?.internalSourceCommit ?? null,
         sourceFileCount: currentLiveStatus.source.fileCount,
         sourceTreeSha256: currentLiveStatus.source.treeSha256,
         migrationFileCount: currentLiveStatus.migrations.fileCount,
@@ -153,26 +184,55 @@ writeJson(output, {
         latestCandidateMigration: currentLiveStatus.migrations.latestMigration,
         latestCandidateMigrationSha256:
           currentLiveStatus.migrations.latestMigrationSha256,
-        pendingMigrations: [],
+        pendingMigrations: currentCandidate?.pendingMigrations ?? [],
         candidateMigrationsMatchLiveLedger: true,
+        externalActionLockRequired:
+          currentCandidate?.externalActionLockRequired ?? null,
+        requiredGates: currentCandidate?.requiredGates ?? null,
+        historicalManifestReleaseCandidate: manifest.releaseCandidate,
       }
     : manifest.releaseCandidate,
-  mediaUploadHandoff: manifest.mediaUploadHandoff ?? null,
-  legacyMediaPurgeAndHighResolutionRelease:
-    (manifest as unknown as Record<string, unknown>)
+  mediaUploadHandoff: currentLiveStatus ? null : manifest.mediaUploadHandoff ?? null,
+  historicalManifestMediaUploadHandoff:
+    currentLiveStatus ? manifest.mediaUploadHandoff ?? null : null,
+  legacyMediaPurgeAndHighResolutionRelease: currentLiveStatus
+    ? null
+    : (manifest as unknown as Record<string, unknown>)
       .legacyMediaPurgeAndHighResolutionRelease ?? null,
-  referencedGitHubReconciliation: manifest.githubReconciliationEvidence
+  historicalManifestLegacyMediaPurgeAndHighResolutionRelease:
+    currentLiveStatus
+      ? (manifest as unknown as Record<string, unknown>)
+        .legacyMediaPurgeAndHighResolutionRelease ?? null
+      : null,
+  referencedGitHubReconciliation: currentLiveStatus
+    ? null
+    : manifest.githubReconciliationEvidence
     ? {
         ...manifest.githubReconciliationEvidence,
         reverifiedByThisAttestation: false,
       }
     : null,
-  lastGitHubParityRelease: manifest.lastGitHubParityRelease,
+  historicalManifestGitHubReconciliation:
+    currentLiveStatus ? manifest.githubReconciliationEvidence ?? null : null,
+  lastGitHubParityRelease: currentLiveStatus ? null : manifest.lastGitHubParityRelease,
+  historicalManifestLastGitHubParityRelease:
+    currentLiveStatus ? manifest.lastGitHubParityRelease : null,
   historicalProductionObservations: manifest.historicalProductionObservations,
-  referencedProductionObservation: {
-    ...manifest.currentProductionObservation,
-    reverifiedByThisAttestation: false,
-  },
+  referencedProductionObservation: currentLiveStatus
+    ? {
+        evidenceScope: "CURRENT_STATE.json current production reconciliation",
+        github: currentProduction?.github ?? null,
+        sites: currentProduction?.sites ?? null,
+        supabase: currentProduction?.supabase ?? null,
+        edge: currentProduction?.edge ?? null,
+        reverifiedByThisAttestation: false,
+      }
+    : {
+        ...manifest.currentProductionObservation,
+        reverifiedByThisAttestation: false,
+      },
+  historicalManifestCurrentProductionObservation:
+    currentLiveStatus ? manifest.currentProductionObservation : null,
   productionEvidenceBoundary: {
     provesLiveSitesVersion: false,
     provesLiveDatabaseLedger: false,
@@ -205,23 +265,75 @@ writeJson(output, {
       latestCandidateMigration,
     latestCandidateMigrationSha256,
   },
-  applicationQualityEvidence: manifest.applicationQualityEvidence,
-  databaseContractReview: manifest.databaseContractReview,
-  referencedLiveEdgeObservation: manifest.edgeDeployment
+  applicationQualityEvidence:
+    currentLiveStatus ? null : manifest.applicationQualityEvidence,
+  historicalManifestApplicationQualityEvidence:
+    currentLiveStatus ? manifest.applicationQualityEvidence : null,
+  databaseContractReview:
+    currentLiveStatus ? null : manifest.databaseContractReview,
+  historicalManifestDatabaseContractReview:
+    currentLiveStatus ? manifest.databaseContractReview : null,
+  referencedLiveEdgeObservation: currentLiveStatus
+    ? {
+        ...(currentProduction?.edge ?? {}),
+        evidenceScope: "CURRENT_STATE.json current Edge reconciliation",
+        reverifiedByThisAttestation: false,
+      }
+    : manifest.edgeDeployment
     ? { ...manifest.edgeDeployment, reverifiedByThisAttestation: false }
     : null,
-  edgeCandidate: manifest.edgeCandidate,
-  referencedOperationalHold: manifest.operationalHold
+  historicalManifestEdgeDeployment:
+    currentLiveStatus ? manifest.edgeDeployment ?? null : null,
+  edgeCandidate: currentLiveStatus ? null : manifest.edgeCandidate,
+  historicalManifestEdgeCandidate:
+    currentLiveStatus ? manifest.edgeCandidate ?? null : null,
+  referencedOperationalHold: currentLiveStatus
+    ? {
+        evidenceScope: "CURRENT_STATE.json current external-action locks",
+        ...(currentState?.externalActionLock ?? {}),
+        reverifiedByThisAttestation: false,
+      }
+    : manifest.operationalHold
     ? { ...manifest.operationalHold, reverifiedByThisAttestation: false }
     : null,
-  activationRoutine: manifest.activationRoutine,
-  generatedVersionCloseouts: manifest.generatedVersionCloseouts,
-  deploymentParity: manifest.deploymentParity,
-  rolloutSequence: manifest.rolloutSequence,
-  deploymentFreeze: manifest.deploymentFreeze,
-  activationState: manifest.activationState,
-  activationStateScope: manifest.activationStateScope,
-  currentRuntimeIdentityObservation: manifest.currentRuntimeIdentityObservation,
+  historicalManifestOperationalHold:
+    currentLiveStatus ? manifest.operationalHold ?? null : null,
+  activationRoutine: currentLiveStatus ? null : manifest.activationRoutine,
+  historicalManifestActivationRoutine:
+    currentLiveStatus ? manifest.activationRoutine ?? null : null,
+  generatedVersionCloseouts:
+    currentLiveStatus ? null : manifest.generatedVersionCloseouts,
+  historicalManifestGeneratedVersionCloseouts:
+    currentLiveStatus ? manifest.generatedVersionCloseouts ?? null : null,
+  deploymentParity: currentLiveStatus ? null : manifest.deploymentParity,
+  historicalManifestDeploymentParity:
+    currentLiveStatus ? manifest.deploymentParity ?? null : null,
+  rolloutSequence: currentLiveStatus ? null : manifest.rolloutSequence,
+  historicalManifestRolloutSequence:
+    currentLiveStatus ? manifest.rolloutSequence ?? null : null,
+  deploymentFreeze: currentLiveStatus ? null : manifest.deploymentFreeze,
+  historicalManifestDeploymentFreeze:
+    currentLiveStatus ? manifest.deploymentFreeze : null,
+  activationState: currentLiveStatus ? null : manifest.activationState,
+  historicalManifestActivationState:
+    currentLiveStatus ? manifest.activationState : null,
+  activationStateScope:
+    currentLiveStatus ? null : manifest.activationStateScope,
+  historicalManifestActivationStateScope:
+    currentLiveStatus ? manifest.activationStateScope : null,
+  currentRuntimeIdentityObservation: currentLiveStatus
+    ? {
+        evidenceScope: "CURRENT_STATE.json current release identity",
+        phase: currentState?.phase ?? null,
+        currentVerdict: currentState?.currentVerdict ?? null,
+        github: currentProduction?.github ?? null,
+        sites: currentProduction?.sites ?? null,
+        supabase: currentProduction?.supabase ?? null,
+        edge: currentProduction?.edge ?? null,
+      }
+    : manifest.currentRuntimeIdentityObservation,
+  historicalManifestRuntimeIdentityObservation:
+    currentLiveStatus ? manifest.currentRuntimeIdentityObservation : null,
 });
 
 console.log(`Generated exact-SHA Veroxa deployment attestation at ${output}`);
