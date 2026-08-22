@@ -1,6 +1,39 @@
 <!-- GUARDED_INTERNAL_AI_ROLLOUT_AUTHORITY -->
 
-## 2026-08-21 — reconciled R3 live status (current authority)
+## 2026-08-22 — PR #205 live convergence and authenticated-proof gate (current authority)
+
+Read `artifacts/veroxa/docs/CURRENT_STATE.json`,
+`artifacts/veroxa/docs/CURRENT_MILESTONE.md`, and
+`artifacts/veroxa/docs/VEROXA_LIVE_STATUS_CLOSEOUT_20260822.json` before older
+status material.
+
+- **Release baseline:** GitHub `main` is PR #205 merge
+  `c47920dce981478d757a3cc89ef9f337c39908ef`, tree
+  `1303518c22c5ff40daabc5b8f68803a02d30b8c8`. Four exact-head workflows
+  passed; Copilot's sole-reviewer re-review recommended approval with zero new
+  findings.
+- **Runtime:** `momo-content-ai-lifecycle` v15 is ACTIVE and its three deployed
+  files match merged source. Sites v68 deployment
+  `appgdep_6a894fe379108191a767de502d56d5bd` succeeded; its 248-file runtime
+  subtree at `926e3a10e081e9b5f8924783add85cb022afc75549272352e9e416b53e3b1504`
+  matches GitHub main. Both domains, provider status, and SSL are active; the
+  post-deploy errors-only log is empty.
+- **Database and locks:** Supabase Pro is `ACTIVE_HEALTHY` with 60
+  migrations. Acceptance has zero registered sessions, assets, packages, or
+  provider connections. Every external-action flag remains closed.
+- **Program:** VER-43 → VER-39 → VER-26 → VER-27 → VER-28 is the active order;
+  VER-41 is Todo behind VER-43/39. VER-28 is founder-only.
+- **Proof boundary:** the preserved expired session is immutable and the single
+  proof remains unconsumed. No v15 proof invocation exists. A fresh, explicit
+  one-shot authorization is required before one short-lived, least-privileged
+  synthetic Client session and one no-new-media rejection proof. Broad project
+  authority does not substitute for that exact authorization.
+- **Safety:** no Momo/founder GO is claimed. `ready_for_team_review` is not
+  approval or publication. IMG_4257 and all real/customer media remain locked;
+  publishing, provider, messaging, website, review, scheduling, pricing, and
+  repository-visibility actions remain prohibited.
+
+## 2026-08-21 — reconciled R3 live status (historical, superseded)
 
 Read `artifacts/veroxa/docs/CURRENT_STATE.json`,
 `artifacts/veroxa/docs/CURRENT_MILESTONE.md`, and

@@ -4,7 +4,43 @@ Status: highest-level current source-of-truth index. Read this file before relyi
 
 <!-- GUARDED_INTERNAL_AI_ROLLOUT_AUTHORITY -->
 
-## 2026-08-21 — reconciled R3 live status (current authority)
+## 2026-08-22 — PR #205 live convergence and authenticated-proof gate (current authority)
+
+Read in this order:
+
+1. `CURRENT_STATE.json` — compact current state and incomplete gates.
+2. `CURRENT_MILESTONE.md` — controlling outcome, blocker, and safe sequence.
+3. `VEROXA_LIVE_STATUS_CLOSEOUT_20260822.json` — exact GitHub, Sites,
+   Supabase, Edge, lock, proof, and Linear observation.
+4. `SUPABASE_PRO_CAPACITY_AND_WORKFLOW_DIRECTION.md` — current Pro-capacity,
+   spend, and proportional-use governance.
+
+Current checkpoint:
+
+- GitHub `main` is PR #205 merge
+  `c47920dce981478d757a3cc89ef9f337c39908ef`; all four exact-head workflows
+  passed and Copilot's sole-reviewer re-review recommended approval with zero
+  new findings.
+- Sites v68 deployment `appgdep_6a894fe379108191a767de502d56d5bd`
+  succeeded and its 248-file runtime subtree
+  (`926e3a10e081e9b5f8924783add85cb022afc75549272352e9e416b53e3b1504`)
+  matches main. Both domains, provider status, and SSL are active.
+- `momo-content-ai-lifecycle` v15 is ACTIVE; its three deployed files match
+  merged source and it has zero proof invocations. The other active Edge
+  bundles were unchanged from the prior exact-parity checkpoint.
+- Supabase Pro is `ACTIVE_HEALTHY` with 60 migrations. Acceptance has
+  zero registered sessions, assets, packages, or provider connections. All
+  external-action locks remain closed.
+- The active order is VER-43 → VER-39 → VER-26 → VER-27 → VER-28; VER-41 is
+  Todo behind VER-43/39 and VER-28 is founder-only.
+- The preserved expired session remains immutable and the one proof is
+  unconsumed. A fresh explicit one-shot authorization is required before one
+  temporary least-privileged synthetic Client session and one no-new-media
+  rejection proof.
+- IMG_4257 and real/customer media remain locked. No Momo or founder GO,
+  approval, publication, or external authority is claimed.
+
+## 2026-08-21 — reconciled R3 live status (historical, superseded)
 
 Read in this order:
 

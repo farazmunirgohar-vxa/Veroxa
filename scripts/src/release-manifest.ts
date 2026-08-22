@@ -254,8 +254,22 @@ const ACTIVE_VER43_HOSTED_SIGNATURE_ENVELOPE_REPAIR_ALLOWED_PATHS = new Set([
 const ACTIVE_VER43_HOSTED_SIGNATURE_ENVELOPE_REPAIR_SITES_FILE_COUNT = 248;
 const ACTIVE_VER43_HOSTED_SIGNATURE_ENVELOPE_REPAIR_SITES_SHA256 =
   "926e3a10e081e9b5f8924783add85cb022afc75549272352e9e416b53e3b1504";
+const ACTIVE_VER43_HOSTED_SIGNATURE_ENVELOPE_REPAIR_FIXED_HEAD_COMMIT =
+  "c47920dce981478d757a3cc89ef9f337c39908ef";
+const ACTIVE_LIVE_STATUS_EDGE15_SITES68_PACKET_BASE_COMMIT =
+  ACTIVE_VER43_HOSTED_SIGNATURE_ENVELOPE_REPAIR_FIXED_HEAD_COMMIT;
+const ACTIVE_LIVE_STATUS_EDGE15_SITES68_PACKET_ALLOWED_PATHS = new Set([
+  "AGENTS.md",
+  "artifacts/veroxa/docs/ACTIVE_DOCS_INDEX.md",
+  "artifacts/veroxa/docs/CURRENT_MILESTONE.md",
+  "artifacts/veroxa/docs/CURRENT_STATE.json",
+  "artifacts/veroxa/docs/VEROXA_LIVE_STATUS_CLOSEOUT_20260822.json",
+  "artifacts/veroxa/docs/VEROXA_LOCKED_OPERATING_MEMORY.md",
+  "scripts/src/check-chatgpt-sites-migration-source-truth.ts",
+  "scripts/src/release-manifest.ts",
+]);
 const CURRENT_LIVE_STATUS_CLOSEOUT_PATH =
-  "artifacts/veroxa/docs/VEROXA_LIVE_STATUS_CLOSEOUT_20260821.json";
+  "artifacts/veroxa/docs/VEROXA_LIVE_STATUS_CLOSEOUT_20260822.json";
 
 export const TREE_HASH_ALGORITHM = "veroxa-path-null-content-null-sha256-v1";
 export const REVIEWED_LOCAL_CANDIDATE_RELEASE_STATE =
@@ -1255,8 +1269,12 @@ function readActiveMediaInspectionCandidateState():
           "r3_acceptance_live_stack_reconciled_auth_session_blocked" &&
         candidate.state ===
           "live_platform_reconciled_acceptance_proof_blocked"));
+    const isReleaseConvergedCandidate = value.phase ===
+        "r3_release_converged_authenticated_proof_pending" &&
+      candidate.kind === "ver43_hosted_signature_envelope_release" &&
+      candidate.state === "release_converged_authenticated_proof_pending";
     if (!isPreflightCandidate && !isVerifierContractCandidate &&
-      !isPreinterventionCandidate) {
+      !isPreinterventionCandidate && !isReleaseConvergedCandidate) {
       return null;
     }
     return value as unknown as ActiveMediaInspectionCandidateState;
@@ -1937,24 +1955,76 @@ function assertActiveR3AcceptanceAuthProofRunnerDiffScope(): void {
   }
 }
 
-/**
- * Bind the hosted-signature repair to merged PR #204 plus its committed,
- * staged, unstaged, and untracked paths. Every unrelated mutation fails
- * closed, including deletion, rename, or an omitted root/Sites mirror.
- */
+/** Bind merged PR #205 to its immutable exact committed slice. */
 function assertActiveVer43HostedSignatureEnvelopeRepairDiffScope(): void {
   const comparisonRange =
-    `${ACTIVE_VER43_HOSTED_SIGNATURE_ENVELOPE_REPAIR_BASE_COMMIT}...HEAD`;
+    `${ACTIVE_VER43_HOSTED_SIGNATURE_ENVELOPE_REPAIR_BASE_COMMIT}...${ACTIVE_VER43_HOSTED_SIGNATURE_ENVELOPE_REPAIR_FIXED_HEAD_COMMIT}`;
   try {
     execFileSync("git", [
       "merge-base",
       "--is-ancestor",
       ACTIVE_VER43_HOSTED_SIGNATURE_ENVELOPE_REPAIR_BASE_COMMIT,
-      "HEAD",
+      ACTIVE_VER43_HOSTED_SIGNATURE_ENVELOPE_REPAIR_FIXED_HEAD_COMMIT,
     ], { cwd: repoRoot, stdio: "ignore" });
   } catch {
     throw new Error(
       "VER-43 hosted-signature repair lacks the exact merged PR #204 base",
+    );
+  }
+
+  try {
+    const paths = gitPathList([
+      "diff", "--find-renames", "--name-only", "--diff-filter=ACM",
+      comparisonRange, "--",
+    ]).sort();
+    const forbidden = gitPathList([
+      "diff", "--find-renames", "--name-only", "--diff-filter=DRTUXB",
+      comparisonRange, "--",
+    ]).sort();
+    const unexpected = paths.filter((path) =>
+      !ACTIVE_VER43_HOSTED_SIGNATURE_ENVELOPE_REPAIR_ALLOWED_PATHS.has(path)
+    );
+    const missing = Array.from(
+      ACTIVE_VER43_HOSTED_SIGNATURE_ENVELOPE_REPAIR_ALLOWED_PATHS,
+    ).filter((path) => !paths.includes(path)).sort();
+    if (unexpected.length > 0 || missing.length > 0 || forbidden.length > 0) {
+      throw new Error(
+        "VER-43 hosted-signature repair Git scope drifted: " + [
+          unexpected.length > 0 ? `unexpected=${unexpected.join(",")}` : null,
+          missing.length > 0 ? `missing=${missing.join(",")}` : null,
+          forbidden.length > 0 ? `forbidden=${forbidden.join(",")}` : null,
+        ].filter(Boolean).join("; "),
+      );
+    }
+  } catch (error) {
+    if (error instanceof Error && error.message.startsWith(
+      "VER-43 hosted-signature repair Git scope drifted:",
+    )) throw error;
+    throw new Error(
+      "VER-43 hosted-signature repair cannot verify its exact Git diff scope: " +
+        (error instanceof Error ? error.message : String(error)),
+    );
+  }
+}
+
+/**
+ * Bind the current live-status packet to the PR #205 merge plus its committed,
+ * staged, unstaged, and untracked paths. Runtime and release files are outside
+ * this documentation-only scope.
+ */
+function assertActiveLiveStatusEdge15Sites68PacketDiffScope(): void {
+  const comparisonRange =
+    `${ACTIVE_LIVE_STATUS_EDGE15_SITES68_PACKET_BASE_COMMIT}...HEAD`;
+  try {
+    execFileSync("git", [
+      "merge-base",
+      "--is-ancestor",
+      ACTIVE_LIVE_STATUS_EDGE15_SITES68_PACKET_BASE_COMMIT,
+      "HEAD",
+    ], { cwd: repoRoot, stdio: "ignore" });
+  } catch {
+    throw new Error(
+      "Edge-v15/Sites-v68 live-status packet lacks the exact PR #205 base",
     );
   }
 
@@ -1988,14 +2058,14 @@ function assertActiveVer43HostedSignatureEnvelopeRepairDiffScope(): void {
       ...gitPathList(["ls-files", "--unmerged"]),
     ])).sort();
     const unexpected = paths.filter((path) =>
-      !ACTIVE_VER43_HOSTED_SIGNATURE_ENVELOPE_REPAIR_ALLOWED_PATHS.has(path)
+      !ACTIVE_LIVE_STATUS_EDGE15_SITES68_PACKET_ALLOWED_PATHS.has(path)
     );
     const missing = Array.from(
-      ACTIVE_VER43_HOSTED_SIGNATURE_ENVELOPE_REPAIR_ALLOWED_PATHS,
+      ACTIVE_LIVE_STATUS_EDGE15_SITES68_PACKET_ALLOWED_PATHS,
     ).filter((path) => !paths.includes(path)).sort();
     if (unexpected.length > 0 || missing.length > 0 || forbidden.length > 0) {
       throw new Error(
-        "VER-43 hosted-signature repair Git scope drifted: " + [
+        "Edge-v15/Sites-v68 live-status packet Git scope drifted: " + [
           unexpected.length > 0 ? `unexpected=${unexpected.join(",")}` : null,
           missing.length > 0 ? `missing=${missing.join(",")}` : null,
           forbidden.length > 0 ? `forbidden=${forbidden.join(",")}` : null,
@@ -2004,10 +2074,10 @@ function assertActiveVer43HostedSignatureEnvelopeRepairDiffScope(): void {
     }
   } catch (error) {
     if (error instanceof Error && error.message.startsWith(
-      "VER-43 hosted-signature repair Git scope drifted:",
+      "Edge-v15/Sites-v68 live-status packet Git scope drifted:",
     )) throw error;
     throw new Error(
-      "VER-43 hosted-signature repair cannot verify its exact Git diff scope: " +
+      "Edge-v15/Sites-v68 live-status packet cannot verify its exact Git diff scope: " +
         (error instanceof Error ? error.message : String(error)),
     );
   }
@@ -2289,6 +2359,7 @@ function assertCurrentLiveStatusReconciliation(
     assertActiveLiveStatusSupabaseProPacketDiffScope,
     assertActiveR3AcceptanceAuthProofRunnerDiffScope,
     assertActiveVer43HostedSignatureEnvelopeRepairDiffScope,
+    assertActiveLiveStatusEdge15Sites68PacketDiffScope,
   ]) {
     try {
       guard();
@@ -2330,7 +2401,7 @@ function assertCurrentLiveStatusReconciliation(
     PREINTERVENTION_ACCEPTANCE_MIGRATION,
   );
   const liveSitesRuntimeTree = hashGitSubtree(
-    ACTIVE_LIVE_STATUS_SUPABASE_PRO_PACKET_FIXED_HEAD_COMMIT,
+    ACTIVE_LIVE_STATUS_EDGE15_SITES68_PACKET_BASE_COMMIT,
     "artifacts/veroxa-sites",
   );
   const authProofRunnerSitesRuntimeTree = hashGitSubtree(
@@ -2348,39 +2419,48 @@ function assertCurrentLiveStatusReconciliation(
     "current live status must preserve the immutable schema-13 deployment manifest",
   );
   must(
-    record.phase === "r3_acceptance_live_stack_reconciled_auth_session_blocked" &&
-      record.currentVerdict === "NOT READY — R3 ACCEPTANCE GATES OPEN" &&
-      record.updatedAt === "2026-08-21T06:37:49Z" &&
+    record.phase === "r3_release_converged_authenticated_proof_pending" &&
+      record.currentVerdict ===
+        "NOT READY — R3 AUTHENTICATED ACCEPTANCE GATES OPEN" &&
+      record.updatedAt === "2026-08-22T07:37:41Z" &&
       record.currentStatusCloseout === CURRENT_LIVE_STATUS_CLOSEOUT_PATH,
     "current live-status identity, timestamp, or not-ready boundary drifted",
   );
   must(
     github?.observedMainCommit ===
-        ACTIVE_LIVE_STATUS_SUPABASE_PRO_PACKET_BASE_COMMIT &&
-      github.observedMainTree === "0904bd1ddaeb8fc8d981f064a31b20133dae64eb" &&
-      github.latestMergedPullRequest === 202 &&
-      github.pullRequest202Head ===
-        "f8e78c3b8f7863151e68867062c387973689ac4f" &&
-      github.runtimeChangedByPullRequest202 === false,
-    "GitHub PR #202 baseline or runtime boundary drifted",
+        ACTIVE_LIVE_STATUS_EDGE15_SITES68_PACKET_BASE_COMMIT &&
+      github.observedMainTree === "1303518c22c5ff40daabc5b8f68803a02d30b8c8" &&
+      github.latestMergedPullRequest === 205 &&
+      github.pullRequest205Head ===
+        "51dca29248778e842b671f5cbe18783195fbcda0" &&
+      github.runtimeChangedByPullRequest205 === true &&
+      github.requiredWorkflowsGreen === true &&
+      github.copilotSoleReviewer === true &&
+      github.copilotReReviewOutcome ===
+        "approval_recommended_zero_new_findings",
+    "GitHub PR #205 baseline, workflow, review, or runtime boundary drifted",
   );
   must(
-    sites?.version === 66 &&
+    sites?.version === 68 &&
       sites.versionId ===
-        "appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_8b15a03fe30c8191869f407d796ce5a8" &&
-      sites.deploymentId === "appgdep_6a87ee29daf88191bd2813485deefb88" &&
+        "appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_0116de399dc881918935597e6fbc0272" &&
+      sites.deploymentId === "appgdep_6a894fe379108191a767de502d56d5bd" &&
       sites.deploymentStatus === "succeeded" &&
       sites.internalSourceCommit ===
-        "85e2bc4f7eb3a6b23a5bd1d2f3934d0d1c44364f" &&
-      sites.runtimeSubtreeFileCount === 245 &&
+        "8ed3dc93be34a5f889aba4e911170f29c6999148" &&
+      sites.internalSourceTree ===
+        "73fcaed7c34f743408deb74438cdf878a0e77a1b" &&
+      sites.runtimeSubtreeFileCount === 248 &&
       sites.runtimeSubtreeSha256 ===
-        "85f50c41751f38a49bd6ce3eadfb9bf1f90065615b84b2d6c8707ca7e23d89a7" &&
+        ACTIVE_VER43_HOSTED_SIGNATURE_ENVELOPE_REPAIR_SITES_SHA256 &&
       liveSitesRuntimeTree.fileCount === sites.runtimeSubtreeFileCount &&
       liveSitesRuntimeTree.sha256 === sites.runtimeSubtreeSha256 &&
       sites.matchesObservedGitHubMainRuntimeSubtree === true &&
+      sites.environmentRevision === 30 &&
       sites.apexDomainHealthy === true &&
-      sites.wwwDomainHealthy === true,
-    "Sites v66 identity, domain health, or exact runtime-subtree parity drifted",
+      sites.wwwDomainHealthy === true &&
+      sites.postDeployWorkerErrors === 0,
+    "Sites v68 identity, domain health, or exact runtime-subtree parity drifted",
   );
   must(
     authProofRunnerSitesRuntimeTree.fileCount ===
@@ -2417,18 +2497,22 @@ function assertCurrentLiveStatusReconciliation(
   must(
     edge?.allActiveFunctionBundleSourcesMatchObservedGitHubMain === true &&
       edge.mediaLifecycleVersion === 4 &&
-      edge.contentLifecycleVersion === 14 &&
+      edge.contentLifecycleVersion === 15 &&
       edge.webhookLifecycleVersion === 6 &&
       edge.dispatchLifecycleVersion === 4 &&
-      edge.legacyPurgeVersion === 11,
+      edge.legacyPurgeVersion === 11 &&
+      edge.contentLifecycleVerifyJwt === false &&
+      edge.contentLifecycleBundleSha256 ===
+        "af24ee01a0eb9725f6d3931cf2c4b317ef58f7d9efcdf763682d176484e9c8cd" &&
+      edge.contentLifecycleV15ProofInvocationCount === 0,
     "active Edge version or all-bundle source-parity record drifted",
   );
   must(
-    candidate?.kind === "veroxa_preintervention_acceptance" &&
-      candidate.state === "live_platform_reconciled_acceptance_proof_blocked" &&
-      candidate.pullRequest === 193 &&
+    candidate?.kind === "ver43_hosted_signature_envelope_release" &&
+      candidate.state === "release_converged_authenticated_proof_pending" &&
+      candidate.pullRequest === 205 &&
       candidate.mergeCommit ===
-        "1663028de4def6a94565fe095691191205a7192a" &&
+        ACTIVE_LIVE_STATUS_EDGE15_SITES68_PACKET_BASE_COMMIT &&
       sameJson(candidate.pendingMigrations, []) &&
       candidate.migration?.applied === true &&
       candidate.migration?.candidateMigrationCount === 60 &&
@@ -2436,7 +2520,7 @@ function assertCurrentLiveStatusReconciliation(
         rootMigrationTree.sha256 &&
       candidate.externalActionLockRequired === true &&
       candidate.img4257RetriesRemaining === 0,
-    "applied acceptance source lineage or immutable media boundary drifted",
+    "PR #205 release lineage or immutable media boundary drifted",
   );
   must(
     gates?.releaseSourceMerged === true &&
@@ -2445,6 +2529,7 @@ function assertCurrentLiveStatusReconciliation(
       gates.edgeBundleParityProven === true &&
       gates.externalActionLocksClosed === true &&
       gates.freshAuthenticatedUploadSession === false &&
+      gates.authenticatedExpiredSessionRejectionProof === false &&
       gates.syntheticSuccessPassed === false &&
       gates.duplicateReplayIdempotent === false &&
       gates.controlledFailureFailedClosed === false &&
@@ -2455,13 +2540,23 @@ function assertCurrentLiveStatusReconciliation(
     "current state overclaims or omits an R3 acceptance gate",
   );
   must(
-    blocker?.linearIssue === "VER-41" &&
-      blocker.linearStatus === "Todo" &&
-      blocker.uploadSessionId === "45ad07a3-0192-452b-8a01-5d5bf8528ced" &&
-      blocker.uploadSessionState === "expired" &&
-      blocker.uploadSessionRegistered === false &&
+    blocker?.linearIssue === "VER-43" &&
+      blocker.linearStatus === "In Progress" &&
+      blocker.downstreamIssue === "VER-39" &&
+      blocker.downstreamStatus === "In Progress" &&
+      blocker.preservedUploadSessionId ===
+        "45ad07a3-0192-452b-8a01-5d5bf8528ced" &&
+      blocker.preservedUploadSessionState === "expired" &&
+      blocker.preservedUploadSessionRegistered === false &&
+      blocker.proofState === "unconsumed" &&
+      blocker.lastProofEdgeVersion === 14 &&
+      blocker.lastProofHttpStatus === 403 &&
+      blocker.contentLifecycleV15ProofInvocationCount === 0 &&
+      blocker.reusableClientAuthorityAvailable === false &&
+      blocker.proofRunnerWakeCredentialConfigured === false &&
       blocker.oldSessionEvidenceMustRemainImmutable === true &&
-      program?.ver40Status === "Done" &&
+      program?.ver43Status === "In Progress" &&
+      program.ver39Status === "In Progress" &&
       program.ver41Status === "Todo" &&
       program.syntheticGate?.status === "In Progress" &&
       program.syntheticGate?.complete === false &&
@@ -2470,7 +2565,7 @@ function assertCurrentLiveStatusReconciliation(
       program.founderGate?.status === "Todo" &&
       program.founderGate?.complete === false &&
       program.founderGate?.momoGo === false,
-    "VER-40/VER-41, expired-session blocker, or incomplete R3 gates drifted",
+    "VER-43/VER-39 authentication blocker or incomplete R3 gates drifted",
   );
   must(
     sameJson(locks, {
@@ -2495,28 +2590,49 @@ function assertCurrentLiveStatusReconciliation(
   );
   must(
     closeout.recordKind === "veroxa_live_status_closeout" &&
-      closeout.status === "live_stack_reconciled_acceptance_incomplete" &&
+      closeout.status === "release_converged_authenticated_proof_pending" &&
       closeout.observedAt === record.updatedAt &&
       closeout.github?.observedMainCommit === github?.observedMainCommit &&
-      closeout.sites?.runtimeSubtree?.fileCount === 245 &&
+      closeout.github?.latestMergedPullRequest === 205 &&
+      closeout.github?.pullRequest205?.requiredWorkflows?.ci === "success" &&
+      closeout.github?.pullRequest205?.review?.owner === "copilot" &&
+      closeout.github?.pullRequest205?.review?.codexDuplicateReviewPerformed === false &&
+      closeout.github?.pullRequest205?.review?.reReviewOutcome ===
+        "approval_recommended" &&
+      closeout.github?.pullRequest205?.review?.reReviewNewFindingCount === 0 &&
+      closeout.sites?.version === 68 &&
+      closeout.sites?.deploymentId ===
+        "appgdep_6a894fe379108191a767de502d56d5bd" &&
+      closeout.sites?.runtimeSubtree?.fileCount === 248 &&
       closeout.sites?.runtimeSubtree?.sha256 ===
-        "85f50c41751f38a49bd6ce3eadfb9bf1f90065615b84b2d6c8707ca7e23d89a7" &&
+        ACTIVE_VER43_HOSTED_SIGNATURE_ENVELOPE_REPAIR_SITES_SHA256 &&
       closeout.sites?.runtimeSubtree?.matchesObservedGitHubMain === true &&
+      closeout.sites?.postDeployErrorsOnlyWorkerLogCount === 0 &&
       closeout.supabase?.migrations?.count === rootMigrationTree.fileCount &&
       closeout.supabase?.migrations?.treeSha256 === rootMigrationTree.sha256 &&
       closeout.supabase?.externalActionLocks?.status === "closed" &&
       closeout.supabase?.externalActionLocks?.rowsWithAnyExternalActionEnabled === 0 &&
       closeout.supabase?.externalActionLocks?.acceptanceExternalWriteAllowedRows === 0 &&
       closeout.supabase?.acceptanceSessionBlocker?.state === "expired" &&
+      closeout.supabase?.acceptanceSessionBlocker?.proofState === "unconsumed" &&
+      closeout.supabase?.acceptance?.registeredSessionRows === 0 &&
+      closeout.supabase?.acceptance?.assetRows === 0 &&
+      closeout.supabase?.acceptance?.packageRows === 0 &&
       closeout.edge?.allActiveFunctionBundleSourcesMatchObservedGitHubMain === true &&
+      closeout.edge?.proofEvidence?.version15InvocationCount === 0 &&
+      closeout.edge?.proofEvidence?.proofConsumed === false &&
+      closeout.r3Program?.ver43?.status === "In Progress" &&
+      closeout.r3Program?.ver39?.status === "In Progress" &&
       closeout.r3Program?.founderGate?.momoGo === false &&
-      closeout.productBoundary?.runtimeOrPlatformMutationPerformed === false,
+      closeout.productBoundary?.runtimeOrPlatformMutationPerformed === true &&
+      closeout.productBoundary?.secondAuthenticationProofPerformed === false &&
+      closeout.productBoundary?.realMomoMediaTouched === false,
     "machine-readable live-status closeout drifted or overclaims production work",
   );
 
   const expectedFunctions = [
     ["momo-media-ai-lifecycle", 4, "ACTIVE", true],
-    ["momo-content-ai-lifecycle", 14, "ACTIVE", false],
+    ["momo-content-ai-lifecycle", 15, "ACTIVE", false],
     ["momo-content-ai-webhook-lifecycle", 6, "ACTIVE", false],
     ["momo-content-ai-dispatch-lifecycle", 4, "ACTIVE", false],
     ["veroxa-legacy-media-purge-20260812", 11, "ACTIVE", true],
@@ -2541,7 +2657,7 @@ function assertCurrentLiveStatusReconciliation(
     must(
       typeof expectedSha === "string" &&
         sha256GitFile(
-          ACTIVE_LIVE_STATUS_SUPABASE_PRO_PACKET_BASE_COMMIT,
+          ACTIVE_LIVE_STATUS_EDGE15_SITES68_PACKET_BASE_COMMIT,
           path,
         ) === expectedSha,
       "canonical Edge source drifted: " + path,
@@ -2577,8 +2693,10 @@ function assertActivePreinterventionAcceptanceCandidate(
   manifest: DeploymentManifest,
   state: ActiveMediaInspectionCandidateState,
 ): void {
-  if (state.phase ===
-    "r3_acceptance_live_stack_reconciled_auth_session_blocked") {
+  if ([
+    "r3_acceptance_live_stack_reconciled_auth_session_blocked",
+    "r3_release_converged_authenticated_proof_pending",
+  ].includes(state.phase)) {
     assertCurrentLiveStatusReconciliation(manifest, state);
     return;
   }
@@ -3984,6 +4102,12 @@ function assertMediaRecoveryByteInspectionCandidateManifest(
       );
     } else if (activeForwardCandidate.activeCandidate?.kind ===
       "veroxa_preintervention_acceptance") {
+      assertActivePreinterventionAcceptanceCandidate(
+        manifest,
+        activeForwardCandidate,
+      );
+    } else if (activeForwardCandidate.activeCandidate?.kind ===
+      "ver43_hosted_signature_envelope_release") {
       assertActivePreinterventionAcceptanceCandidate(
         manifest,
         activeForwardCandidate,

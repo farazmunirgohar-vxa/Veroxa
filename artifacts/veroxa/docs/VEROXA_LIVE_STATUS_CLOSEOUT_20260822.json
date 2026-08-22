@@ -1,0 +1,269 @@
+{
+  "schemaVersion": 1,
+  "recordKind": "veroxa_live_status_closeout",
+  "status": "release_converged_authenticated_proof_pending",
+  "observedAt": "2026-08-22T07:37:41Z",
+  "evidenceBoundary": "reviewed_release_merge_plus_edge_first_sites_second_deployment_and_read_only_postdeploy_verification",
+  "github": {
+    "repository": "farazmunirgohar-vxa/Veroxa",
+    "defaultBranch": "main",
+    "observedMainCommit": "c47920dce981478d757a3cc89ef9f337c39908ef",
+    "observedMainTree": "1303518c22c5ff40daabc5b8f68803a02d30b8c8",
+    "latestMergedPullRequest": 205,
+    "pullRequest205": {
+      "head": "51dca29248778e842b671f5cbe18783195fbcda0",
+      "mergeCommit": "c47920dce981478d757a3cc89ef9f337c39908ef",
+      "scope": "hosted_signed_envelope_transport_and_regression_guard",
+      "runtimeChanged": true,
+      "changedFiles": 12,
+      "requiredWorkflows": {
+        "ci": "success",
+        "veroxaVerify": "success",
+        "sitesVerify": "success",
+        "supabaseVerify": "success"
+      },
+      "review": {
+        "owner": "copilot",
+        "codexDuplicateReviewPerformed": false,
+        "firstReviewFindingCount": 1,
+        "findingFixed": true,
+        "reReviewOutcome": "approval_recommended",
+        "reReviewNewFindingCount": 0,
+        "unresolvedThreadCount": 0
+      }
+    }
+  },
+  "sites": {
+    "projectId": "appgprj_6a53d07c7c28819182801cf35dfd30de",
+    "slug": "veroxa-client-experience",
+    "productionUrl": "https://veroxasystems.com",
+    "version": 68,
+    "versionId": "appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_0116de399dc881918935597e6fbc0272",
+    "internalSourceCommit": "8ed3dc93be34a5f889aba4e911170f29c6999148",
+    "internalSourceTree": "73fcaed7c34f743408deb74438cdf878a0e77a1b",
+    "deploymentId": "appgdep_6a894fe379108191a767de502d56d5bd",
+    "deploymentStatus": "succeeded",
+    "deploymentKind": "publish",
+    "environmentRevision": 30,
+    "archive": {
+      "fileCount": 53,
+      "byteLength": 6328320,
+      "sha256": "497061f3e52ffc434658e7f9ae8c992ecbd2e180d0de0378d22f81c819ff473a"
+    },
+    "runtimeSubtree": {
+      "root": "artifacts/veroxa-sites",
+      "fileCount": 248,
+      "hashAlgorithm": "veroxa-path-null-content-null-sha256-v1",
+      "sha256": "926e3a10e081e9b5f8924783add85cb022afc75549272352e9e416b53e3b1504",
+      "gitTree": "73fcaed7c34f743408deb74438cdf878a0e77a1b",
+      "matchesObservedGitHubMain": true,
+      "extraFiles": 0,
+      "missingFiles": 0
+    },
+    "domains": [
+      {
+        "hostname": "veroxasystems.com",
+        "status": "active",
+        "providerStatus": "active",
+        "sslStatus": "active"
+      },
+      {
+        "hostname": "www.veroxasystems.com",
+        "status": "active",
+        "providerStatus": "active",
+        "sslStatus": "active"
+      }
+    ],
+    "postDeployErrorsOnlyWorkerLogCount": 0
+  },
+  "supabase": {
+    "organizationId": "vxenhhycymlsccamhayg",
+    "organizationName": "Veroxa Dev",
+    "plan": "pro",
+    "projectRef": "mwqkhsvdezeykdpqhqec",
+    "projectName": "Veroxa Dev",
+    "region": "us-east-2",
+    "health": "ACTIVE_HEALTHY",
+    "postgresVersion": "17.6.1.121",
+    "migrations": {
+      "count": 60,
+      "latestPlatformVersion": "20260820163500",
+      "latestPlatformName": "veroxa_preintervention_acceptance_v1",
+      "canonicalSource": "supabase/migrations/20260815191500_veroxa_preintervention_acceptance_v1.sql",
+      "canonicalByteLength": 76641,
+      "canonicalSha256": "fe047343b1bab6a5da5222ab78acbd2c87fa7cd0713cd317dbf51dc64404950e",
+      "treeFileCount": 60,
+      "treeHashAlgorithm": "veroxa-path-null-content-null-sha256-v1",
+      "treeSha256": "4c91224d731322539bdea70c3c4e802960b0fa4bc154faef19896a5a23794875"
+    },
+    "externalActionLocks": {
+      "runtimeControlRows": 2,
+      "providerWritesEnabled": 0,
+      "reviewRepliesEnabled": 0,
+      "websiteWritesEnabled": 0,
+      "externalSchedulingEnabled": 0,
+      "rowsWithAnyExternalActionEnabled": 0,
+      "acceptanceScopeRows": 1,
+      "acceptanceExternalWriteAllowedRows": 0,
+      "connectedProviderRows": 0,
+      "publishQueueRows": 0,
+      "publishAttemptRows": 0,
+      "status": "closed"
+    },
+    "acceptance": {
+      "scopeRows": 1,
+      "customerVisibleRows": 0,
+      "includedInReportRows": 0,
+      "uploadSessionRows": 4,
+      "initiatedSessionRows": 1,
+      "expiredSessionRows": 3,
+      "registeredSessionRows": 0,
+      "assetRows": 0,
+      "packageRows": 0,
+      "providerConnectionRows": 0
+    },
+    "acceptanceSessionBlocker": {
+      "sessionId": "45ad07a3-0192-452b-8a01-5d5bf8528ced",
+      "state": "expired",
+      "registered": false,
+      "proofState": "unconsumed",
+      "reusableClientAuthorityAvailable": false,
+      "proofRunnerWakeCredentialConfigured": false,
+      "requiredRecovery": "fresh_explicit_one_shot_authorization_then_one_short_lived_least_privileged_synthetic_client_proof",
+      "oldSessionEvidenceMustRemainImmutable": true
+    },
+    "privateSchemaDefenseInDepth": {
+      "tableCount": 26,
+      "tablesWithoutRls": 6,
+      "publicAnonAuthenticatedTableGrantCount": 0,
+      "publicAnonAuthenticatedSchemaGrantCount": 0,
+      "confirmedPublicExposure": false
+    },
+    "proCapacity": {
+      "verifiedPlan": "pro",
+      "governance": "governed_capacity_not_blanket_operational_authority",
+      "spendCapConfiguration": "unverified",
+      "backupConfiguration": "unverified",
+      "optionalFeatureConfiguration": "unverified",
+      "usageAndCost": "unverified"
+    }
+  },
+  "edge": {
+    "allActiveFunctionBundleSourcesMatchObservedGitHubMain": true,
+    "parityEvidenceBasis": "content_v15_fresh_three_file_readback_plus_unchanged_prior_exact_parity_for_other_four_active_functions",
+    "functions": [
+      {
+        "slug": "momo-media-ai-lifecycle",
+        "version": 4,
+        "status": "ACTIVE",
+        "verifyJwt": true,
+        "bundleSourceParity": true
+      },
+      {
+        "slug": "momo-content-ai-lifecycle",
+        "version": 15,
+        "status": "ACTIVE",
+        "verifyJwt": false,
+        "bundleSourceParity": true,
+        "bundleSha256": "af24ee01a0eb9725f6d3931cf2c4b317ef58f7d9efcdf763682d176484e9c8cd"
+      },
+      {
+        "slug": "momo-content-ai-webhook-lifecycle",
+        "version": 6,
+        "status": "ACTIVE",
+        "verifyJwt": false,
+        "bundleSourceParity": true
+      },
+      {
+        "slug": "momo-content-ai-dispatch-lifecycle",
+        "version": 4,
+        "status": "ACTIVE",
+        "verifyJwt": false,
+        "bundleSourceParity": true
+      },
+      {
+        "slug": "veroxa-legacy-media-purge-20260812",
+        "version": 11,
+        "status": "ACTIVE",
+        "verifyJwt": true,
+        "bundleSourceParity": true
+      }
+    ],
+    "verifiedSourceFiles": {
+      "supabase/functions/momo-media-ai-lifecycle/index.ts": "bcda431f2199acc558689fd0a3c0fa5db42e4e69f6ab67a6b88ed2b5abfa087d",
+      "supabase/functions/_shared/momo-media-ai-lifecycle-contract.ts": "bdc9138f56d670155cab8cf65b18f0cb806a8331573976a3921cc026efb558cb",
+      "supabase/functions/_shared/bridge-public-key-transition.ts": "f230a29a94266a0c234304c319bfd223138f41ea1a36a2a841d9b280adfa4f3b",
+      "supabase/functions/momo-content-ai-lifecycle/index.ts": "9fe464e0449b43cbea1f440451bff63a30db547d04180ffe84f2079681f02d35",
+      "supabase/functions/_shared/momo-content-ai-lifecycle-contract.ts": "8ee9495191e7e1fbbc8ce55b1c80fea8f051ab3ab277001662efa3f83f7dda1b",
+      "supabase/functions/momo-content-ai-webhook-lifecycle/index.ts": "7ffb35269322113e01fbd485effc2b88d6a8b95b5820047ca00db91eb36395ca",
+      "supabase/functions/_shared/momo-content-ai-webhook-lifecycle-contract.ts": "5390616096e5cc62ecdbe10f1de30bd919de54d9caada86a25ced038f0c850a4",
+      "supabase/functions/momo-content-ai-dispatch-lifecycle/index.ts": "36a0ffed25cea0d5d51e247d3b31e856f4b07a83fcb6ac89babd620c6c087d4e",
+      "supabase/functions/_shared/momo-content-ai-dispatch-lifecycle-contract.ts": "c3f49df8423dc39c57e6cd182d560659800643339aa74926d7da7c413997ce97",
+      "supabase/functions/veroxa-legacy-media-purge-20260812/index.ts": "6d928ef8c06d1c97441080637467837ed309ac37f4f1285c1630c987a957bab5"
+    },
+    "proofEvidence": {
+      "lastInvocationVersion": 14,
+      "lastInvocationId": "eabe0dc2-83f5-4ad6-aefa-5540698b58f7",
+      "lastInvocationStatus": 403,
+      "lastInvocationStage": "before_auth_lookup",
+      "version15InvocationCount": 0,
+      "proofConsumed": false
+    }
+  },
+  "r3Program": {
+    "ver43": {
+      "status": "In Progress",
+      "blocks": ["VER-39", "VER-26", "VER-41"]
+    },
+    "ver39": {
+      "status": "In Progress",
+      "blockedBy": ["VER-43"],
+      "blocks": ["VER-26", "VER-41"]
+    },
+    "ver41": {
+      "status": "Todo",
+      "blockedBy": ["VER-43", "VER-39"],
+      "scope": "preserved_session_recovery_substep_of_ver26"
+    },
+    "syntheticGate": {
+      "issue": "VER-26",
+      "status": "In Progress",
+      "complete": false,
+      "blockedBy": ["VER-43", "VER-39"],
+      "fixture": {
+        "width": 640,
+        "height": 480,
+        "byteLength": 40266,
+        "sha256": "251703648bda54c7e5f5ee79939f66b1de304882a54bae814986adc4ecc8cbc2"
+      }
+    },
+    "authenticatedPortalGate": {
+      "issue": "VER-27",
+      "status": "Todo",
+      "complete": false,
+      "blockedBy": ["VER-26"]
+    },
+    "founderGate": {
+      "issue": "VER-28",
+      "status": "Todo",
+      "complete": false,
+      "blockedBy": ["VER-27"],
+      "founderGoIssued": false,
+      "momoGo": false
+    }
+  },
+  "productBoundary": {
+    "readyForTeamReviewIsExternalApproval": false,
+    "readyForTeamReviewIsPublication": false,
+    "momoGoClaimed": false,
+    "customerMediaUsedForThisObservation": false,
+    "runtimeOrPlatformMutationPerformed": true,
+    "secondAuthenticationProofPerformed": false,
+    "realMomoMediaTouched": false
+  },
+  "immutableHistoricalManifest": {
+    "path": "artifacts/veroxa/docs/VEROXA_DEPLOYMENT_MANIFEST.json",
+    "schemaVersion": 13,
+    "status": "preserved_historical_pr185_sites_v56_closeout_not_current_live_status_authority"
+  }
+}
