@@ -11,7 +11,7 @@ import {
 
 export const runtime = "edge";
 
-const HMAC = /^[0-9a-f]{64}$/u;
+const HMAC = /^[0-9a-f]{64}$/iu;
 const PRODUCTION_ORIGIN = "https://veroxasystems.com";
 
 function configuration(): {

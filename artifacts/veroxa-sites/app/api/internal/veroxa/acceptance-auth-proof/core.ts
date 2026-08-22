@@ -15,7 +15,7 @@ export const acceptanceAuthProofTarget = Object.freeze({
     "restaurants/0b1323dd-6df6-47d3-8c84-bb8614fdf0d8/uploads/2026/08/b30d1aee-7188-43ea-be76-d70ac65e3a22.jpg",
 });
 
-const HMAC = /^[0-9a-f]{64}$/u;
+const HMAC = /^[0-9a-f]{64}$/iu;
 const JWT = /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/u;
 const UUID =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
@@ -364,7 +364,7 @@ export async function executeAcceptanceAuthProof(
   try {
     await dependencies.clearClientSession();
   } catch {
-    revocationFailed = true;
+    if (accessToken) revocationFailed = true;
   }
   if (revocationFailed) {
     throw new ProofFailure("session_revocation_unconfirmed");

@@ -130,7 +130,7 @@ function harness(overrides = {}) {
     calls,
     handler: createAcceptanceAuthProofHandler({
       configured: overrides.configured ?? true,
-      wakeHmacSecret: SECRET,
+      wakeHmacSecret: overrides.wakeHmacSecret ?? SECRET,
       operation,
       now: () => NOW,
     }),
@@ -157,6 +157,22 @@ test("the runner rejects unsigned, stale, malformed, and non-POST requests befor
     assert.ok([400, 403, 405].includes(response.status));
     assert.equal(calls.getExistingUser, 0);
   }
+});
+
+test("uppercase HMAC secret and signature hex are accepted", async () => {
+  const wakeHmacSecret = SECRET.toUpperCase();
+  const signature = createHmac("sha256", Buffer.from(wakeHmacSecret, "hex"))
+    .update(
+      `${acceptanceAuthProofWakeContext}\n${NOW}\n${NONCE}\n${acceptanceAuthProofCanonicalBody}`,
+    )
+    .digest("hex")
+    .toUpperCase();
+  const { handler } = harness({ wakeHmacSecret });
+  const response = await handler(signedRequest({
+    secret: wakeHmacSecret,
+    signature,
+  }));
+  assert.equal(response.status, 200);
 });
 
 test("one signed wake proves Client RLS and reaches only the fixed expired-session target", async () => {
@@ -217,6 +233,19 @@ test("an identity mismatch fails before a session is minted", async () => {
   assert.equal(response.status, 503);
   assert.equal((await response.json()).state, "identity_invalid");
   assert.equal(calls.generate, 0);
+  assert.equal(calls.clear, 1);
+});
+
+test("pre-session cleanup failure does not mask the original rejection", async () => {
+  const { handler, calls } = harness({
+    existingUser: { ...exactUser, email: "different@example.invalid" },
+    clearThrows: new Error("no local session"),
+  });
+  const response = await handler(signedRequest());
+  assert.equal(response.status, 503);
+  assert.equal((await response.json()).state, "identity_invalid");
+  assert.equal(calls.generate, 0);
+  assert.deepEqual(calls.revoke, []);
   assert.equal(calls.clear, 1);
 });
 
@@ -298,6 +327,7 @@ test("production wiring mints no user, resets no credential, and stays release-s
     "data?.session?.access_token",
     'signOut(\n        accessToken,\n        "local"',
     "VEROXA_INTERNAL_ACCEPTANCE_AUTH_PROOF_HMAC_SECRET",
+    "const HMAC = /^[0-9a-f]{64}$/iu;",
   ]) assert.ok(route.includes(marker), `missing route marker: ${marker}`);
   for (const forbidden of [
     "inviteUserByEmail",
